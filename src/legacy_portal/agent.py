@@ -50,9 +50,12 @@ Rules:
 - Never guess element names. If an action fails, look at the page again and try something different.
 - If the session expires, log in again and continue where you left off.
 - Never solve or bypass a CAPTCHA: hand off.
-- Reply with one action as JSON. Keep "reason" to one short sentence."""
+- Reply with JSON: {"actions": [...], "reason": "..."}. You may batch up to 5 actions when you can already see
+  every element they need (e.g. open details -> download -> close). Execution stops at the first failure and you
+  get to look again. "done" and "handoff" must be the only action in their batch.
+- Keep "reason" to one short sentence."""
 
-ACTION_SCHEMA = {
+ONE_ACTION = {
     "type": "object",
     "properties": {
         "action": {"type": "string", "enum": ["click", "fill", "select", "download", "goto", "done", "handoff"]},
@@ -61,9 +64,17 @@ ACTION_SCHEMA = {
         "name": {"type": "string"},
         "value": {"type": "string"},
         "nth": {"type": "integer", "minimum": 0},
+    },
+    "required": ["action"],
+}
+MAX_BATCH = 5
+ACTION_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "actions": {"type": "array", "items": ONE_ACTION, "minItems": 1, "maxItems": MAX_BATCH},
         "reason": {"type": "string"},
     },
-    "required": ["action", "reason"],
+    "required": ["actions", "reason"],
 }
 
 
@@ -107,7 +118,7 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
             observation = tools.observe()
             prompt = (f"Step {n}/{max_steps}.\n"
                       f"Downloaded so far ({len(tools.downloads)}): {[Path(d).name for d in tools.downloads]}\n"
-                      f"Recent actions:\n" + ("\n".join(history[-10:]) or "(none)") +
+                      f"Recent actions:\n" + ("\n".join(history[-15:]) or "(none)") +
                       f"\n\nCurrent page:\n{observation}")
             try:
                 llm = backend.complete(SYSTEM, prompt, ACTION_SCHEMA, model=model)
@@ -115,21 +126,28 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                 # model or CLI failure: stop safely, never guess
                 result.outcome, result.reason = "error", f"model call failed: {e}"
                 break
-            action = llm.data
-            if action["action"] in ("done", "handoff"):
-                shot = tools.screenshot(f"{n:03d}-{action['action']}")
-                result.steps.append(Step(n, action, True, action["action"], shot, llm.input_tokens,
-                                         llm.output_tokens, llm.latency_s))
-                result.outcome, result.reason = action["action"], action.get("reason", "")
+            batch, reason = llm.data["actions"][:MAX_BATCH], llm.data.get("reason", "")
+            terminal = next((a for a in batch if a["action"] in ("done", "handoff")), None)
+            if terminal:
+                shot = tools.screenshot(f"{n:03d}-{terminal['action']}")
+                result.steps.append(Step(n, {**terminal, "reason": reason}, True, terminal["action"], shot,
+                                         llm.input_tokens, llm.output_tokens, llm.latency_s))
+                result.outcome, result.reason = terminal["action"], reason
                 break
-            res = tools.run(action)
-            shot = tools.screenshot(f"{n:03d}-{action['action']}")
-            result.steps.append(Step(n, action, res.ok, res.message, shot, llm.input_tokens, llm.output_tokens,
-                                     llm.latency_s))
-            target = f"{action.get('role', '')} {action.get('name', '')!r}".strip()
-            history.append(f"{n}. {action['action']} {target} -> {'OK' if res.ok else 'FAILED'}: {res.message}")
-            print(f"[{portal} {n:02d}] {action['action']:<8} {target[:60]:<60} {'ok ' if res.ok else 'ERR'} "
-                  f"{res.message[:70]}", flush=True)
+            for i, action in enumerate(batch):
+                res = tools.run(action)
+                shot = tools.screenshot(f"{n:03d}-{i}-{action['action']}")
+                cost_in, cost_out, lat = (llm.input_tokens, llm.output_tokens, llm.latency_s) if i == 0 else (0, 0, 0)
+                result.steps.append(Step(n, {**action, "reason": reason}, res.ok, res.message, shot, cost_in,
+                                         cost_out, lat))
+                target = f"{action.get('role', '')} {action.get('name', '')!r}".strip()
+                nth = f"[{action['nth']}]" if action.get("nth") is not None else ""
+                history.append(f"{n}.{i} {action['action']} {target}{nth} -> {'OK' if res.ok else 'FAILED'}: "
+                               f"{res.message}")
+                print(f"[{portal} {n:02d}.{i}] {action['action']:<8} {(target + nth)[:58]:<58} "
+                      f"{'ok ' if res.ok else 'ERR'} {res.message[:70]}", flush=True)
+                if not res.ok:
+                    break  # look at the page again before doing anything else
         browser.close()
     result.seconds = round(time.monotonic() - t0, 1)
     (run_dir / "run.json").write_text(json.dumps(asdict(result), indent=2))

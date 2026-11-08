@@ -50,6 +50,22 @@ Format: constraint → options → evidence → choice → would change if. Cons
   extraction, vision fallback) get upgraded, with numbers.
 - **Would change if:** a step's success on Haiku is below target and a stronger model fixes it at acceptable cost.
 
+## D7. Action batching: up to 5 actions per model call, stop at the first failure
+- **Constraint:** C5 (cost) and latency; the step budget.
+- **Evidence (Haiku via CLI, 2026-11-08):** Portal B needs 3 actions per document (Details, Download, Close).
+  One action per call: 70 calls, budget exhausted at 19/20 docs, 358 s. Batches of up to 5: **20/20 in 20 calls,
+  176 s.** Portal A, one action per call: 20/20 in 28 calls, 301 s.
+- **Choice (2026-11-08):** the model may batch up to 5 actions when every target is already visible; code
+  executes them in order and **stops at the first failure** so the model looks again; `done`/`handoff` must be alone.
+  Generic (no portal-specific hints), so it doesn't compromise the held-out test.
+- **Would change if:** batching raises wrong-target errors in the chaos suite (stale page after a navigation) →
+  cap the batch at actions that don't navigate.
+
+## Earlier fix worth telling: ambiguous targets are errors
+- Portal A's login boxes have no labels (common on old sites), so both are named ''. The first version silently
+  took the first match and typed the password into the username box; Haiku then **handed off instead of retrying**
+  (account-lockout risk, C4). Now: several matches without `nth` → error, never a silent guess.
+
 ## Open (decision cards before or during the build)
 - D5. Hosting the live demo: Lambda container with headless Chromium (default), ECS Fargate per run (fallback), or a
   hosted browser service.
