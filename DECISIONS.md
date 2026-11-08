@@ -29,10 +29,28 @@ Format: constraint → options → evidence → choice → would change if. Cons
   pattern as my Order Ops Agent (tau2 vs. Shopify).
 - **Would change if:** the client is ERP-heavy (e.g. SAP/Odoo integrators) → write the Odoo adapter.
 
+## D2. How the agent sees and acts: hybrid, accessibility tree first, screenshots as fallback
+- **Constraint:** C3 (survive redesigns, generalize to the held-out portal) and C5 (< $0.25 per invoice).
+- **Options:** A. DOM/HTML tools: cheap, precise, brittle to structure changes · B. vision (computer use on
+  screenshots): works anywhere, ~5-10x cost per step, slower, misclicks · C. hybrid.
+- **Choice (2026-11-08):** C. Refinement: the DOM side reads Playwright's **accessibility
+  tree** (`aria_snapshot`: roles + names of buttons, links, fields, tables), ~10x smaller than raw HTML and stable
+  under cosmetic redesigns. Elements are addressed by role + accessible name, not CSS selectors. Vision only when an
+  element can't be found after a retry or the page has nothing actionable.
+- **Would change if:** the held-out portal or Online-Mind2Web shows the accessibility tree missing key controls
+  (canvas UIs, unlabeled icons) → raise the vision share and measure the cost.
+
+## D4. Models: Haiku first, upgrade only the steps that fail; development on the Claude CLI
+- **Constraint:** C5 cost; the rule: "start with cheap models; if they can't do the task properly, then decide
+  which tasks need a better model."
+- **Choice (2026-11-08):** Haiku everywhere by default. The model sits behind a backend interface:
+  `claude-cli` (development, runs `claude -p` on a Claude plan with no tools, no hooks, no MCP, a custom system
+  prompt and JSON-schema output; ~2.6k tokens of overhead, ~1.8 s per call) and `anthropic` (the API, for the
+  deployed demo and its parity check; superseded for the final evals by D23). The eval ablation decides which steps (navigation,
+  extraction, vision fallback) get upgraded, with numbers.
+- **Would change if:** a step's success on Haiku is below target and a stronger model fixes it at acceptable cost.
+
 ## Open (decision cards before or during the build)
-- D2. How the agent sees and acts: DOM tools (Playwright selectors, read the HTML) vs. vision (Claude computer use on
-  screenshots) vs. hybrid (DOM first, vision as fallback).
-- D4. Model per step: one model everywhere vs. a cheap model for navigation and a stronger one for extraction.
 - D5. Hosting the live demo: Lambda container with headless Chromium (default), ECS Fargate per run (fallback), or a
   hosted browser service.
 - D6. What counts toward the headline success number (clean runs only vs. including injected failures).
