@@ -1,0 +1,21 @@
+# Local Postgres for development and evals. Run it through scripts/dev_db.sh (Colima engine, own project name).
+name: legacyportal-p4
+
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: lpa
+      POSTGRES_PASSWORD: lpa
+      POSTGRES_DB: lpa_p4
+    ports:
+      - "127.0.0.1:55434:5432"   # localhost only, high port (another local project uses 55433)
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lpa -d lpa_p4"]
+      interval: 2s
+      retries: 30
+
+volumes:
+  pgdata:

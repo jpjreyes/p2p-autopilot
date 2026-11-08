@@ -7,6 +7,18 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: lpa
+          POSTGRES_PASSWORD: lpa
+          POSTGRES_DB: lpa_p4
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U lpa -d lpa_p4" --health-interval 2s --health-retries 30
+    env:
+      DATABASE_URL: postgresql://lpa:lpa@localhost:5432/lpa_p4
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6

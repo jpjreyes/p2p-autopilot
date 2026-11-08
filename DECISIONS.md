@@ -19,10 +19,19 @@ Format: constraint → options → evidence → choice → would change if. Cons
 - **Would change if:** a client cares about real legacy software specifically → add
   Dolibarr as a local test run (option C).
 
+## D3. Order system: Postgres tables behind an `OrderSystem` interface; Odoo adapter possible later
+- **Constraint:** C1/C6 need exact money (NUMERIC, Decimal) and an auditable source of truth; the live demo must
+  deploy serverless (D5); the project's point is computer use, not ERP integration.
+- **Options:** A. plain Postgres tables (~20 min, easy to deploy on Neon) · B. Odoo Community in Docker (real ERP,
+  heavy, slow to seed, hard to host, its API is off-topic work) · C. A behind an interface, Odoo adapter later.
+- **Choice (2026-11-08):** C, the recommended option; to be revisited if the evals argue otherwise.
+  The matcher only depends on three methods (`get_po`, `received_qty`, `supplier_name`): the same two-backends
+  pattern as my Order Ops Agent (tau2 vs. Shopify).
+- **Would change if:** the client is ERP-heavy (e.g. SAP/Odoo integrators) → write the Odoo adapter.
+
 ## Open (decision cards before or during the build)
 - D2. How the agent sees and acts: DOM tools (Playwright selectors, read the HTML) vs. vision (Claude computer use on
   screenshots) vs. hybrid (DOM first, vision as fallback).
-- D3. Order system: plain Postgres tables vs. Odoo Community.
 - D4. Model per step: one model everywhere vs. a cheap model for navigation and a stronger one for extraction.
 - D5. Hosting the live demo: Lambda container with headless Chromium (default), ECS Fargate per run (fallback), or a
   hosted browser service.
