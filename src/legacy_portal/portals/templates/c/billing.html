@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>SafeGuard Vendor Center - Billing</title></head>
+<body>
+{% include "c/_tabs.html" %}
+<div class="body">
+  <h3>{{ "Statements" if variant else "Billing documents" }}</h3>
+  {% for month, docs in months %}
+  <details {{ "open" if loop.first }}>
+    <summary>{{ month }} ({{ docs|length }})</summary>
+    <table>
+      <tr><th>{{ "Statement" if renamed else "Document" }}</th><th>{{ "Posted" if renamed else "Issued" }}</th>
+          <th>{{ "Your ref." if renamed else "Customer reference" }}</th><th>Total</th><th>Status</th><th></th></tr>
+      {% for d in docs %}
+      <tr><td>{{ d.number }}{% if d.doc_type == "credit_note" %} <small>(credit)</small>{% endif %}</td>
+          <td>{{ fmt_date(d.issue_date, "c") }}</td><td>{{ d.po_number }}</td><td>{{ fmt_money(d.total, "c") }}</td>
+          <td>{{ d.status|capitalize }}</td>
+          <td><a href="/c/billing/{{ quote(d.number) }}/pdf" target="_blank">{{ "Download" if variant else "PDF" }}</a></td></tr>
+      {% endfor %}
+    </table>
+  </details>
+  {% endfor %}
+  {% if has_older %}<p><a href="/c/billing?older=1">Show older</a></p>{% endif %}
+</div>
+</body></html>

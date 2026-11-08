@@ -9,3 +9,4 @@ node_modules/
 web/.env.local
 evals/runs/*/screens/
 study/
+data/generated/

@@ -1,0 +1,28 @@
+<html><head><style>body{font-family:Verdana;font-size:11px}td,th{font-size:11px}</style></head>
+<body>
+<h3>{{ "Billing Documents" if variant else "Invoices" }}</h3>
+<p>Page {{ page }} of {{ pages }} ({{ total }} records)</p>
+{% set h_no = "Document #" if renamed else "Invoice No." %}
+{% set h_date = "Doc Date" if renamed else "Date" %}
+{% set h_po = "Customer Order" if renamed else "PO Ref" %}
+{% set h_amt = "Value" if renamed else "Amount" %}
+{% set h_st = "State" if renamed else "Status" %}
+<table border="1" cellpadding="3" cellspacing="0" width="95%">
+<tr bgcolor="#cccccc">
+{% if variant %}<th>{{ h_amt }}</th><th>{{ h_st }}</th><th>{{ h_no }}</th><th>{{ h_po }}</th><th>{{ h_date }}</th><th>&nbsp;</th>
+{% else %}<th>{{ h_no }}</th><th>{{ h_date }}</th><th>{{ h_po }}</th><th>{{ h_amt }}</th><th>{{ h_st }}</th><th>&nbsp;</th>{% endif %}
+</tr>
+{% for d in rows %}
+{% set link %}<a href="/a/doc?no={{ quote(d.number) }}" target="_blank">{{ "Open" if variant else "View PDF" }}</a>{% endset %}
+<tr bgcolor="{{ loop.cycle('#ffffff', '#eeeeee') }}">
+{% if variant %}<td align="right">{{ fmt_money(d.total, "a") }}</td><td>{{ d.status|upper }}</td><td>{{ d.number }}</td><td>{{ d.po_number }}</td><td>{{ fmt_date(d.issue_date, "a") }}</td><td>{{ link }}</td>
+{% else %}<td>{{ d.number }}</td><td>{{ fmt_date(d.issue_date, "a") }}</td><td>{{ d.po_number }}</td><td align="right">{{ fmt_money(d.total, "a") }}</td><td>{{ d.status|upper }}</td><td>{{ link }}</td>{% endif %}
+</tr>
+{% endfor %}
+</table>
+<p>
+{% if page > 1 %}<a href="/a/invoices?page={{ page - 1 }}">&lt; Prev</a>{% endif %}
+&nbsp;
+{% if page < pages %}<a href="/a/invoices?page={{ page + 1 }}">Next &gt;</a>{% endif %}
+</p>
+</body></html>

@@ -1,0 +1,10 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>SafeGuard Vendor Center</title></head>
+<body>
+{% include "c/_tabs.html" %}
+<div class="body">
+  <h3>Dashboard</h3>
+  <p>Welcome back. Your account documents are under the <b>{{ "Statements" if variant else "Billing" }}</b> tab.</p>
+  <p style="color:#666">Tip: documents older than two months are archived; use "Show older" to view them.</p>
+</div>
+</body></html>

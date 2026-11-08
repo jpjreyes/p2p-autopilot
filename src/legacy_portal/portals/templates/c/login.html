@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>SafeGuard Vendor Center</title>
+<style>
+body{font-family:Tahoma,sans-serif;background:#eef3ee;margin:0}
+.top{background:#1e5631;color:#fff;padding:10px 20px}
+.panel{width:420px;margin:70px auto;background:#fff;border-top:6px solid #f2b705;padding:22px;box-shadow:0 2px 6px #999}
+input{padding:5px;width:95%}.err{color:#a00}.note{color:#155}
+</style></head>
+<body>
+<div class="top">SafeGuard Supply Co. — Vendor Center</div>
+<div class="panel">
+  <h3>{{ "Account access" if variant else "Customer sign-in" }}</h3>
+  {% if notice %}<p class="note">{{ notice }}</p>{% endif %}
+  {% if error %}<p class="err">{{ error }}</p>{% endif %}
+  <form method="post" action="/c/login">
+    <p>Account name<br><input type="text" name="username"></p>
+    <p>Password<br><input type="password" name="password"></p>
+    <p><label><input type="checkbox" name="remember" style="width:auto"> Keep me signed in</label></p>
+    {% if captcha %}<p style="background:#fde;padding:8px">Unusual activity detected. Complete the puzzle to continue:
+      <br><input type="text" name="captcha" placeholder="Slide the piece into place"></p>{% endif %}
+    <p><button type="submit">{{ "Enter" if variant else "Sign in" }}</button></p>
+  </form>
+</div>
+</body></html>

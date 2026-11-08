@@ -1,0 +1,39 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Valvex B2B Portal</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f2f2f2;margin:0}
+header{background:#7a0019;color:#fff;padding:14px 24px;font-size:20px}
+.box{background:#fff;width:380px;margin:60px auto;padding:24px;border:1px solid #ccc}
+label{display:block;margin-top:10px}input[type=text],input[type=email],input[type=password]{width:100%;padding:6px}
+.err{color:#b00}.note{color:#05a}
+#consent{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center}
+#consent div{background:#fff;padding:24px;width:420px}
+</style></head>
+<body>
+<header>VALVEX · B2B Kundenportal / Customer Portal</header>
+<div class="box">
+  <h2>{{ "Sign in" if variant else "Anmelden / Log in" }}</h2>
+  {% if notice %}<p class="note">{{ notice }}</p>{% endif %}
+  {% if error %}<p class="err">{{ error }}</p>{% endif %}
+  <form method="post" action="/b/login">
+    <label>E-Mail <input type="email" name="email"></label>
+    <label>{{ "Passwort / Password" }} <input type="password" name="password"></label>
+    {% if captcha %}
+    <div style="margin-top:12px;border:1px solid #aaa;padding:8px">
+      <label><input type="checkbox" name="captcha" value="1"> I am not a robot</label>
+      <small>Select all images with traffic lights to continue.</small>
+    </div>
+    {% endif %}
+    <p><button type="submit">{{ "Continue" if variant else "Log in" }}</button></p>
+  </form>
+</div>
+<div id="consent">
+  <div>
+    <h3>Cookies</h3>
+    <p>We use cookies to operate this portal. Please accept to continue.</p>
+    <button onclick="document.cookie='b_consent=1;path=/';document.getElementById('consent').remove()">
+      {{ "Agree" if variant else "Accept all" }}</button>
+  </div>
+</div>
+<script>if (document.cookie.includes('b_consent=1')) document.getElementById('consent').remove();</script>
+</body></html>

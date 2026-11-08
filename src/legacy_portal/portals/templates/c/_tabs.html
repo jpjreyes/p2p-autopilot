@@ -1,0 +1,16 @@
+<style>
+body{font-family:Tahoma,sans-serif;background:#eef3ee;margin:0}
+.top{background:#1e5631;color:#fff;padding:10px 20px}.top a{color:#fff;float:right;font-size:12px}
+.tabs{background:#d9e6d9;padding:0 20px}.tabs a{display:inline-block;padding:8px 14px;color:#1e5631;text-decoration:none}
+.tabs a.on{background:#fff;font-weight:bold}
+.body{background:#fff;margin:0 20px 20px;padding:18px}
+table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ddd;padding:5px;font-size:13px;text-align:left}
+summary{cursor:pointer;font-weight:bold;padding:6px 0}
+</style>
+<div class="top">SafeGuard Supply Co. — Vendor Center <a href="/c/logout">Sign out</a></div>
+<div class="tabs">
+  <a href="/c/home" class="{{ 'on' if tab == 'dashboard' }}">Dashboard</a>
+  <a href="/c/billing" class="{{ 'on' if tab == 'billing' }}">{{ "Statements" if variant else "Billing" }}</a>
+  <a href="#" onclick="return false">Orders</a>
+  <a href="#" onclick="return false">Support</a>
+</div>

@@ -1,0 +1,32 @@
+<html>
+<head><title>Acme SupplierNet - Sign In</title>
+<script>if (top !== self) { top.location = self.location; }</script>
+<style>body{font-family:Verdana,Arial;font-size:11px;background:#d4d0c8}td{font-size:11px}.err{color:#c00}.note{color:#036}</style>
+</head>
+<body>
+<table width="100%" bgcolor="#003366"><tr><td><font color="white" size="4"><b>ACME SupplierNet</b></font></td>
+<td align="right"><font color="#cccccc">Customer Self-Service v3.2</font></td></tr></table>
+<br><br>
+<center>
+<table border="1" cellpadding="6" cellspacing="0" bgcolor="#ffffff" width="340">
+<tr><td bgcolor="#336699"><font color="white"><b>Customer Sign In</b></font></td></tr>
+<tr><td>
+{% if notice %}<p class="note">{{ notice }}</p>{% endif %}
+{% if error %}<p class="err">{{ error }}</p>{% endif %}
+<form method="post" action="/a/login">
+<table>
+<tr><td>{{ "Login ID" if variant else "Username" }}:</td><td><input type="text" name="username" size="20"></td></tr>
+<tr><td>Password:</td><td><input type="password" name="password" size="20"></td></tr>
+{% if captcha %}
+<tr><td colspan="2"><div style="border:1px solid #999;padding:6px;background:#eee">
+<b>Security check:</b> type the characters shown<br>
+<span style="font-family:serif;font-size:20px;letter-spacing:6px;text-decoration:line-through">x7Q9k</span><br>
+<input type="text" name="captcha" size="8"></div></td></tr>
+{% endif %}
+<tr><td></td><td><input type="submit" value="{{ 'Log On' if variant else 'Sign In' }}"></td></tr>
+</table>
+</form>
+</td></tr></table>
+<p><font color="#666">Best viewed in Internet Explorer 6.0 at 1024x768</font></p>
+</center>
+</body></html>

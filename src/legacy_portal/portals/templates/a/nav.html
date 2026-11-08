@@ -1,0 +1,10 @@
+<html><head><style>body{font-family:Verdana;font-size:11px;background:#336699;color:#fff}a{color:#fff}</style></head>
+<body>
+<p><b>ACME SupplierNet</b></p>
+<p>Logged in as<br>{{ user }}</p>
+<hr>
+<a href="/a/welcome" target="main">Home</a><br><br>
+<a href="/a/invoices" target="main">{{ "Billing Documents" if variant else "Invoices" }}</a><br><br>
+<a href="#" onclick="alert('Statements are mailed monthly.');return false;">Statements</a><br><br>
+<a href="/a/logout" target="_top">Log Off</a>
+</body></html>

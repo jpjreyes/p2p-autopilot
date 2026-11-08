@@ -1,0 +1,12 @@
+<html>
+<head><title>Acme SupplierNet</title></head>
+<frameset cols="{{ '*,190' if variant else '190,*' }}" border="1">
+{% if variant %}
+  <frame name="main" src="/a/welcome">
+  <frame name="nav" src="/a/nav">
+{% else %}
+  <frame name="nav" src="/a/nav">
+  <frame name="main" src="/a/welcome">
+{% endif %}
+</frameset>
+</html>

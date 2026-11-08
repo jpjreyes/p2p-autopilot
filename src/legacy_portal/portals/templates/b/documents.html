@@ -1,0 +1,75 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Valvex B2B Portal - Documents</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f2f2f2;margin:0}
+header{background:#7a0019;color:#fff;padding:14px 24px;font-size:20px}
+header a{color:#fff;font-size:13px;float:right}
+main{background:#fff;margin:20px;padding:20px;border:1px solid #ccc}
+table{border-collapse:collapse;width:100%;margin-top:14px}td,th{border:1px solid #ddd;padding:6px;font-size:13px}
+th{background:#eee}.err{color:#b00}
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5)}
+#modal .card{background:#fff;width:440px;margin:90px auto;padding:20px}
+</style></head>
+<body>
+<header>VALVEX · B2B Kundenportal <a href="/b/logout">Abmelden / Log out</a></header>
+<main>
+<h2>{{ "Belege" if renamed else "Dokumente / Documents" }}</h2>
+<form method="get" action="/b/documents">
+  <input type="hidden" name="searched" value="1">
+  Von / From <input type="text" name="date_from" placeholder="TT.MM.JJJJ" value="{{ q.date_from }}">
+  Bis / To <input type="text" name="date_to" placeholder="TT.MM.JJJJ" value="{{ q.date_to }}">
+  Status <select name="status">
+    <option value="all" {{ "selected" if q.status == "all" }}>Alle / All</option>
+    <option value="open" {{ "selected" if q.status == "open" }}>Offen / Open</option>
+    <option value="paid" {{ "selected" if q.status == "paid" }}>Bezahlt / Paid</option>
+  </select>
+  <button type="submit">{{ "Find" if variant else "Suchen / Search" }}</button>
+</form>
+{% if error %}<p class="err">{{ error }}</p>{% endif %}
+{% if rows is none %}
+  <p>Bitte nutzen Sie die Suche. / Use the search to find documents.</p>
+{% elif not rows %}
+  <p>Keine Treffer / No results.</p>
+{% else %}
+<table>
+<tr>
+  <th>{{ "Belegnr." if renamed else "Nummer / Number" }}</th>
+  <th>{{ "Belegdatum" if renamed else "Datum / Date" }}</th>
+  <th>{{ "Auftrag" if renamed else "Bestellung / Order" }}</th>
+  <th>{{ "Wert" if renamed else "Betrag / Amount" }}</th>
+  <th>Status</th><th></th>
+</tr>
+{% for d in rows %}
+<tr>
+  <td>{{ d.number }}</td><td>{{ fmt_date(d.issue_date, "b") }}</td><td>{{ d.po_number }}</td>
+  <td style="text-align:right">{{ fmt_money(d.total, "b") }}</td>
+  <td>{{ "Offen" if d.status == "open" else "Bezahlt" }}</td>
+  <td><button type="button" class="details"
+      data-number="{{ d.number }}" data-date="{{ fmt_date(d.issue_date, 'b') }}" data-due="{{ fmt_date(d.due_date, 'b') }}"
+      data-po="{{ d.po_number }}" data-total="{{ fmt_money(d.total, 'b') }}"
+      data-type="{{ 'Gutschrift / Credit note' if d.doc_type == 'credit_note' else 'Rechnung / Invoice' }}">
+      {{ "More" if variant else "Details" }}</button></td>
+</tr>
+{% endfor %}
+</table>
+<p>Seite / Page {{ page }} / {{ pages }}
+{% if page > 1 %}<a href="?searched=1&date_from={{ q.date_from }}&date_to={{ q.date_to }}&status={{ q.status }}&page={{ page - 1 }}">« Zurück</a>{% endif %}
+{% if page < pages %}<a href="?searched=1&date_from={{ q.date_from }}&date_to={{ q.date_to }}&status={{ q.status }}&page={{ page + 1 }}">Weiter »</a>{% endif %}
+</p>
+{% endif %}
+</main>
+<div id="modal"><div class="card">
+  <h3 id="m-type"></h3>
+  <p>Nr.: <b id="m-number"></b><br>Datum: <span id="m-date"></span><br>Fällig / Due: <span id="m-due"></span><br>
+     Bestellung / Order: <span id="m-po"></span><br>Betrag / Amount: <b id="m-total"></b></p>
+  <p><a id="m-pdf" href="#" target="_blank">{{ "PDF öffnen" if variant else "PDF herunterladen / Download PDF" }}</a>
+     &nbsp; <button type="button" onclick="document.getElementById('modal').style.display='none'">Schließen / Close</button></p>
+</div></div>
+<script>
+document.querySelectorAll('button.details').forEach(b => b.addEventListener('click', () => {
+  for (const k of ['type','number','date','due','po','total']) document.getElementById('m-'+k).textContent = b.dataset[k];
+  document.getElementById('m-pdf').href = '/b/download?doc=' + encodeURIComponent(b.dataset.number);
+  document.getElementById('modal').style.display = 'block';
+}));
+</script>
+</body></html>
