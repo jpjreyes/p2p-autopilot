@@ -39,6 +39,13 @@ Format: constraint → options → evidence → choice → would change if. Cons
   element can't be found after a retry or the page has nothing actionable.
 - **Would change if:** the held-out portal or Online-Mind2Web shows the accessibility tree missing key controls
   (canvas UIs, unlabeled icons) → raise the vision share and measure the cost.
+- **Vision fallback built (2026-11-08): `look` = set-of-marks.** A screenshot with a numbered box on every
+  interactive element + a legend; the model answers with `"mark": N` and code clicks that exact element (no guessed
+  pixels; unknown marks are errors). Tested with the `icon_links` chaos mode: each document gets two **unlabeled**
+  icons, "request paper copy" (mails a letter, a real side effect the portal counts) and "PDF", so the accessibility
+  tree shows two nameless links. Results: **A 20/20, 13 calls; B 20/20, 44 calls (vs 20 without icons); 0 side
+  effects on both.** The cost doubling on B (one look per pop-up) is why vision stays a fallback, not the default.
+  Failure suite now **14/14** (7 situations x 2 portals).
 
 ## D4. Models: Haiku first, upgrade only the steps that fail; development on the Claude CLI
 - **Constraint:** C5 cost; the rule: "start with cheap models; if they can't do the task properly, then decide
