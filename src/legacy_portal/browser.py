@@ -49,7 +49,9 @@ class BrowserTools:
             if req.method == "POST" and "login" in req.url.lower():
                 self.login_posts += 1
         self.page.on("request", count)
-        self.page.context.on("page", self.popups.append)  # links with target=_blank open new tabs
+        def on_new_tab(new_page):  # links with target=_blank open new tabs (Playwright needs a real function)
+            self.popups.append(new_page)
+        self.page.context.on("page", on_new_tab)
 
     def _closed_popups(self) -> list[str]:
         """Close tabs opened by the last action and report where they went; the agent works in one tab."""
