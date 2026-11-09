@@ -109,8 +109,9 @@ class RunResult:
 
 
 def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL, max_steps: int = 60,
-        headless: bool = True) -> RunResult:
-    run_dir = RUNS_DIR / f"{datetime.now():%Y%m%d-%H%M%S}-{portal}"
+        headless: bool = True, run_id: str | None = None, on_step=None) -> RunResult:
+    """on_step(idx, n, action, ok, message, screenshot) is called after every step (live replay, audit log)."""
+    run_dir = RUNS_DIR / (run_id or f"{datetime.now():%Y%m%d-%H%M%S}-{portal}")
     run_dir.mkdir(parents=True, exist_ok=True)
     user, pw = CREDENTIALS[portal]
     history: list[str] = []
@@ -122,6 +123,12 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
         tools = BrowserTools(page, base_url, {"username": user, "password": pw}, run_dir)
         page.goto(f"{base_url}/{portal}/login")
         result = RunResult(portal, "budget", "step budget exhausted", tools.downloads, run_dir=str(run_dir))
+
+        def record(step: Step) -> None:
+            result.steps.append(step)
+            if on_step:
+                on_step(len(result.steps) - 1, step.n, step.action, step.ok, step.result, step.screenshot)
+
         for n in range(1, max_steps + 1):
             observation = tools.observe()
             prompt = (f"Step {n}/{max_steps}.\n"
@@ -144,7 +151,7 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
             terminal = next((a for a in batch if a["action"] in ("done", "handoff")), None)
             if terminal:
                 shot = tools.screenshot(f"{n:03d}-{terminal['action']}")
-                result.steps.append(Step(n, {**terminal, "reason": reason}, True, terminal["action"], shot,
+                record(Step(n, {**terminal, "reason": reason}, True, terminal["action"], shot,
                                          llm.input_tokens, llm.output_tokens, llm.latency_s))
                 result.outcome, result.reason = terminal["action"], reason
                 break
@@ -153,7 +160,7 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                     pending_look = tools.look()
                     n_marks = len(tools.marks)
                     history.append(f"{n}.{i} look -> screenshot with {n_marks} marks (attached next turn)")
-                    result.steps.append(Step(n, {**action, "reason": reason}, True, f"look: {n_marks} marks",
+                    record(Step(n, {**action, "reason": reason}, True, f"look: {n_marks} marks",
                                              "", llm.input_tokens if i == 0 else 0,
                                              llm.output_tokens if i == 0 else 0, llm.latency_s if i == 0 else 0))
                     print(f"[{portal} {n:02d}.{i}] look     {n_marks} marks", flush=True)
@@ -161,7 +168,7 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                 res = tools.run(action)
                 shot = tools.screenshot(f"{n:03d}-{i}-{action['action']}")
                 cost_in, cost_out, lat = (llm.input_tokens, llm.output_tokens, llm.latency_s) if i == 0 else (0, 0, 0)
-                result.steps.append(Step(n, {**action, "reason": reason}, res.ok, res.message, shot, cost_in,
+                record(Step(n, {**action, "reason": reason}, res.ok, res.message, shot, cost_in,
                                          cost_out, lat))
                 target = (f"mark {action['mark']}" if action.get("mark") is not None
                           else f"{action.get('role', '')} {action.get('name', '')!r}".strip())
