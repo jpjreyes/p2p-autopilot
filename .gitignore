@@ -10,4 +10,4 @@ web/.env.local
 evals/runs/*/screens/
 study/
 data/generated/
-runs/
+/runs/
