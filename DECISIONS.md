@@ -81,6 +81,21 @@ Format: constraint → options → evidence → choice → would change if. Cons
   human (= the 7 planted problems), 0 unsafe proposals.
 - **Would change if:** suppliers send scanned paper PDFs (no text layer) → OCR or the vision path for extraction.
 
+## D9. Tool feedback is part of the prompt: say exactly what happened and what to do next
+- **Constraint:** C2 (recover when possible, never fail silently) and C5 (cost).
+- **Evidence (failure suite, Haiku via CLI, 2026-11-08):** first full suite 11/12. The model was fine in both
+  problem cases; the tool's messages weren't:
+  | Case | Tool message before | Before | Tool message after | After |
+  |---|---|---|---|---|
+  | B, session expiry (page still shows the list; only downloads get the login page) | "not a PDF (HTTP 200); the session *may* have expired" | retried 4x, handed off after 1/20 docs (safe, but no recovery) | "session expired: the portal sent its login page (/b/login) ... log in again and continue" | **20/20, 28 calls, PASS** |
+  | A, layout redesign ("View PDF" became "Open", a link opening a new tab) | new tab silently ignored ("clicked") | 20/20 but **31 calls, 389 s** | "it opened a new tab at ... (closed); to save a document use download on that link" | **20/20, 11 calls, 142 s** |
+- **Choice (2026-11-08):** tool results name the cause and the next step; tools close stray tabs and
+  inspect where a failed download landed. Generic feedback, no portal-specific hints (held-out test stays fair).
+- **Also found by the suite (my bugs, fixed, now covered by real-browser tests):** a `goto` to a file crashed the
+  run; Playwright rejected a built-in method as an event handler. Any browser error is now a failed action, the
+  suite isolates and saves every run, and 3 headless-Chromium tests cover the tool guardrails in CI.
+- **Final failure-suite result: 12/12** (5 failure modes + clean, portals A and B; CAPTCHA = handoff in 1 call).
+
 ## Open (decision cards before or during the build)
 - D5. Hosting the live demo: Lambda container with headless Chromium (default), ECS Fargate per run (fallback), or a
   hosted browser service.
