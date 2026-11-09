@@ -9,6 +9,7 @@ Every call returns the parsed JSON plus usage, so evals can report tokens and la
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import subprocess
@@ -29,17 +30,22 @@ class LLMResult:
 
 
 class Backend(Protocol):
-    def complete(self, system: str, prompt: str, schema: dict, model: str = DEFAULT_MODEL) -> LLMResult: ...
+    def complete(self, system: str, prompt: str, schema: dict, model: str = DEFAULT_MODEL,
+                 images: list[bytes] | None = None) -> LLMResult: ...
 
 
 class ClaudeCLIBackend:
     def __init__(self, timeout_s: int = 120):
         self.timeout_s = timeout_s
 
-    def complete(self, system: str, prompt: str, schema: dict, model: str = DEFAULT_MODEL) -> LLMResult:
-        cmd = ["claude", "-p", prompt, "--model", model, "--system-prompt", system,
-               "--tools", "", "--setting-sources", "", "--strict-mcp-config", "--disable-slash-commands",
-               "--no-session-persistence", "--output-format", "json", "--json-schema", json.dumps(schema)]
+    def complete(self, system: str, prompt: str, schema: dict, model: str = DEFAULT_MODEL,
+                 images: list[bytes] | None = None) -> LLMResult:
+        base = ["claude", "-p", "--model", model, "--system-prompt", system, "--tools", "", "--setting-sources", "",
+                "--strict-mcp-config", "--disable-slash-commands", "--no-session-persistence",
+                "--json-schema", json.dumps(schema)]
+        if images:
+            return self._with_images(base, prompt, images, model)
+        cmd = [*base[:2], prompt, *base[2:], "--output-format", "json"]
         t0 = time.monotonic()
         for attempt in (1, 2):  # the CLI occasionally returns an empty answer; one retry, then a clear error
             out = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=self.timeout_s,
@@ -61,6 +67,30 @@ class ClaudeCLIBackend:
         tokens_in = u.get("input_tokens", 0) + u.get("cache_creation_input_tokens", 0) + u.get(
             "cache_read_input_tokens", 0)
         return LLMResult(data, tokens_in, u.get("output_tokens", 0), latency, model)
+
+
+    def _with_images(self, base: list[str], prompt: str, images: list[bytes], model: str) -> LLMResult:
+        """Images need the stream-json input format (one user message with image blocks)."""
+        content = [{"type": "image", "source": {"type": "base64", "media_type": "image/png",
+                                                "data": base64.b64encode(img).decode()}} for img in images]
+        content.append({"type": "text", "text": prompt})
+        msg = json.dumps({"type": "user", "message": {"role": "user", "content": content}}) + "\n"
+        cmd = [*base, "--input-format", "stream-json", "--output-format", "stream-json", "--verbose"]
+        t0 = time.monotonic()
+        for attempt in (1, 2):
+            out = subprocess.run(cmd, check=False, input=msg, capture_output=True, text=True,
+                                 timeout=self.timeout_s, cwd="/tmp")
+            events = [json.loads(ln) for ln in out.stdout.splitlines() if ln.strip().startswith("{")]
+            result = next((e for e in reversed(events) if e.get("type") == "result"), {})
+            data = result.get("structured_output")
+            if out.returncode == 0 and isinstance(data, dict) and not result.get("is_error"):
+                u = result.get("usage", {})
+                tokens_in = (u.get("input_tokens", 0) + u.get("cache_creation_input_tokens", 0)
+                             + u.get("cache_read_input_tokens", 0))
+                return LLMResult(data, tokens_in, u.get("output_tokens", 0), time.monotonic() - t0, model)
+            if attempt == 2:
+                raise RuntimeError(f"claude CLI (images) gave no structured answer: {out.stderr[-200:]}")
+        raise AssertionError("unreachable")
 
 
 def get_backend(name: str | None = None) -> Backend:

@@ -40,6 +40,9 @@ Actions:
   select    choose an option (value = the option's visible label) in a combobox
   download  save the PDF behind a link (use it on the link that opens the document's PDF)
   goto      open a URL on this same portal (value = URL or path)
+  look      get a screenshot with a numbered box on every interactive element, plus a legend. Use it when the
+            accessibility tree is not enough: unlabeled icons, several nameless links, anything you can't tell
+            apart by name. Then address elements with "mark": N (marks expire when the page changes)
   done      every in-scope document has been downloaded
   handoff   stop and ask a human: CAPTCHA or "verify you are human", repeated failures, anything unclear or risky
 
@@ -50,20 +53,23 @@ Rules:
 - Never guess element names. If an action fails, look at the page again and try something different.
 - If the session expires, log in again and continue where you left off.
 - Never solve or bypass a CAPTCHA: hand off.
+- Never click a link or button whose purpose you are not sure of: it may do something real (mail, cancel,
+  dispute). If names don't tell you, look first.
 - Reply with JSON: {"actions": [...], "reason": "..."}. You may batch up to 5 actions when you can already see
   every element they need (e.g. open details -> download -> close). Execution stops at the first failure and you
-  get to look again. "done" and "handoff" must be the only action in their batch.
+  get to look again. "done" and "handoff" must be the only action in their batch; "look" must be the last.
 - Keep "reason" to one short sentence."""
 
 ONE_ACTION = {
     "type": "object",
     "properties": {
-        "action": {"type": "string", "enum": ["click", "fill", "select", "download", "goto", "done", "handoff"]},
+        "action": {"type": "string", "enum": ["click", "fill", "select", "download", "goto", "look", "done", "handoff"]},
         "frame": {"type": "string"},
         "role": {"type": "string"},
         "name": {"type": "string"},
         "value": {"type": "string"},
         "nth": {"type": "integer", "minimum": 0},
+        "mark": {"type": "integer", "minimum": 1},
     },
     "required": ["action"],
 }
@@ -108,6 +114,7 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
     run_dir.mkdir(parents=True, exist_ok=True)
     user, pw = CREDENTIALS[portal]
     history: list[str] = []
+    pending_look: tuple[bytes, str] | None = None
     t0 = time.monotonic()
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless)
@@ -121,8 +128,14 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                       f"Downloaded so far ({len(tools.downloads)}): {[Path(d).name for d in tools.downloads]}\n"
                       f"Recent actions:\n" + ("\n".join(history[-15:]) or "(none)") +
                       f"\n\nCurrent page:\n{observation}")
+            images = None
+            if pending_look:
+                images = [pending_look[0]]
+                prompt += ("\n\nScreenshot attached: every interactive element has a red numbered box.\nLegend:\n"
+                           + pending_look[1][:6000])
+                pending_look = None
             try:
-                llm = backend.complete(SYSTEM, prompt, ACTION_SCHEMA, model=model)
+                llm = backend.complete(SYSTEM, prompt, ACTION_SCHEMA, model=model, images=images)
             except (RuntimeError, subprocess.TimeoutExpired, json.JSONDecodeError, KeyError) as e:
                 # model or CLI failure: stop safely, never guess
                 result.outcome, result.reason = "error", f"model call failed: {e}"
@@ -136,12 +149,22 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                 result.outcome, result.reason = terminal["action"], reason
                 break
             for i, action in enumerate(batch):
+                if action["action"] == "look":
+                    pending_look = tools.look()
+                    n_marks = len(tools.marks)
+                    history.append(f"{n}.{i} look -> screenshot with {n_marks} marks (attached next turn)")
+                    result.steps.append(Step(n, {**action, "reason": reason}, True, f"look: {n_marks} marks",
+                                             "", llm.input_tokens if i == 0 else 0,
+                                             llm.output_tokens if i == 0 else 0, llm.latency_s if i == 0 else 0))
+                    print(f"[{portal} {n:02d}.{i}] look     {n_marks} marks", flush=True)
+                    break
                 res = tools.run(action)
                 shot = tools.screenshot(f"{n:03d}-{i}-{action['action']}")
                 cost_in, cost_out, lat = (llm.input_tokens, llm.output_tokens, llm.latency_s) if i == 0 else (0, 0, 0)
                 result.steps.append(Step(n, {**action, "reason": reason}, res.ok, res.message, shot, cost_in,
                                          cost_out, lat))
-                target = f"{action.get('role', '')} {action.get('name', '')!r}".strip()
+                target = (f"mark {action['mark']}" if action.get("mark") is not None
+                          else f"{action.get('role', '')} {action.get('name', '')!r}".strip())
                 nth = f"[{action['nth']}]" if action.get("nth") is not None else ""
                 history.append(f"{n}.{i} {action['action']} {target}{nth} -> {'OK' if res.ok else 'FAILED'}: "
                                f"{res.message}")

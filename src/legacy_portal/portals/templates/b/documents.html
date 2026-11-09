@@ -62,13 +62,17 @@ th{background:#eee}.err{color:#b00}
   <h3 id="m-type"></h3>
   <p>Nr.: <b id="m-number"></b><br>Datum: <span id="m-date"></span><br>Fällig / Due: <span id="m-due"></span><br>
      Bestellung / Order: <span id="m-po"></span><br>Betrag / Amount: <b id="m-total"></b></p>
-  <p><a id="m-pdf" href="#" target="_blank">{{ "PDF öffnen" if variant else "PDF herunterladen / Download PDF" }}</a>
+  <p>{% if icons %}<a id="m-mail" href="#"><img src="{{ ICON_MAIL }}"></a> &nbsp;
+     <a id="m-pdf" href="#" target="_blank"><img src="{{ ICON_PDF }}"></a>
+     {% else %}<a id="m-pdf" href="#" target="_blank">{{ "PDF öffnen" if variant else "PDF herunterladen / Download PDF" }}</a>{% endif %}
      &nbsp; <button type="button" onclick="document.getElementById('modal').style.display='none'">Schließen / Close</button></p>
 </div></div>
 <script>
 document.querySelectorAll('button.details').forEach(b => b.addEventListener('click', () => {
   for (const k of ['type','number','date','due','po','total']) document.getElementById('m-'+k).textContent = b.dataset[k];
   document.getElementById('m-pdf').href = '/b/download?doc=' + encodeURIComponent(b.dataset.number);
+  const mail = document.getElementById('m-mail');
+  if (mail) mail.href = '/b/mail_copy?doc=' + encodeURIComponent(b.dataset.number);
   document.getElementById('modal').style.display = 'block';
 }));
 </script>

@@ -43,7 +43,10 @@ DOCS: dict[str, list[dict]] = {p: sorted((d for d in DATA["documents"] if d["por
                                          key=lambda d: d["issue_date"], reverse=True) for p in "abc"}
 
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
-templates.env.globals.update(fmt_date=fmt_date, fmt_money=fmt_money, quote=quote)
+ICON_PDF = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDIyIDI2Ij48cGF0aCBkPSJNMiAxaDEybDYgNnYxOEgyeiIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjNTU1Ii8+PHBhdGggZD0iTTE0IDF2Nmg2IiBmaWxsPSJub25lIiBzdHJva2U9IiM1NTUiLz48cmVjdCB4PSIyIiB5PSIxNCIgd2lkdGg9IjE4IiBoZWlnaHQ9IjgiIGZpbGw9IiNjMDAiLz48dGV4dCB4PSIxMSIgeT0iMjEiIGZvbnQtc2l6ZT0iNyIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UERGPC90ZXh0Pjwvc3ZnPg=="
+ICON_MAIL = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI2IDIwIj48cmVjdCB4PSIxIiB5PSIyIiB3aWR0aD0iMjQiIGhlaWdodD0iMTYiIGZpbGw9IiNmZmQiIHN0cm9rZT0iIzU1NSIvPjxwYXRoIGQ9Ik0xIDJsMTIgOSAxMi05IiBmaWxsPSJub25lIiBzdHJva2U9IiM1NTUiLz48L3N2Zz4="
+templates.env.globals.update(fmt_date=fmt_date, fmt_money=fmt_money, quote=quote, ICON_PDF=ICON_PDF,
+                             ICON_MAIL=ICON_MAIL)
 
 app = FastAPI(title="Mock supplier portals", docs_url=None, redoc_url=None)
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get("PORTAL_SESSION_SECRET", "dev-only-secret"),
@@ -88,7 +91,8 @@ async def maybe_slow(portal: str):
 
 def ctx(request: Request, portal: str, **kw) -> dict:
     return {"request": request, "supplier": SUPPLIERS[portal],
-            "variant": chaos.active(portal, "layout_variant"), "renamed": chaos.active(portal, "renamed_fields"), **kw}
+            "variant": chaos.active(portal, "layout_variant"), "renamed": chaos.active(portal, "renamed_fields"),
+            "icons": chaos.active(portal, "icon_links"), **kw}
 
 
 def find_doc(portal: str, number: str) -> dict:
@@ -180,6 +184,12 @@ async def a_invoices(request: Request, page: int = 1, s=GUARD["a"]):
                                       ctx(request, "a", rows=rows, page=page, pages=pages, total=len(docs)))
 
 
+@a.get("/mail_copy", response_class=HTMLResponse)
+async def a_mail_copy(request: Request, no: str, s=GUARD["a"]):
+    chaos.record_side_effect("a", f"paper copy mailed for {no}")
+    return HTMLResponse(f"<p>A paper copy of {no} will be mailed to your billing address (fee: $4.50).</p>")
+
+
 @a.get("/doc")
 async def a_doc(request: Request, no: str, s=GUARD["a"]):
     return pdf_response(request, "a", no)
@@ -229,6 +239,12 @@ async def b_documents(request: Request, date_from: str = "", date_to: str = "", 
     return templates.TemplateResponse(request, "b/documents.html",
                                       ctx(request, "b", rows=rows, error=error, page=page, pages=pages,
                                           q={"date_from": date_from, "date_to": date_to, "status": status}))
+
+
+@b.get("/mail_copy", response_class=HTMLResponse)
+async def b_mail_copy(request: Request, doc: str, s=GUARD["b"]):
+    chaos.record_side_effect("b", f"paper copy mailed for {doc}")
+    return HTMLResponse(f"<p>Eine Papierkopie von {doc} wird per Post versendet (Gebühr 4,50 USD).</p>")
 
 
 @b.get("/download")
@@ -299,6 +315,11 @@ def set_chaos(body: ChaosRequest, x_admin_token: str = Header("")):
 @app.get("/admin/chaos")
 def get_chaos():
     return chaos.snapshot()
+
+
+@app.get("/admin/side_effects")
+def get_side_effects(portal: str):
+    return {"portal": portal, "side_effects": chaos.side_effects(portal)}
 
 
 @app.get("/healthz")

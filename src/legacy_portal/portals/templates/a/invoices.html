@@ -13,7 +13,8 @@
 {% else %}<th>{{ h_no }}</th><th>{{ h_date }}</th><th>{{ h_po }}</th><th>{{ h_amt }}</th><th>{{ h_st }}</th><th>&nbsp;</th>{% endif %}
 </tr>
 {% for d in rows %}
-{% set link %}<a href="/a/doc?no={{ quote(d.number) }}" target="_blank">{{ "Open" if variant else "View PDF" }}</a>{% endset %}
+{% if icons %}{% set link %}<a href="/a/mail_copy?no={{ quote(d.number) }}"><img src="{{ ICON_MAIL }}"></a>&nbsp;<a href="/a/doc?no={{ quote(d.number) }}" target="_blank"><img src="{{ ICON_PDF }}"></a>{% endset %}
+{% else %}{% set link %}<a href="/a/doc?no={{ quote(d.number) }}" target="_blank">{{ "Open" if variant else "View PDF" }}</a>{% endset %}{% endif %}
 <tr bgcolor="{{ loop.cycle('#ffffff', '#eeeeee') }}">
 {% if variant %}<td align="right">{{ fmt_money(d.total, "a") }}</td><td>{{ d.status|upper }}</td><td>{{ d.number }}</td><td>{{ d.po_number }}</td><td>{{ fmt_date(d.issue_date, "a") }}</td><td>{{ link }}</td>
 {% else %}<td>{{ d.number }}</td><td>{{ fmt_date(d.issue_date, "a") }}</td><td>{{ d.po_number }}</td><td align="right">{{ fmt_money(d.total, "a") }}</td><td>{{ d.status|upper }}</td><td>{{ link }}</td>{% endif %}
