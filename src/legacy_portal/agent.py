@@ -149,6 +149,10 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                       f"{'ok ' if res.ok else 'ERR'} {res.message[:70]}", flush=True)
                 if not res.ok:
                     break  # look at the page again before doing anything else
+            if tools.login_limit_hit:  # enforced in code, not left to the model (C4)
+                result.outcome = "handoff"
+                result.reason = f"forced: {tools.login_posts} login attempts exceeds the limit (account safety)"
+                break
         result.contexts = dict(tools.contexts)
         browser.close()
     result.seconds = round(time.monotonic() - t0, 1)

@@ -11,6 +11,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from dataclasses import dataclass, field
 from datetime import date, datetime
@@ -23,6 +25,7 @@ from legacy_portal.llm import DEFAULT_MODEL, Backend
 from legacy_portal.matching import DocLine, ExtractedDoc
 
 CENT = Decimal("0.01")
+CACHE_DIR = Path(__file__).resolve().parents[2] / "runs" / ".extract_cache"
 
 SYSTEM = """You extract fields from supplier invoices and credit notes for accounts payable.
 Return exactly what the document says; never compute or guess values that are not printed.
@@ -179,6 +182,14 @@ def cross_check(doc: ExtractedDoc, context: str | None) -> tuple[str, list[str]]
 def extract(pdf: str | Path, supplier_id: str, backend: Backend, context_snapshot: str | None = None,
             model: str = DEFAULT_MODEL) -> Extraction:
     text = pdf_text(pdf)
+    key = hashlib.sha256(f"{model}|{text}".encode()).hexdigest()[:24]
+    cached = CACHE_DIR / f"{key}.json"
+    if cached.exists():  # identical PDF already read and validated: reuse the model output, re-run every check
+        raw = json.loads(cached.read_text())
+        doc, errors = validate(raw, supplier_id)
+        if doc is not None:
+            check, notes = cross_check(doc, portal_context(context_snapshot or "", doc.number))
+            return Extraction(str(pdf), doc, raw, [], check, notes, 0, 0, 0.0)
     prompt = f"Document text:\n---\n{text}\n---"
     res = backend.complete(SYSTEM, prompt, SCHEMA, model=model)
     tokens, latency, attempts = res.input_tokens, res.latency_s, 1
@@ -191,6 +202,8 @@ def extract(pdf: str | Path, supplier_id: str, backend: Backend, context_snapsho
         doc, errors = validate(res.data, supplier_id)
     if doc is None:
         return Extraction(str(pdf), None, res.data, errors, "unavailable", [], attempts, tokens, latency)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    cached.write_text(json.dumps(res.data))
     context = portal_context(context_snapshot or "", doc.number)
     check, notes = cross_check(doc, context)
     return Extraction(str(pdf), doc, res.data, [], check, notes, attempts, tokens, latency)

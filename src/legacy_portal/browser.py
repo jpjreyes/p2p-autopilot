@@ -22,6 +22,7 @@ from playwright.sync_api import Frame, Page
 from playwright.sync_api import TimeoutError as PWTimeout
 
 MAX_SNAPSHOT_CHARS = 7000
+MAX_LOGIN_POSTS = 3  # C4 account safety: more than this and the run is stopped in code, whatever the model wants
 
 
 @dataclass
@@ -39,6 +40,17 @@ class BrowserTools:
     out_dir: Path
     downloads: list[str] = field(default_factory=list)
     contexts: dict[str, str] = field(default_factory=dict)  # pdf path -> what the page showed at download time
+    login_posts: int = 0
+
+    def __post_init__(self):
+        def count(req):
+            if req.method == "POST" and "login" in req.url.lower():
+                self.login_posts += 1
+        self.page.on("request", count)
+
+    @property
+    def login_limit_hit(self) -> bool:
+        return self.login_posts > MAX_LOGIN_POSTS
 
     # ------------------------------------------------------------------ observe
     def frames(self) -> list[tuple[str, Frame]]:

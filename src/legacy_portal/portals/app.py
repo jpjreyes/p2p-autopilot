@@ -100,7 +100,7 @@ def find_doc(portal: str, number: str) -> dict:
 
 def pdf_response(request: Request, portal: str, number: str) -> Response:
     doc = find_doc(portal, number)
-    if chaos.active(portal, "session_expiry"):
+    if chaos.fire_once(portal, "session_expiry"):
         # Reassign the top-level key: Starlette only saves the session when a top-level key changes.
         request.session[portal] = {**request.session[portal], "expired": True}  # NEXT request bounces to login
     fname = number.replace("/", "-") + ".pdf"

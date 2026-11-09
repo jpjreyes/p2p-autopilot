@@ -3,7 +3,7 @@
 Modes (any combination, per portal):
   layout_variant   buttons/links renamed and columns reordered (a portal redesign)
   renamed_fields   column headers renamed ("Invoice No." -> "Document #")
-  session_expiry   the session dies right after the first PDF download
+  session_expiry   the session dies once, right after the first PDF download (logging in again works)
   slow             every page waits 2-4 s before answering
   captcha          login shows a CAPTCHA that cannot be solved -> the only right move is a human handoff
 
@@ -17,6 +17,7 @@ import os
 
 MODES = {"layout_variant", "renamed_fields", "session_expiry", "slow", "captcha"}
 _state: dict[str, set[str]] = {"a": set(), "b": set(), "c": set()}
+_fired: dict[str, set[str]] = {"a": set(), "b": set(), "c": set()}  # one-shot modes already triggered
 
 
 def _load_env() -> None:
@@ -33,11 +34,20 @@ def set_modes(portal: str, modes: list[str]) -> set[str]:
     if unknown:
         raise ValueError(f"unknown chaos modes {sorted(unknown)}; valid: {sorted(MODES)}")
     _state[portal] = set(modes)
+    _fired[portal] = set()
     return _state[portal]
 
 
 def active(portal: str, mode: str) -> bool:
     return mode in _state[portal]
+
+
+def fire_once(portal: str, mode: str) -> bool:
+    """True the first time a one-shot mode triggers after being switched on, then False."""
+    if mode in _state[portal] and mode not in _fired[portal]:
+        _fired[portal].add(mode)
+        return True
+    return False
 
 
 def snapshot() -> dict[str, list[str]]:
