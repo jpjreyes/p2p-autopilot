@@ -42,11 +42,24 @@ class BrowserTools:
     contexts: dict[str, str] = field(default_factory=dict)  # pdf path -> what the page showed at download time
     login_posts: int = 0
 
+    popups: list = field(default_factory=list)
+
     def __post_init__(self):
         def count(req):
             if req.method == "POST" and "login" in req.url.lower():
                 self.login_posts += 1
         self.page.on("request", count)
+        self.page.context.on("page", self.popups.append)  # links with target=_blank open new tabs
+
+    def _closed_popups(self) -> list[str]:
+        """Close tabs opened by the last action and report where they went; the agent works in one tab."""
+        self.page.wait_for_timeout(300)
+        urls = []
+        for pop in self.popups:
+            urls.append(pop.url if pop.url != "about:blank" else "(a file or download)")
+            pop.close()
+        self.popups.clear()
+        return urls
 
     @property
     def login_limit_hit(self) -> bool:
@@ -120,6 +133,10 @@ class BrowserTools:
         try:
             if kind == "click":
                 self._locate(frame, role, name, nth).click(timeout=5000)
+                opened = self._closed_popups()
+                if opened:
+                    return ActionResult(True, f"clicked {role} {name!r}: it opened a new tab at {opened[0]} (closed). "
+                                              "To save a document, use the download action on that same link.")
                 return ActionResult(True, f"clicked {role} {name!r}")
             if kind == "fill":
                 self._locate(frame, role, name, nth).fill(self._fill_secrets(value), timeout=5000)
@@ -165,7 +182,11 @@ class BrowserTools:
             return ActionResult(False, f"blocked: {url} is outside the allowed portal")
         resp = self.page.context.request.get(url)  # same cookies as the logged-in page
         if "application/pdf" not in resp.headers.get("content-type", ""):
-            return ActionResult(False, f"not a PDF (HTTP {resp.status}); the session may have expired")
+            landed = urlparse(resp.url).path
+            if "login" in resp.url.lower() or 'type="password"' in resp.text().lower():
+                return ActionResult(False, f"session expired: the portal sent its login page ({landed}) instead of the "
+                                           f"PDF. Log in again (goto {landed}) and continue; downloads so far are kept.")
+            return ActionResult(False, f"not a PDF (HTTP {resp.status}, landed on {landed})")
         disp = resp.headers.get("content-disposition", "")
         m = re.search(r'filename="([^"]+)"', disp)
         fname = m.group(1) if m else f"doc{len(self.downloads) + 1}.pdf"
