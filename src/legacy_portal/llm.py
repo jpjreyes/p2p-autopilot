@@ -41,14 +41,22 @@ class ClaudeCLIBackend:
                "--tools", "", "--setting-sources", "", "--strict-mcp-config", "--disable-slash-commands",
                "--no-session-persistence", "--output-format", "json", "--json-schema", json.dumps(schema)]
         t0 = time.monotonic()
-        out = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=self.timeout_s, cwd="/tmp")
+        for attempt in (1, 2):  # the CLI occasionally returns an empty answer; one retry, then a clear error
+            out = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=self.timeout_s,
+                                 cwd="/tmp")
+            if out.returncode != 0:
+                err = f"claude CLI failed ({out.returncode}): {out.stderr[-300:] or out.stdout[-300:]}"
+            else:
+                payload = json.loads(out.stdout)
+                data = payload.get("structured_output")
+                if data is None and payload.get("result", "").strip().startswith("{"):
+                    data = json.loads(payload["result"])
+                if not payload.get("is_error") and isinstance(data, dict):
+                    break
+                err = f"claude CLI gave no structured answer: {str(payload.get('result'))[:200]!r}"
+            if attempt == 2:
+                raise RuntimeError(err)
         latency = time.monotonic() - t0
-        if out.returncode != 0:
-            raise RuntimeError(f"claude CLI failed ({out.returncode}): {out.stderr[-500:] or out.stdout[-500:]}")
-        payload = json.loads(out.stdout)
-        if payload.get("is_error"):
-            raise RuntimeError(f"claude CLI error: {payload.get('result')}")
-        data = payload.get("structured_output") or json.loads(payload["result"])
         u = payload.get("usage", {})
         tokens_in = u.get("input_tokens", 0) + u.get("cache_creation_input_tokens", 0) + u.get(
             "cache_read_input_tokens", 0)

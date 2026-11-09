@@ -98,6 +98,7 @@ class RunResult:
     downloads: list[str]
     steps: list[Step] = field(default_factory=list)
     run_dir: str = ""
+    contexts: dict[str, str] = field(default_factory=dict)
     seconds: float = 0.0
 
 
@@ -148,6 +149,7 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                       f"{'ok ' if res.ok else 'ERR'} {res.message[:70]}", flush=True)
                 if not res.ok:
                     break  # look at the page again before doing anything else
+        result.contexts = dict(tools.contexts)
         browser.close()
     result.seconds = round(time.monotonic() - t0, 1)
     (run_dir / "run.json").write_text(json.dumps(asdict(result), indent=2))

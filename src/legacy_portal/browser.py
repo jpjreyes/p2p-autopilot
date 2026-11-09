@@ -38,6 +38,7 @@ class BrowserTools:
     secrets: dict[str, str]
     out_dir: Path
     downloads: list[str] = field(default_factory=list)
+    contexts: dict[str, str] = field(default_factory=dict)  # pdf path -> what the page showed at download time
 
     # ------------------------------------------------------------------ observe
     def frames(self) -> list[tuple[str, Frame]]:
@@ -129,6 +130,10 @@ class BrowserTools:
 
     def _download(self, frame: str, role: str, name: str, nth: int | None = None) -> ActionResult:
         el = self._locate(frame, role, name, nth)
+        try:
+            seen = self._frame(frame).locator("body").aria_snapshot(timeout=3000)
+        except PWError:
+            seen = ""
         href = el.get_attribute("href")
         if not href or href == "#":
             return ActionResult(False, "that element has no download link (open the document details first?)")
@@ -146,4 +151,5 @@ class BrowserTools:
         path.write_bytes(resp.body())
         if str(path) not in self.downloads:
             self.downloads.append(str(path))
+        self.contexts[str(path)] = seen  # the listing row / details pop-up: the second source for extraction
         return ActionResult(True, f"downloaded {fname}", downloaded=str(path))
