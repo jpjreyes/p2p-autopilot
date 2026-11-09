@@ -53,10 +53,14 @@ CREATE TABLE IF NOT EXISTS review_items (
 """
 
 
+def ensure_schema(conn: psycopg.Connection) -> None:
+    """Run once at startup. (Running it per request raced: concurrent CREATE TABLE IF NOT EXISTS can collide.)"""
+    conn.execute(SCHEMA_SQL)
+
+
 class RunStore:
     def __init__(self, conn: psycopg.Connection):
         self.conn = conn
-        conn.execute(SCHEMA_SQL)
 
     def start(self, run_id: str, portal: str, chaos: str = "") -> None:
         self.conn.execute("INSERT INTO runs (run_id, portal, chaos) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",

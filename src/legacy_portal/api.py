@@ -18,6 +18,8 @@ from __future__ import annotations
 import os
 import threading
 import time
+from collections.abc import Iterator
+from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime
 from pathlib import Path
 
@@ -25,13 +27,15 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool
 from pydantic import BaseModel
 
 from legacy_portal.agent import RUNS_DIR, run
 from legacy_portal.llm import get_backend
-from legacy_portal.orders.store import PostgresOrderSystem, connect
+from legacy_portal.orders.store import PostgresOrderSystem
 from legacy_portal.pipeline import process
-from legacy_portal.runstore import RunStore, jsonable
+from legacy_portal.runstore import RunStore, ensure_schema, jsonable
 
 load_dotenv()
 PORTAL_BASE = os.environ.get("PORTAL_BASE_URL", "http://127.0.0.1:8061")
@@ -39,7 +43,20 @@ RUNS_PER_HOUR = int(os.environ.get("LPA_RUNS_PER_HOUR", "6"))
 ALLOWED_PORTALS = {"a", "b"}  # C is held out (D1): never runnable from the console
 CHAOS_MODES = {"", "layout_variant", "renamed_fields", "session_expiry", "slow", "captcha", "icon_links"}
 
-app = FastAPI(title="Legacy Portal Agent API")
+POOL = ConnectionPool(os.environ["DATABASE_URL"], min_size=1, max_size=6, open=False,
+                      kwargs={"autocommit": True, "row_factory": dict_row})
+
+
+@asynccontextmanager
+async def lifespan(_app):
+    POOL.open(wait=True)
+    with POOL.connection() as conn:
+        ensure_schema(conn)
+    yield
+    POOL.close()
+
+
+app = FastAPI(title="Legacy Portal Agent API", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=os.environ.get("CONSOLE_ORIGINS", "http://localhost:3061").split(","),
                    allow_methods=["GET", "POST"], allow_headers=["*"])
 
@@ -47,8 +64,10 @@ _lock = threading.Lock()
 _started: list[float] = []
 
 
-def store() -> RunStore:
-    return RunStore(connect())
+@contextmanager
+def store() -> Iterator[RunStore]:
+    with POOL.connection() as conn:  # borrowed from the pool, returned after the request
+        yield RunStore(conn)
 
 
 class StartRun(BaseModel):
@@ -73,18 +92,19 @@ def _set_chaos(portal: str, modes: list[str]) -> None:
 
 
 def _execute(run_id: str, portal: str, chaos: str) -> None:
-    rs = store()
     try:
-        _set_chaos(portal, [chaos] if chaos else [])
-        result = run(portal, PORTAL_BASE, get_backend(), run_id=run_id,
-                     on_step=lambda idx, n, action, ok, msg, shot: rs.step(run_id, idx, n, action, ok, msg, shot))
-        calls = sum(1 for s in result.steps if s.tokens_in)
-        rs.finish(run_id, result.outcome, result.reason, len(result.downloads), calls, result.seconds)
-        if result.downloads:
-            items = process(result.run_dir, get_backend(), PostgresOrderSystem(connect()))
-            rs.save_review(run_id, items)
-    except Exception as e:  # noqa: BLE001 -- a failed demo run is recorded, never left "running"
-        rs.finish(run_id, "error", repr(e)[:300], 0, 0, 0)
+        with store() as rs:
+            try:
+                _set_chaos(portal, [chaos] if chaos else [])
+                result = run(portal, PORTAL_BASE, get_backend(), run_id=run_id,
+                             on_step=lambda idx, n, action, ok, msg, shot: rs.step(run_id, idx, n, action, ok, msg,
+                                                                                    shot))
+                calls = sum(1 for s in result.steps if s.tokens_in)
+                rs.finish(run_id, result.outcome, result.reason, len(result.downloads), calls, result.seconds)
+                if result.downloads:
+                    rs.save_review(run_id, process(result.run_dir, get_backend(), PostgresOrderSystem(rs.conn)))
+            except Exception as e:  # noqa: BLE001 -- a failed demo run is recorded, never left "running"
+                rs.finish(run_id, "error", repr(e)[:300], 0, 0, 0)
     finally:
         _set_chaos(portal, [])
         _lock.release()
@@ -104,32 +124,34 @@ def start_run(body: StartRun):
         raise HTTPException(409, "a run is already in progress")
     _started.append(now)
     run_id = f"{datetime.now():%Y%m%d-%H%M%S}-{body.portal}"
-    store().start(run_id, body.portal, body.chaos)
+    with store() as rs:
+        rs.start(run_id, body.portal, body.chaos)
     threading.Thread(target=_execute, args=(run_id, body.portal, body.chaos), daemon=True).start()
     return {"run_id": run_id}
 
 
 @app.get("/api/runs")
 def list_runs():
-    rows = store().conn.execute("SELECT * FROM runs ORDER BY started_at DESC LIMIT 30").fetchall()
-    return jsonable(rows)
+    with store() as rs:
+        return jsonable(rs.conn.execute("SELECT * FROM runs ORDER BY started_at DESC LIMIT 30").fetchall())
 
 
 @app.get("/api/runs/{run_id}")
 def get_run(run_id: str):
-    rs = store()
-    run_row = rs.conn.execute("SELECT * FROM runs WHERE run_id=%s", (run_id,)).fetchone()
+    with store() as rs:
+        run_row = rs.conn.execute("SELECT * FROM runs WHERE run_id=%s", (run_id,)).fetchone()
+        steps = rs.conn.execute("SELECT idx, n, action, ok, result, screenshot <> '' AS has_shot FROM steps "
+                                "WHERE run_id=%s ORDER BY idx", (run_id,)).fetchall()
+        items = rs.conn.execute("SELECT * FROM review_items WHERE run_id=%s ORDER BY number", (run_id,)).fetchall()
     if not run_row:
         raise HTTPException(404, "run not found")
-    steps = rs.conn.execute("SELECT idx, n, action, ok, result, screenshot <> '' AS has_shot FROM steps "
-                            "WHERE run_id=%s ORDER BY idx", (run_id,)).fetchall()
-    items = rs.conn.execute("SELECT * FROM review_items WHERE run_id=%s ORDER BY number", (run_id,)).fetchall()
     return {"run": jsonable([run_row])[0], "steps": jsonable(steps), "review": jsonable(items)}
 
 
 @app.get("/api/runs/{run_id}/steps/{idx}.png")
 def step_screenshot(run_id: str, idx: int):
-    row = store().conn.execute("SELECT screenshot FROM steps WHERE run_id=%s AND idx=%s", (run_id, idx)).fetchone()
+    with store() as rs:
+        row = rs.conn.execute("SELECT screenshot FROM steps WHERE run_id=%s AND idx=%s", (run_id, idx)).fetchone()
     path = Path(row["screenshot"]) if row and row["screenshot"] else None
     if not path or not path.is_file() or RUNS_DIR not in path.resolve().parents:
         raise HTTPException(404, "no screenshot")
@@ -141,13 +163,15 @@ def review(status: str | None = None):
     q, args = "SELECT * FROM review_items", ()
     if status:
         q, args = q + " WHERE status=%s", (status,)
-    return jsonable(store().conn.execute(q + " ORDER BY item_id DESC LIMIT 200", args).fetchall())
+    with store() as rs:
+        return jsonable(rs.conn.execute(q + " ORDER BY item_id DESC LIMIT 200", args).fetchall())
 
 
 @app.post("/api/review/{item_id}")
 def decide(item_id: int, body: Decision):
     try:
-        row = store().decide(item_id, body.decision, body.reviewer, body.note)
+        with store() as rs:
+            row = rs.decide(item_id, body.decision, body.reviewer, body.note)
     except ValueError as e:
         raise HTTPException(400, str(e)) from e
     if not row:
