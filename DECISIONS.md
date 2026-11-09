@@ -66,6 +66,21 @@ Format: constraint → options → evidence → choice → would change if. Cons
   took the first match and typed the password into the username box; Haiku then **handed off instead of retrying**
   (account-lockout risk, C4). Now: several matches without `nth` → error, never a silent guess.
 
+## D8. Reading PDFs: the model extracts, code checks, the portal row is a second source
+- **Constraint:** C1/C2 (no wrong amounts reach AP, failures surfaced) and C3 (must work on the held-out supplier).
+- **Options:** A. model extraction alone (generalizes, can misread) · B. a parser per supplier layout (exact, but
+  classic RPA brittleness; useless on a new supplier) · C. model + checks in code.
+- **Choice (2026-11-08):** C, as production invoice-processing systems do (extract → validate → human review).
+  Checks: required fields, plain decimals, ISO dates, qty x price adds up to the total. A failed check gets ONE
+  retry with the errors spelled out, then goes to a human. **Second source:** the portal's own listing row (or
+  details pop-up) captured at download time must agree on total, PO and date; disagreement goes straight to a
+  human, never retried.
+- **Evidence (Haiku via CLI):** Portal A: 20/20 extracted, 20/20 agree with the portal row, 1 retry (the credit
+  note failed the arithmetic check on the first read and passed on the retry). Portal B (European formats, details
+  pop-up as the second source): 20/20 agree. End to end on both: 20/20 verdicts, 20/20 payable amounts, 7 to a
+  human (= the 7 planted problems), 0 unsafe proposals.
+- **Would change if:** suppliers send scanned paper PDFs (no text layer) → OCR or the vision path for extraction.
+
 ## Open (decision cards before or during the build)
 - D5. Hosting the live demo: Lambda container with headless Chromium (default), ECS Fargate per run (fallback), or a
   hosted browser service.
