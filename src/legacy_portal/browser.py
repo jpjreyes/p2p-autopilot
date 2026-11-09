@@ -132,24 +132,35 @@ class BrowserTools:
                 url = urljoin(self.page.url, value)
                 if urlparse(url).netloc != urlparse(self.allowed_origin).netloc:
                     return ActionResult(False, f"blocked: {url} is outside the allowed portal")
-                self.page.goto(url)
+                try:
+                    self.page.goto(url)
+                except PWError as e:
+                    if "Download is starting" not in str(e):
+                        raise
+                    # The URL is a file, not a page: fetch it through the session like a link download.
+                    return self._fetch_pdf(url, self._seen("top"))
                 return ActionResult(True, f"opened {url}")
             if kind == "download":
                 return self._download(frame, role, name, nth)
             return ActionResult(False, f"unknown action {kind!r}")
-        except (LookupError, PWTimeout) as e:
+        except (LookupError, PWTimeout, PWError) as e:  # any browser error is a failed action, never a crash
             return ActionResult(False, f"failed: {str(e).splitlines()[0][:200]}")
+
+    def _seen(self, frame: str) -> str:
+        try:
+            return self._frame(frame).locator("body").aria_snapshot(timeout=3000)
+        except (PWError, LookupError):
+            return ""
 
     def _download(self, frame: str, role: str, name: str, nth: int | None = None) -> ActionResult:
         el = self._locate(frame, role, name, nth)
-        try:
-            seen = self._frame(frame).locator("body").aria_snapshot(timeout=3000)
-        except PWError:
-            seen = ""
+        seen = self._seen(frame)
         href = el.get_attribute("href")
         if not href or href == "#":
             return ActionResult(False, "that element has no download link (open the document details first?)")
-        url = urljoin(self._frame(frame).url, href)
+        return self._fetch_pdf(urljoin(self._frame(frame).url, href), seen)
+
+    def _fetch_pdf(self, url: str, seen: str) -> ActionResult:
         if urlparse(url).netloc != urlparse(self.allowed_origin).netloc:
             return ActionResult(False, f"blocked: {url} is outside the allowed portal")
         resp = self.page.context.request.get(url)  # same cookies as the logged-in page

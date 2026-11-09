@@ -44,14 +44,21 @@ def main():
     args = ap.parse_args()
     base = os.environ.get("PORTAL_BASE_URL", "http://127.0.0.1:8061")
     backend, rows = get_backend(), []
+    stamp = f"{datetime.now():%Y%m%d-%H%M%S}"
     with connect() as conn:
         orders = PostgresOrderSystem(conn)
         for portal in args.portals:
             for mode in args.modes:
                 set_chaos(base, portal, [] if mode == "none" else [mode])
                 print(f"\n=== portal {portal} · {mode} ===", flush=True)
+                out = RUNS_DIR / f"chaos-{stamp}.json"
                 try:
                     r = run(portal, base, backend, max_steps=60)
+                except Exception as e:  # noqa: BLE001 -- one crashed run is one FAIL row, never a dead suite
+                    rows.append({"portal": portal, "mode": mode, "outcome": "crash", "reason": repr(e)[:300],
+                                 "downloads": 0, "calls": 0, "seconds": 0, "pass": False})
+                    out.write_text(json.dumps(rows, indent=2))
+                    continue
                 finally:
                     set_chaos(base, portal, [])
                 calls = sum(1 for s in r.steps if s.tokens_in)
@@ -70,9 +77,9 @@ def main():
                     row["pass"] = (r.outcome == "done" and sc["verdict_correct"] == sc["documents"]
                                    and not sc["unsafe_proposals"])
                 rows.append(row)
+                out.write_text(json.dumps(rows, indent=2))  # saved after every run
                 print(json.dumps({k: v for k, v in row.items() if k != "run_dir"}), flush=True)
-    out = RUNS_DIR / f"chaos-{datetime.now():%Y%m%d-%H%M%S}.json"
-    out.write_text(json.dumps(rows, indent=2))
+    out = RUNS_DIR / f"chaos-{stamp}.json"
     print(f"\n{'portal':<7}{'mode':<16}{'outcome':<9}{'docs':>5}{'verdicts':>9}{'unsafe':>7}{'calls':>6}"
           f"{'secs':>7}  pass")
     for r in rows:
