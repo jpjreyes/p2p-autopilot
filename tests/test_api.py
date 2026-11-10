@@ -12,11 +12,10 @@ pytestmark = pytest.mark.skipif(not os.environ.get("DATABASE_URL"), reason="need
 @pytest.fixture(scope="module")
 def client():
     from legacy_portal.api import POOL, app
-    from legacy_portal.pipeline import ReviewItem
-    from legacy_portal.runstore import RunStore
-
     from legacy_portal.data.generate import generate
     from legacy_portal.orders.store import load
+    from legacy_portal.pipeline import ReviewItem
+    from legacy_portal.runstore import RunStore
 
     with TestClient(app) as c:  # runs the lifespan: pool open + schema once
         with POOL.connection() as conn:
