@@ -5,6 +5,8 @@
   GET  /api/runs/{id}                one run with its steps (live while running)
   GET  /api/runs/{id}/steps/{idx}.png  the screenshot of a step (audit log)
   GET  /api/review?status=...        review items
+  GET  /api/review/{item_id}         one item with what the agent read and the PO + goods receipt it was matched to
+  GET  /api/review/{item_id}/page.png  the invoice's first page, as the reviewer sees it
   POST /api/review/{item_id}         a human decision {decision: approve|reject, note}
 
 Guardrails for a public demo: one run at a time, a per-hour run limit, only the dev portals (never the
@@ -15,6 +17,7 @@ Run:  uv run uvicorn legacy_portal.api:app --port 8062
 
 from __future__ import annotations
 
+import io
 import os
 import threading
 import time
@@ -23,10 +26,11 @@ from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime
 from pathlib import Path
 
+import pypdfium2 as pdfium
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 from pydantic import BaseModel
@@ -40,8 +44,9 @@ from legacy_portal.runstore import RunStore, ensure_schema, jsonable
 load_dotenv()
 PORTAL_BASE = os.environ.get("PORTAL_BASE_URL", "http://127.0.0.1:8061")
 RUNS_PER_HOUR = int(os.environ.get("LPA_RUNS_PER_HOUR", "6"))
-ALLOWED_PORTALS = {"a", "b"}  # C is held out (D1): never runnable from the console
-CHAOS_MODES = {"", "layout_variant", "renamed_fields", "session_expiry", "slow", "captcha", "icon_links"}
+ALLOWED_PORTALS = {"a", "b", "c"}  # D is held out (D10): never runnable from the console
+CHAOS_MODES = {"", "layout_variant", "renamed_fields", "session_expiry", "slow", "captcha", "icon_links",
+               "opaque_icons", "injection", "scanned", "handwritten"}
 
 POOL = ConnectionPool(os.environ["DATABASE_URL"], min_size=1, max_size=6, open=False,
                       kwargs={"autocommit": True, "row_factory": dict_row})
@@ -113,7 +118,7 @@ def _execute(run_id: str, portal: str, chaos: str) -> None:
 @app.post("/api/runs")
 def start_run(body: StartRun):
     if body.portal not in ALLOWED_PORTALS:
-        raise HTTPException(400, "only portals a and b can be run from the console (c is held out)")
+        raise HTTPException(400, "only portals a, b and c can be run from the console (d is held out)")
     if body.chaos not in CHAOS_MODES:
         raise HTTPException(400, f"unknown chaos mode {body.chaos!r}")
     now = time.time()
@@ -160,11 +165,41 @@ def step_screenshot(run_id: str, idx: int):
 
 @app.get("/api/review")
 def review(status: str | None = None):
-    q, args = "SELECT * FROM review_items", ()
+    q, args = "SELECT i.*, r.portal FROM review_items i JOIN runs r USING (run_id)", ()
     if status:
-        q, args = q + " WHERE status=%s", (status,)
+        q, args = q + " WHERE i.status=%s", (status,)
     with store() as rs:
         return jsonable(rs.conn.execute(q + " ORDER BY item_id DESC LIMIT 200", args).fetchall())
+
+
+@app.get("/api/review/{item_id}")
+def review_item(item_id: int):
+    with store() as rs:
+        item = rs.conn.execute("SELECT i.*, r.portal FROM review_items i JOIN runs r USING (run_id) "
+                               "WHERE item_id=%s", (item_id,)).fetchone()
+        if not item:
+            raise HTTPException(404, "item not found")
+        po_number = (item["extracted"] or {}).get("po_number")
+        orders = PostgresOrderSystem(rs.conn)
+        po = orders.get_po(po_number) if po_number else None
+        received = orders.received_qty(po_number) if po else {}
+    order = None if po is None else {
+        "po_number": po.po_number,
+        "lines": [{"sku": ln.sku, "description": ln.description, "qty": ln.qty, "unit_price": str(ln.unit_price),
+                   "received": received.get(ln.sku, 0)} for ln in po.lines]}
+    return {"item": jsonable([item])[0], "order": order}
+
+
+@app.get("/api/review/{item_id}/page.png")
+def review_page(item_id: int):
+    with store() as rs:
+        row = rs.conn.execute("SELECT pdf FROM review_items WHERE item_id=%s", (item_id,)).fetchone()
+    path = Path(row["pdf"]) if row and row["pdf"] else None
+    if not path or not path.is_file() or RUNS_DIR not in path.resolve().parents:
+        raise HTTPException(404, "no document")
+    buf = io.BytesIO()
+    pdfium.PdfDocument(str(path))[0].render(scale=1.6).to_pil().save(buf, "PNG", optimize=True)
+    return Response(buf.getvalue(), media_type="image/png", headers={"Cache-Control": "max-age=3600"})
 
 
 @app.post("/api/review/{item_id}")

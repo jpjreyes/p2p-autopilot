@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from decimal import Decimal
 from pathlib import Path
 
@@ -36,6 +36,7 @@ class ReviewItem:
     evidence: list[str]
     portal_check: str
     attempts: int
+    extracted: dict = field(default_factory=dict)  # what the model read (printed values + handwriting), for review
 
 
 def process(run_dir: str | Path, backend: Backend, orders: OrderSystem) -> list[ReviewItem]:
@@ -62,12 +63,12 @@ def process(run_dir: str | Path, backend: Backend, orders: OrderSystem) -> list[
     for ex in sorted(extractions, key=lambda e: (e.doc.issue_date, e.doc.number) if e.doc else ("9999", e.pdf)):
         if ex.doc is None:
             items.append(ReviewItem(Path(ex.pdf).stem, ex.pdf, "needs_human", "extraction_failed", None,
-                                    ex.errors, ex.portal_check, ex.attempts))
+                                    ex.errors, ex.portal_check, ex.attempts, ex.raw))
             continue
         v = match(ex.doc, orders, ledger)
         if ex.portal_check == "disagree":
             items.append(ReviewItem(ex.doc.number, ex.pdf, "needs_human", "portal_mismatch", None,
-                                    ex.portal_notes + v.evidence, ex.portal_check, ex.attempts))
+                                    ex.portal_notes + v.evidence, ex.portal_check, ex.attempts, ex.raw))
             continue
         status = ("no_action" if v.verdict == "already_paid"
                   else "proposed" if v.payable is not None and v.verdict == "match" else "needs_human")
@@ -78,7 +79,7 @@ def process(run_dir: str | Path, backend: Backend, orders: OrderSystem) -> list[
                                                                               ["(not transcribed)"]))
         items.append(ReviewItem(ex.doc.number, ex.pdf, status, v.verdict,
                                 None if v.payable is None else str(v.payable), v.evidence, ex.portal_check,
-                                ex.attempts))
+                                ex.attempts, ex.raw))
     (Path(run_dir) / "review.json").write_text(json.dumps([asdict(i) for i in items], indent=2))
     return items
 

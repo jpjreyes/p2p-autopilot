@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS review_items (
     decided_at   timestamptz,
     UNIQUE (run_id, number)
 );
+ALTER TABLE review_items ADD COLUMN IF NOT EXISTS pdf text NOT NULL DEFAULT '';
+ALTER TABLE review_items ADD COLUMN IF NOT EXISTS extracted jsonb NOT NULL DEFAULT '{}';
 """
 
 
@@ -79,10 +81,12 @@ class RunStore:
             self.conn.execute("DELETE FROM review_items WHERE run_id=%s AND decided_at IS NULL", (run_id,))
             for i in items:
                 self.conn.execute(
-                    """INSERT INTO review_items (run_id, number, status, verdict, payable, evidence, portal_check)
-                       VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT (run_id, number) DO NOTHING""",
+                    """INSERT INTO review_items (run_id, number, status, verdict, payable, evidence, portal_check,
+                                                 pdf, extracted)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (run_id, number) DO UPDATE SET pdf = EXCLUDED.pdf, extracted = EXCLUDED.extracted""",
                     (run_id, i.number, i.status, i.verdict, None if i.payable is None else Decimal(i.payable),
-                     Jsonb(i.evidence), i.portal_check))
+                     Jsonb(i.evidence), i.portal_check, i.pdf, Jsonb(getattr(i, "extracted", {}) or {})))
 
     def decide(self, item_id: int, decision: str, who: str, note: str = "") -> dict | None:
         if decision not in ("approve", "reject"):

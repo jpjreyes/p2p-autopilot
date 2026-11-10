@@ -1,84 +1,93 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { api, VERDICT_LABEL, type ReviewItem } from "@/lib/api";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { PenLine } from "lucide-react";
+import { api, hasHandwritingChange, money, moneySummary, PORTALS, STATUS, VERDICT, type ReviewItem } from "@/lib/api";
+import { Badge, Card, Empty, PageHeader, Stat } from "@/components/ui";
+import { InvoiceDrawer } from "@/components/invoice-drawer";
 
-const FILTERS: Record<string, string> = {
-  needs_human: "Needs a human",
-  proposed: "Proposed for payment",
-  approved_for_payment: "Approved",
-  rejected: "Rejected",
-};
+const TABS = ["needs_human", "proposed", "approved_for_payment", "rejected"] as const;
 
 export default function ReviewPage() {
-  const [status, setStatus] = useState("needs_human");
+  const [tab, setTab] = useState<(typeof TABS)[number]>("needs_human");
   const [items, setItems] = useState<ReviewItem[]>([]);
+  const [open, setOpen] = useState<number | null>(null);
   const [error, setError] = useState("");
 
-  const load = useCallback(
-    () => api<ReviewItem[]>(`/api/review?status=${status}`).then(setItems).catch((e) => setError(e.message)),
-    [status],
-  );
+  const load = useCallback(() => api<ReviewItem[]>("/api/review").then(setItems).catch((e) => setError(e.message)), []);
   useEffect(() => { load(); }, [load]);
 
-  async function decide(item: ReviewItem, decision: "approve" | "reject") {
-    setError("");
-    try {
-      await api(`/api/review/${item.item_id}`, { method: "POST", body: JSON.stringify({ decision }) });
-      load();
-    } catch (e) {
-      setError((e as Error).message);
-    }
-  }
+  const s = useMemo(() => moneySummary(items), [items]);
+  const shown = items.filter((i) => i.status === tab);
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Review queue</h1>
-      <p className="max-w-3xl text-sm text-muted">
-        The agent proposes; a person decides. Approving marks an invoice as approved for payment in the AP
-        system. Nothing here moves money.
-      </p>
-      <div className="flex flex-wrap gap-2 text-sm">
-        {Object.entries(FILTERS).map(([k, v]) => (
-          <button key={k} onClick={() => setStatus(k)}
-            className={`rounded-full border px-3 py-1 ${status === k ? "border-accent text-accent" : "border-line text-muted"}`}>
-            {v}
-          </button>
-        ))}
+    <div>
+      <PageHeader eyebrow="Review queue" title="Exceptions, with the evidence next to the invoice">
+        The agent proposes; a person decides. Open any invoice to see the document, what the agent read and the
+        3-way match line by line.
+      </PageHeader>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Stat label="Waiting for a person" value={s.review.length} note={`${money(s.reviewBilled)} billed`} tone="warn" />
+        <Stat label="Proposed for payment" value={money(s.proposed)} note="matched to PO and receipt" />
+        <Stat label="Overbilling caught" value={money(s.caught)} note="price above PO, short deliveries, duplicates" tone="ok" />
+        <Stat label="Approved for payment" value={money(s.approved)} note="by a person, in this console" />
       </div>
-      {error && <p className="text-sm text-bad">{error}</p>}
-      <div className="overflow-x-auto rounded-lg border border-line">
-        <table className="w-full text-sm">
-          <thead className="bg-card text-left text-muted">
-            <tr><th className="p-2">Document</th><th className="p-2">Verdict</th><th className="p-2 text-right">Proposed pay</th>
-              <th className="p-2">Evidence</th><th className="p-2">Decision</th></tr>
-          </thead>
-          <tbody>
-            {items.map((i) => (
-              <tr key={i.item_id} className="border-t border-line align-top">
-                <td className="p-2 font-mono">{i.number}<span className="block text-xs text-muted">{i.run_id}</span></td>
-                <td className="p-2">{VERDICT_LABEL[i.verdict] ?? i.verdict}</td>
-                <td className="p-2 text-right font-mono">{i.payable ?? "—"}</td>
-                <td className="p-2 text-xs text-muted">{i.evidence.join(" ")}</td>
-                <td className="p-2">
-                  {i.decided_at ? (
-                    <span className="text-xs text-muted">{i.status.replaceAll("_", " ")} by {i.decided_by}</span>
-                  ) : (
-                    <span className="flex gap-2">
-                      <button onClick={() => decide(i, "approve")} disabled={i.payable == null}
-                        title={i.payable == null ? "No amount to approve: resolve with the supplier first" : ""}
-                        className="rounded border border-ok px-2 py-0.5 text-ok disabled:opacity-40">Approve</button>
-                      <button onClick={() => decide(i, "reject")}
-                        className="rounded border border-bad px-2 py-0.5 text-bad">Reject</button>
-                    </span>
-                  )}
-                </td>
+
+      <div className="mt-10 flex flex-wrap gap-1 border-b border-line">
+        {TABS.map((t) => {
+          const n = items.filter((i) => i.status === t).length;
+          return (
+            <button key={t} onClick={() => setTab(t)}
+              className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm transition ${tab === t ? "border-brand font-medium text-foreground" : "border-transparent text-muted hover:text-foreground"}`}>
+              {STATUS[t].label}
+              <span className="tabular rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted">{n}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {error && <p className="mt-4 rounded-lg bg-bad-soft px-3 py-2 text-sm text-bad">{error}</p>}
+
+      <Card className="mt-4 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b border-line bg-surface-2 text-left text-xs uppercase tracking-wide text-faint">
+              <tr>
+                <th className="px-5 py-3 font-medium">Invoice</th>
+                <th className="px-5 py-3 font-medium">Supplier</th>
+                <th className="px-5 py-3 font-medium">Finding</th>
+                <th className="px-5 py-3 text-right font-medium">Billed</th>
+                <th className="px-5 py-3 text-right font-medium">Proposed</th>
+                <th className="px-5 py-3 font-medium">Evidence</th>
               </tr>
-            ))}
-            {items.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-muted">Nothing here.</td></tr>}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {shown.map((i) => {
+                const v = VERDICT[i.verdict] ?? { label: i.verdict, tone: "neutral" as const };
+                return (
+                  <tr key={i.item_id} onClick={() => setOpen(i.item_id)} className="cursor-pointer align-top hover:bg-surface-2">
+                    <td className="px-5 py-3.5 font-mono font-medium">{i.number}</td>
+                    <td className="px-5 py-3.5 text-muted">{i.portal ? PORTALS[i.portal]?.supplier : "—"}</td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge tone={v.tone}>{v.label}</Badge>
+                        {hasHandwritingChange(i) && <Badge tone="warn"><PenLine className="size-3" /> Ink</Badge>}
+                      </div>
+                    </td>
+                    <td className="tabular px-5 py-3.5 text-right text-muted">{money(i.extracted?.total)}</td>
+                    <td className="tabular px-5 py-3.5 text-right font-medium">{money(i.payable)}</td>
+                    <td className="max-w-sm px-5 py-3.5 text-xs leading-relaxed text-muted">{i.evidence[0]}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {shown.length === 0 && <Empty>Nothing in “{STATUS[tab].label}”.</Empty>}
+      </Card>
+
+      {open != null && <InvoiceDrawer key={open} itemId={open} onClose={() => setOpen(null)} onDecided={load} />}
     </div>
   );
 }

@@ -101,3 +101,8 @@ def test_text_pdf_does_not_send_images(tmp_path, monkeypatch):
     pdf.write_bytes(render(d, SUPPLIERS["a"]))
     fake = FakeBackend({**GOOD})
     assert extract(pdf, "SUP-ACME", fake).source == "text" and fake.calls == [None]
+
+
+def test_tests_never_write_the_real_cache(tmp_path):
+    from legacy_portal import extract
+    assert "runs" not in extract.CACHE_DIR.parts  # conftest points every test at a temporary cache

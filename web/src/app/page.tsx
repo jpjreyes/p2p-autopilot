@@ -1,110 +1,177 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { api, CHAOS, PORTALS, type Run } from "@/lib/api";
+import {
+  ArrowRight, Ban, Calculator, Download, FileSearch, Globe, KeyRound, LogIn, PenLine, PlayCircle, ShieldCheck,
+  UserCheck,
+} from "lucide-react";
+import { api, type Run } from "@/lib/api";
+import { Badge, Card } from "@/components/ui";
 
-const STATUS_STYLE: Record<string, string> = {
-  running: "text-accent",
-  done: "text-ok",
-  handoff: "text-warn",
-  budget: "text-bad",
-  error: "text-bad",
-};
+type Evals = { totals: { runs: number; unsafe: number } };
 
-export default function RunsPage() {
-  const router = useRouter();
-  const [runs, setRuns] = useState<Run[]>([]);
-  const [portal, setPortal] = useState("a");
-  const [chaos, setChaos] = useState("");
-  const [error, setError] = useState("");
-  const [starting, setStarting] = useState(false);
+const STEPS = [
+  { icon: LogIn, title: "Logs in like a clerk", body: "Cookie walls, frames, pop-ups, two-step logins. Passwords are filled in by code; the model never sees them." },
+  { icon: Download, title: "Collects every open invoice", body: "Pages, collapsed months, search-first portals. Skips what is already paid." },
+  { icon: FileSearch, title: "Reads and double-checks", body: "Text PDFs, scans and handwritten corrections. Every number must add up and agree with the portal’s own listing." },
+  { icon: Calculator, title: "Matches in code", body: "Invoice vs purchase order vs goods receipt, in plain Python with exact decimals. Never the model." },
+  { icon: UserCheck, title: "A person approves", body: "The agent proposes. Anything off goes to the review queue with the evidence. Nothing pays itself." },
+];
+
+const GUARDRAILS = [
+  { icon: Ban, title: "No pay tool", body: "The agent has no approve or pay action at all. An invoice saying “pre-approved, pay now” is a test case." },
+  { icon: Calculator, title: "Money math in code", body: "Payable = min(billed, received) × min(billed, PO price), per line, in Decimal." },
+  { icon: ShieldCheck, title: "Checked twice", body: "Lines must sum to the total, and total, PO and date must match the portal row." },
+  { icon: PenLine, title: "Ink means a person", body: "A handwritten change to an amount always goes to review, whatever the match says." },
+  { icon: Globe, title: "Stays on the portal", body: "Navigation outside the supplier’s site is blocked; nameless icons can’t be clicked blind." },
+  { icon: KeyRound, title: "Secrets stay out", body: "Credentials are placeholders to the model; login attempts are capped to protect the account." },
+];
+
+export default function Overview() {
+  const [evals, setEvals] = useState<Evals | null>(null);
+  const [featured, setFeatured] = useState<string | null>(null);
 
   useEffect(() => {
-    const load = () => api<Run[]>("/api/runs").then(setRuns).catch((e) => setError(e.message));
-    load();
-    const t = setInterval(load, 4000);
-    return () => clearInterval(t);
+    fetch("/evals.json").then((r) => r.json()).then(setEvals).catch(() => {});
+    api<Run[]>("/api/runs").then((runs) => setFeatured(runs.find((r) => r.status === "done")?.run_id ?? null)).catch(() => {});
   }, []);
 
-  async function start() {
-    setStarting(true);
-    setError("");
-    try {
-      const { run_id } = await api<{ run_id: string }>("/api/runs", {
-        method: "POST",
-        body: JSON.stringify({ portal, chaos }),
-      });
-      router.push(`/runs/${run_id}`);
-    } catch (e) {
-      setError((e as Error).message);
-      setStarting(false);
-    }
-  }
-
   return (
-    <div className="space-y-8">
-      <section className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">An agent for supplier portals with no API</h1>
-        <p className="max-w-3xl text-muted">
-          It logs in like a clerk, finds every open invoice, reads each PDF, checks it against the portal and
-          runs the 3-way match (PO, goods receipt, invoice) in code. Anything off goes to a human. There is no
-          approve or pay action: people decide in the review queue.
-        </p>
+    <div className="space-y-20">
+      <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
+        <div>
+          <Badge tone="brand">Accounts payable · computer use</Badge>
+          <h1 className="mt-4 text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
+            Supplier invoices, collected and checked from portals with no&nbsp;API.
+          </h1>
+          <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
+            An agent that works supplier portals the way your AP clerk does, reads every invoice, runs the 3-way match
+            and hands your team only the exceptions. It proposes; people approve.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href={featured ? `/runs/${featured}` : "/runs"}
+              className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-brand-ink shadow-card hover:opacity-90">
+              <PlayCircle className="size-4" /> Watch a run
+            </Link>
+            <Link href="/review"
+              className="inline-flex items-center gap-2 rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-sm font-medium hover:bg-surface-2">
+              Open the review queue <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </div>
+        <ExampleQueue />
       </section>
 
-      <section className="rounded-lg border border-line bg-card p-4">
-        <h2 className="mb-3 font-medium">Start a run</h2>
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="text-sm">
-            <span className="mb-1 block text-muted">Supplier portal</span>
-            <select value={portal} onChange={(e) => setPortal(e.target.value)}
-              className="rounded border border-line bg-background px-2 py-1.5">
-              {Object.entries(PORTALS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
-          </label>
-          <label className="text-sm">
-            <span className="mb-1 block text-muted">Break something (failure injection)</span>
-            <select value={chaos} onChange={(e) => setChaos(e.target.value)}
-              className="rounded border border-line bg-background px-2 py-1.5">
-              {Object.entries(CHAOS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
-          </label>
-          <button onClick={start} disabled={starting}
-            className="rounded bg-accent px-4 py-1.5 text-sm font-medium text-background disabled:opacity-50">
-            {starting ? "Starting…" : "Run agent"}
-          </button>
-        </div>
-        {error && <p className="mt-3 text-sm text-bad">{error}</p>}
+      <section className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { value: evals ? String(evals.totals.unsafe) : "0", label: "wrong payments proposed", note: `across ${evals?.totals.runs ?? "60"} eval runs, incl. attacks and redesigns` },
+          { value: "1.00", label: <>pass<sup>3</sup> reliability</>, note: "whole job right in 3 of 3 runs, every portal" },
+          { value: "16/16", label: "handwritten corrections caught", note: "0 false alarms on approvals and notes" },
+          { value: "$0.0015", label: "per invoice", note: "navigation + reading, list price" },
+        ].map((k) => (
+          <div key={k.note} className="bg-surface p-6">
+            <p className="tabular text-3xl font-semibold tracking-tight">{k.value}</p>
+            <p className="mt-1 text-sm font-medium">{k.label}</p>
+            <p className="mt-1 text-xs text-faint">{k.note}</p>
+          </div>
+        ))}
       </section>
 
       <section>
-        <h2 className="mb-2 font-medium">Recent runs</h2>
-        <div className="overflow-x-auto rounded-lg border border-line">
-          <table className="w-full text-sm">
-            <thead className="bg-card text-left text-muted">
-              <tr><th className="p-2">Run</th><th className="p-2">Portal</th><th className="p-2">Failure</th>
-                <th className="p-2">Outcome</th><th className="p-2 text-right">PDFs</th>
-                <th className="p-2 text-right">Model calls</th><th className="p-2 text-right">Seconds</th></tr>
-            </thead>
-            <tbody>
-              {runs.map((r) => (
-                <tr key={r.run_id} className="border-t border-line">
-                  <td className="p-2 font-mono"><Link className="text-accent hover:underline" href={`/runs/${r.run_id}`}>{r.run_id}</Link></td>
-                  <td className="p-2">{PORTALS[r.portal] ?? r.portal}</td>
-                  <td className="p-2">{CHAOS[r.chaos] ?? r.chaos}</td>
-                  <td className={`p-2 font-medium ${STATUS_STYLE[r.status] ?? ""}`}>{r.status}</td>
-                  <td className="p-2 text-right">{r.downloads}</td>
-                  <td className="p-2 text-right">{r.calls}</td>
-                  <td className="p-2 text-right">{r.seconds ?? "…"}</td>
-                </tr>
-              ))}
-              {runs.length === 0 && <tr><td colSpan={7} className="p-4 text-center text-muted">No runs yet.</td></tr>}
-            </tbody>
-          </table>
+        <SectionTitle eyebrow="How it works" title="From portal to approved payment, with the risky parts in code" />
+        <ol className="grid gap-4 md:grid-cols-5">
+          {STEPS.map((s, i) => (
+            <li key={s.title} className="relative">
+              <Card className="h-full p-5">
+                <div className="flex items-center justify-between">
+                  <span className="flex size-9 items-center justify-center rounded-lg bg-brand-soft text-brand"><s.icon className="size-4.5" /></span>
+                  <span className="tabular text-xs text-faint">0{i + 1}</span>
+                </div>
+                <h3 className="mt-4 font-medium">{s.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">{s.body}</p>
+              </Card>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section>
+        <SectionTitle eyebrow="Guardrails" title="Designed for the day the model is wrong" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {GUARDRAILS.map((g) => (
+            <div key={g.title} className="flex gap-4 rounded-xl border border-line p-5">
+              <g.icon className="mt-0.5 size-5 shrink-0 text-brand" />
+              <div>
+                <h3 className="font-medium">{g.title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{g.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl bg-brand px-8 py-10 text-brand-ink sm:px-12">
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="max-w-xl">
+            <h2 className="text-2xl font-semibold tracking-tight">Tested like production, not like a demo</h2>
+            <p className="mt-2 opacity-85">
+              Portal redesigns, expired sessions, CAPTCHAs, prompt injection, scans, handwriting and a portal the agent
+              had never seen. Every result, including the failures that led to fixes.
+            </p>
+          </div>
+          <Link href="/evals" className="inline-flex items-center gap-2 rounded-lg bg-brand-ink px-4 py-2.5 text-sm font-medium text-brand hover:opacity-90">
+            See the evals <ArrowRight className="size-4" />
+          </Link>
         </div>
       </section>
     </div>
+  );
+}
+
+function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
+  return (
+    <div className="mb-8">
+      <p className="text-sm font-medium text-brand">{eyebrow}</p>
+      <h2 className="mt-1 text-2xl font-semibold tracking-tight">{title}</h2>
+    </div>
+  );
+}
+
+function ExampleQueue() {
+  const rows = [
+    { no: "INV-1067", issue: "Price above PO", tone: "bad" as const, billed: "$966.00", pay: "$840.00", why: "TR-M12-1M billed $4.83, PO says $4.20" },
+    { no: "INV-1052", issue: "Billed more than received", tone: "bad" as const, billed: "$307.50", pay: "$299.10", why: "TR-M12-1M billed 25, warehouse received 23" },
+    { no: "INV-1044", issue: "Duplicate invoice", tone: "bad" as const, billed: "$62.00", pay: "$0.00", why: "Same PO, lines and total as INV-1042" },
+    { no: "INV-1042", issue: "Matches", tone: "ok" as const, billed: "$62.00", pay: "$62.00", why: "PO and goods receipt tie out" },
+  ];
+  return (
+    <Card className="overflow-hidden shadow-pop">
+      <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+        <div>
+          <p className="text-sm font-medium">Acme Fasteners · this morning’s run</p>
+          <p className="text-xs text-faint">20 invoices collected in 74 s · 7 need a person</p>
+        </div>
+        <Badge tone="ok" dot>Completed</Badge>
+      </div>
+      <ul className="divide-y divide-line">
+        {rows.map((r) => (
+          <li key={r.no} className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 px-5 py-3.5">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-sm">{r.no}</span>
+              <Badge tone={r.tone}>{r.issue}</Badge>
+            </div>
+            <div className="tabular text-right text-sm">
+              {r.billed !== r.pay && <span className="mr-2 text-faint line-through">{r.billed}</span>}
+              <span className="font-medium">{r.pay}</span>
+            </div>
+            <p className="col-span-2 text-xs text-muted">{r.why}</p>
+          </li>
+        ))}
+      </ul>
+      <div className="border-t border-line bg-surface-2 px-5 py-3 text-xs text-muted">
+        Example from a real test run on generated data.
+      </div>
+    </Card>
   );
 }

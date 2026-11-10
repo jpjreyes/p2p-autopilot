@@ -21,7 +21,8 @@ def client():
             conn.execute("DELETE FROM runs WHERE run_id='test-run'")
             rs.start("test-run", "a")
             rs.save_review("test-run", [
-                ReviewItem("INV-T1", "x.pdf", "proposed", "match", "10.00", ["ok"], "agree", 1),
+                ReviewItem("INV-T1", "x.pdf", "proposed", "match", "10.00", ["ok"], "agree", 1,
+                           {"po_number": "PO-NOPE", "total": "10.00"}),
                 ReviewItem("INV-T2", "y.pdf", "needs_human", "unknown_po", None, ["no PO"], "agree", 1)])
         yield c
         with POOL.connection() as conn:
@@ -51,5 +52,13 @@ def test_bad_decision_rejected(client):
 
 
 def test_held_out_portal_and_unknown_chaos_are_refused(client):
-    assert client.post("/api/runs", json={"portal": "c"}).status_code == 400
+    assert client.post("/api/runs", json={"portal": "d"}).status_code == 400
     assert client.post("/api/runs", json={"portal": "a", "chaos": "meteor"}).status_code == 400
+
+
+def test_item_detail_and_page_guard(client):
+    i = item(client, "INV-T1")
+    detail = client.get(f"/api/review/{i['item_id']}").json()
+    assert detail["item"]["extracted"]["total"] == "10.00" and detail["order"] is None  # unknown PO: no order
+    assert client.get(f"/api/review/{i['item_id']}/page.png").status_code == 404  # file outside runs/: refused
+    assert client.get("/api/review/999999").status_code == 404
