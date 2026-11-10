@@ -48,3 +48,12 @@ def test_look_marks_unlabeled_icons_and_mark_targets_the_exact_one(tools):
     assert tools.run({"action": "click", "mark": 2}).ok
     assert tools.page.url.endswith("#pdf")
     assert not tools.run({"action": "click", "mark": 9}).ok  # unknown mark: an error, never a guess
+
+
+def test_click_by_text_opens_a_collapsed_section_and_marks_include_summary(tools):
+    tools.page.set_content("<details><summary>September 2026 (5)</summary><a href='#doc'>PDF</a></details>")
+    assert not tools.page.get_by_role("link", name="PDF").is_visible()
+    _, legend = tools.look()
+    assert "September 2026" in legend  # <summary> has no standard role but is marked
+    assert tools.run({"action": "click", "text": "September 2026 (5)"}).ok
+    assert tools.page.get_by_role("link", name="PDF").is_visible()

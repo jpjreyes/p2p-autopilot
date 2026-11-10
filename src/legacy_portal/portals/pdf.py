@@ -67,7 +67,7 @@ def render(doc: dict, supplier: dict) -> bytes:
         pdf.cell(0, 6, v, new_x="LMARGIN", new_y="NEXT")
     if doc.get("notes"):
         pdf.set_font(style="I")
-        pdf.cell(0, 6, doc["notes"], new_x="LMARGIN", new_y="NEXT")
+        pdf.multi_cell(0, 6, doc["notes"], new_x="LMARGIN", new_y="NEXT")
         pdf.set_font(style="")
     pdf.ln(4)
 

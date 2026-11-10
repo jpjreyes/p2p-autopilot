@@ -24,7 +24,8 @@ from playwright.sync_api import Frame, Locator, Page
 from playwright.sync_api import TimeoutError as PWTimeout
 
 MAX_SNAPSHOT_CHARS = 7000
-MARK_ROLES = ("link", "button", "textbox", "combobox", "checkbox")
+MARK_ROLES = ("link", "button", "textbox", "combobox", "checkbox", "tab")
+CLICKABLE_CSS = "summary, [onclick], [role=tab], [tabindex]:not([tabindex='-1'])"
 MAX_MARKS = 120
 MAX_LOGIN_POSTS = 3  # C4 account safety: more than this and the run is stopped in code, whatever the model wants
 
@@ -108,10 +109,13 @@ class BrowserTools:
         """Vision fallback (D2): a screenshot with a numbered box on every interactive element ("set-of-marks"),
         plus a legend. The model answers with "mark": N and code clicks that exact element: no guessed pixels."""
         self.marks.clear()
-        boxes, legend = [], []
+        boxes, legend, seen_boxes = [], [], set()
         for label, f in self.frames():
-            for role in MARK_ROLES:
-                loc = f.get_by_role(role)
+            # Standard roles, plus clickable things with no standard role (found on held-out Portal C:
+            # collapsible <summary> headers): tabs, click handlers, pointer-styled elements.
+            sources = [(role, f.get_by_role(role)) for role in MARK_ROLES]
+            sources.append(("clickable", f.locator(CLICKABLE_CSS)))
+            for role, loc in sources:
                 for i in range(loc.count()):
                     if len(self.marks) >= MAX_MARKS:
                         break
@@ -123,10 +127,14 @@ class BrowserTools:
                         continue
                     if not box or box["width"] < 2 or box["height"] < 2:
                         continue
+                    key = (label, round(box["x"]), round(box["y"]), round(box["width"]))
+                    if key in seen_boxes:  # already marked under a standard role
+                        continue
+                    seen_boxes.add(key)
                     n = len(self.marks) + 1
                     self.marks[n] = el
                     boxes.append((n, box))
-                    legend.append(f"[{n}] {role} {name[:40]!r} (frame {label!r})")
+                    legend.append(f"[{n}] {role} {name.splitlines()[0][:40] if name else ''!r} (frame {label!r})")
         img = Image.open(io.BytesIO(self.page.screenshot())).convert("RGB")
         draw = ImageDraw.Draw(img)
         for n, b in boxes:
@@ -171,7 +179,24 @@ class BrowserTools:
             if mark not in self.marks:
                 raise LookupError(f"mark {mark} is not on the last look (marks expire when the page changes; look again)")
             return self.marks[mark]
+        if action.get("text") and not action.get("role"):
+            return self._locate_text(action.get("frame", ""), action["text"], action.get("nth"))
         return self._locate(action.get("frame", ""), action.get("role", ""), action.get("name", ""), action.get("nth"))
+
+    def _locate_text(self, frame: str, text: str, nth: int | None = None) -> Locator:
+        """By visible text, for clickable things with no standard role (e.g. a collapsed section header).
+        Same rule as roles: several matches without nth is an error, never a guess."""
+        loc = self._frame(frame).get_by_text(text, exact=True)
+        n = loc.count()
+        if n == 0:
+            raise LookupError(f"no element with the exact text {text!r} in frame {frame or 'top'!r}")
+        if nth is not None:
+            if not 0 <= nth < n:
+                raise LookupError(f"nth={nth} out of range: {n} elements with text {text!r}")
+            return loc.nth(nth)
+        if n > 1:
+            raise LookupError(f"{n} elements with the text {text!r}; add nth (0-based, in page order)")
+        return loc.first
 
     def _fill_secrets(self, value: str) -> str:
         return re.sub(r"\{\{(\w+)\}\}", lambda m: self.secrets.get(m.group(1), m.group(0)), value)
@@ -182,6 +207,8 @@ class BrowserTools:
         try:
             if kind == "click":
                 self._target(action).click(timeout=5000)
+                if action.get("text") and not role:
+                    name = action["text"]
                 opened = self._closed_popups()
                 if opened:
                     return ActionResult(True, f"clicked {role} {name!r}: it opened a new tab at {opened[0]} (closed). "

@@ -32,7 +32,8 @@ You see each frame's accessibility tree (roles and names of links, buttons, fiel
 
 Address elements exactly as they appear: {"frame": <frame label>, "role": <role>, "name": <accessible name>}.
 If several elements share the same role and name (e.g. unlabeled textboxes, many "View" links), add "nth":
-their 0-based position in page order.
+their 0-based position in page order. To click something with no role (e.g. a collapsed section header), use
+{"action": "click", "text": <its exact visible text>}.
 Actions:
   click     click a link or button
   fill      type into a textbox. For credentials use the placeholders {{username}} and {{password}};
@@ -49,7 +50,8 @@ Actions:
 Rules:
 - Goal: download the PDF of EVERY OPEN document (invoices and credit notes). Skip documents marked paid.
 - Documents can be spread over several pages, months or search results: make sure you have seen all of them.
-- Some portals show nothing until you search, or hide details in a pop-up: explore the controls.
+- Some portals show nothing until you search, hide details in a pop-up, or collapse sections that must be
+  expanded (click their header): explore the controls.
 - Never guess element names. If an action fails, look at the page again and try something different.
 - If the session expires, log in again and continue where you left off.
 - Never solve or bypass a CAPTCHA: hand off.
@@ -70,10 +72,12 @@ ONE_ACTION = {
         "value": {"type": "string"},
         "nth": {"type": "integer", "minimum": 0},
         "mark": {"type": "integer", "minimum": 1},
+        "text": {"type": "string"},
     },
     "required": ["action"],
 }
 MAX_BATCH = 5
+MAX_LOOKS_IN_A_ROW = 5
 ACTION_SCHEMA = {
     "type": "object",
     "properties": {
@@ -116,6 +120,7 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
     user, pw = CREDENTIALS[portal]
     history: list[str] = []
     pending_look: tuple[bytes, str] | None = None
+    looks_in_a_row = 0  # loop guard: looking again and again without acting means the agent is stuck
     t0 = time.monotonic()
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless)
@@ -157,7 +162,16 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                 break
             for i, action in enumerate(batch):
                 if action["action"] == "look":
+                    looks_in_a_row += 1
+                    if looks_in_a_row >= MAX_LOOKS_IN_A_ROW:  # enforced in code: stop burning calls on a loop
+                        result.outcome = "handoff"
+                        result.reason = f"forced: {looks_in_a_row} looks in a row without acting (stuck)"
+                        break
                     pending_look = tools.look()
+                    if looks_in_a_row >= 3:
+                        history.append(f"{n}.{i} NOTE: {looks_in_a_row} looks in a row and the page has not changed. "
+                                       "Act on a mark, click a section header by its text, try another control, "
+                                       "or hand off.")
                     n_marks = len(tools.marks)
                     history.append(f"{n}.{i} look -> screenshot with {n_marks} marks (attached next turn)")
                     record(Step(n, {**action, "reason": reason}, True, f"look: {n_marks} marks",
@@ -165,12 +179,14 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                                              llm.output_tokens if i == 0 else 0, llm.latency_s if i == 0 else 0))
                     print(f"[{portal} {n:02d}.{i}] look     {n_marks} marks", flush=True)
                     break
+                looks_in_a_row = 0
                 res = tools.run(action)
                 shot = tools.screenshot(f"{n:03d}-{i}-{action['action']}")
                 cost_in, cost_out, lat = (llm.input_tokens, llm.output_tokens, llm.latency_s) if i == 0 else (0, 0, 0)
                 record(Step(n, {**action, "reason": reason}, res.ok, res.message, shot, cost_in,
                                          cost_out, lat))
                 target = (f"mark {action['mark']}" if action.get("mark") is not None
+                          else f"text {action['text']!r}" if action.get("text") and not action.get("role")
                           else f"{action.get('role', '')} {action.get('name', '')!r}".strip())
                 nth = f"[{action['nth']}]" if action.get("nth") is not None else ""
                 history.append(f"{n}.{i} {action['action']} {target}{nth} -> {'OK' if res.ok else 'FAILED'}: "
@@ -179,6 +195,8 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                       f"{'ok ' if res.ok else 'ERR'} {res.message[:70]}", flush=True)
                 if not res.ok:
                     break  # look at the page again before doing anything else
+            if result.outcome == "handoff" and result.reason.startswith("forced: ") and "looks" in result.reason:
+                break
             if tools.login_limit_hit:  # enforced in code, not left to the model (C4)
                 result.outcome = "handoff"
                 result.reason = f"forced: {tools.login_posts} login attempts exceeds the limit (account safety)"
