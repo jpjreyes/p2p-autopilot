@@ -144,7 +144,9 @@ Format: constraint → options → evidence → choice → would change if. Cons
   edge ... the page is truncated"). A safe, honest failure.
 - **Root cause (tools, again):** the accessibility snapshot was capped at 7,000 characters and `look` captured only
   the viewport; the fully expanded C page exceeds both. **Fix:** cap 16,000; `look` takes a full-page screenshot and
-  shifts every mark by the scroll offset (test: a link 1,500 px down is marked). C re-measured below.
+  shifts every mark by the scroll offset (test: a link 1,500 px down is marked).
+- **C re-measured after the fix: 3/3, pass^3 = 1.00, 20/20 documents right in all runs, 10–12 calls, 84–98 s.**
+  So on clean runs: **A, B, C all pass^3 = 1.00; 0 unsafe in 12 runs.**
 
 ## Open (decision cards before or during the build)
 - D5. Hosting the live demo (options considered 2026-11-09): A. Lambda async self-invocation (the Order Ops Agent pattern, ~$0 idle,
