@@ -103,6 +103,24 @@ Format: constraint → options → evidence → choice → would change if. Cons
   suite isolates and saves every run, and 3 headless-Chromium tests cover the tool guardrails in CI.
 - **Final failure-suite result: 12/12** (5 failure modes + clean, portals A and B; CAPTCHA = handoff in 1 call).
 
+## D10. Held-out Portal C: first contact failed; general fixes; an agent mistake made harmless in code
+- **Constraint:** C3 (generalize to a portal never tuned on) and C1 (no wrong payment, whatever the agent does).
+- **First contact (2026-11-09, Haiku via CLI, unchanged agent):** **FAIL, 7/20 documents.** Login, tabs and the two
+  visible months worked; after "Show older", older months are **collapsed `<details>` sections**. Their `<summary>`
+  headers have no standard role, so they were neither in the accessibility tree's actionable roles nor in the
+  set-of-marks, and the agent called `look` 10 times in a row (stopped manually to save quota).
+- **General fixes (no Portal C specifics):** click by exact visible text (`{"action": "click", "text": ...}`, same
+  ambiguity rule); set-of-marks also marks `summary`, tabs, click handlers and focusable elements; **loop guard in
+  code** (3 looks in a row -> nudge, 5 -> forced handoff).
+- **After the fixes:** all 20 open documents downloaded and **20/20 verdicts and amounts**, 27 calls, 194 s. But the
+  agent also downloaded **3 already-paid invoices** (it said so in its own summary) and the pipeline **proposed them
+  for payment again: 3 unsafe proposals = a double payment** in production.
+- **Fix in the system, not the prompt:** the order system now holds the **AP ledger of paid invoices**, and the
+  matcher's first rule is `already_paid` -> pay 0, status `no_action`. Re-scored the same run: **0 unsafe**.
+  Lesson: never rely on the model being right about money; make its mistakes harmless (same principle as no pay tool).
+- **Integrity note:** C was used to find these fixes, so **C is no longer a true held-out**. Reported both numbers;
+  a fresh **Portal D**, never looked at, becomes the new held-out for the final eval.
+
 ## Open (decision cards before or during the build)
 - D5. Hosting the live demo: Lambda container with headless Chromium (default), ECS Fargate per run (fallback), or a
   hosted browser service.

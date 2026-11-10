@@ -38,6 +38,12 @@ CREATE TABLE IF NOT EXISTS goods_receipts (
     po_number     text NOT NULL REFERENCES purchase_orders,
     received_date date NOT NULL
 );
+CREATE TABLE IF NOT EXISTS paid_invoices (   -- the AP ledger: what has already been paid
+    supplier_id  text NOT NULL REFERENCES suppliers,
+    number       text NOT NULL,
+    amount       numeric(12,2) NOT NULL,
+    PRIMARY KEY (supplier_id, number)
+);
 CREATE TABLE IF NOT EXISTS gr_lines (
     gr_number     text NOT NULL REFERENCES goods_receipts,
     sku           text NOT NULL,
@@ -66,6 +72,7 @@ class OrderSystem(Protocol):
     def get_po(self, po_number: str) -> PurchaseOrder | None: ...
     def received_qty(self, po_number: str) -> dict[str, int]: ...
     def supplier_name(self, supplier_id: str) -> str | None: ...
+    def is_paid(self, supplier_id: str, number: str) -> bool: ...
 
 
 def connect(url: str | None = None) -> psycopg.Connection:
@@ -80,7 +87,7 @@ def load(conn: psycopg.Connection, data: dict) -> dict[str, int]:
     os_ = data["order_system"]
     with conn.transaction():
         conn.execute(SCHEMA_SQL)
-        conn.execute("TRUNCATE gr_lines, goods_receipts, po_lines, purchase_orders, suppliers")
+        conn.execute("TRUNCATE paid_invoices, gr_lines, goods_receipts, po_lines, purchase_orders, suppliers")
         with conn.cursor() as cur:
             cur.executemany("INSERT INTO suppliers VALUES (%s, %s)", [(s["id"], s["name"]) for s in data["suppliers"]])
             cur.executemany("INSERT INTO purchase_orders VALUES (%s, %s, %s)",
@@ -90,11 +97,14 @@ def load(conn: psycopg.Connection, data: dict) -> dict[str, int]:
                              for p in os_["purchase_orders"] for ln in p["lines"]])
             cur.executemany("INSERT INTO goods_receipts VALUES (%s, %s, %s)",
                             [(g["gr_number"], g["po_number"], g["received_date"]) for g in os_["goods_receipts"]])
+            cur.executemany("INSERT INTO paid_invoices VALUES (%s, %s, %s)",
+                            [(d["supplier_id"], d["number"], d["total"]) for d in data["documents"]
+                             if d["status"] == "paid"])
             cur.executemany("INSERT INTO gr_lines VALUES (%s, %s, %s)",
                             [(g["gr_number"], ln["sku"], ln["qty_received"])
                              for g in os_["goods_receipts"] for ln in g["lines"]])
     return {t: conn.execute(f"SELECT count(*) AS n FROM {t}").fetchone()["n"]
-            for t in ("suppliers", "purchase_orders", "po_lines", "goods_receipts", "gr_lines")}
+            for t in ("suppliers", "purchase_orders", "po_lines", "goods_receipts", "gr_lines", "paid_invoices")}
 
 
 class PostgresOrderSystem:
@@ -117,6 +127,10 @@ class PostgresOrderSystem:
                FROM goods_receipts g JOIN gr_lines l USING (gr_number)
                WHERE g.po_number = %s GROUP BY l.sku""", (po_number,)).fetchall()
         return {r["sku"]: r["qty"] for r in rows}
+
+    def is_paid(self, supplier_id: str, number: str) -> bool:
+        return self.conn.execute("SELECT 1 FROM paid_invoices WHERE supplier_id=%s AND number=%s",
+                                 (supplier_id, number)).fetchone() is not None
 
     def supplier_name(self, supplier_id: str) -> str | None:
         row = self.conn.execute("SELECT name FROM suppliers WHERE supplier_id = %s", (supplier_id,)).fetchone()

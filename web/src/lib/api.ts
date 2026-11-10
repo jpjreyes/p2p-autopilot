@@ -25,7 +25,7 @@ export type ReviewItem = {
   item_id: number;
   run_id: string;
   number: string;
-  status: "proposed" | "needs_human" | "approved_for_payment" | "rejected";
+  status: "proposed" | "needs_human" | "no_action" | "approved_for_payment" | "rejected";
   verdict: string;
   payable: string | null;
   evidence: string[];
@@ -70,4 +70,5 @@ export const VERDICT_LABEL: Record<string, string> = {
   extraction_failed: "Could not read PDF",
   total_mismatch: "Lines don't add up",
   line_not_on_po: "Item not on PO",
+  already_paid: "Already paid (AP ledger)",
 };

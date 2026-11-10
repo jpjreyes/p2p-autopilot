@@ -20,6 +20,7 @@ class MemoryOrderSystem:
         self.pos = {p["po_number"]: PurchaseOrder(p["po_number"], p["supplier_id"], tuple(
             POLine(ln["sku"], ln["description"], ln["qty"], Decimal(ln["unit_price"])) for ln in p["lines"]))
             for p in os_["purchase_orders"]}
+        self.paid = {(d["supplier_id"], d["number"]) for d in data["documents"] if d["status"] == "paid"}
         self.received = {g["po_number"]: {ln["sku"]: ln["qty_received"] for ln in g["lines"]}
                          for g in os_["goods_receipts"]}
 
@@ -28,6 +29,9 @@ class MemoryOrderSystem:
 
     def received_qty(self, po_number):
         return dict(self.received.get(po_number, {}))
+
+    def is_paid(self, supplier_id, number):
+        return (supplier_id, number) in self.paid
 
     def supplier_name(self, supplier_id):
         return supplier_id
@@ -71,3 +75,12 @@ def test_line_not_on_po_goes_to_a_human():
 
 
 DATA_POS = {p["po_number"] for p in DATA["order_system"]["purchase_orders"]}
+
+
+def test_already_paid_invoice_is_never_proposed_again():
+    """Held-out Portal C: the agent downloaded 3 paid invoices and the pipeline proposed them again (double payment).
+    The AP ledger check in code makes that mistake harmless."""
+    orders = MemoryOrderSystem(DATA)
+    for d in (x for x in DATA["documents"] if x["status"] == "paid"):
+        v = match(as_extracted(d), orders, Ledger())
+        assert v.verdict == "already_paid" and v.payable == Decimal("0.00")

@@ -30,7 +30,7 @@ SUPPLIER_BY_PORTAL = {s["portal"]: s["id"] for s in DATA["suppliers"]}
 class ReviewItem:
     number: str
     pdf: str
-    status: str            # "proposed" (agent is confident) | "needs_human"
+    status: str            # "proposed" (agent is confident) | "needs_human" | "no_action" (already paid)
     verdict: str           # match / price_above_po / ... / extraction_failed / portal_mismatch
     payable: str | None
     evidence: list[str]
@@ -64,7 +64,8 @@ def process(run_dir: str | Path, backend: Backend, orders: OrderSystem) -> list[
             items.append(ReviewItem(ex.doc.number, ex.pdf, "needs_human", "portal_mismatch", None,
                                     ex.portal_notes + v.evidence, ex.portal_check, ex.attempts))
             continue
-        status = "proposed" if v.payable is not None and v.verdict == "match" else "needs_human"
+        status = ("no_action" if v.verdict == "already_paid"
+                  else "proposed" if v.payable is not None and v.verdict == "match" else "needs_human")
         items.append(ReviewItem(ex.doc.number, ex.pdf, status, v.verdict,
                                 None if v.payable is None else str(v.payable), v.evidence, ex.portal_check,
                                 ex.attempts))

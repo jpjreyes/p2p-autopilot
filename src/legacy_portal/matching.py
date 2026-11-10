@@ -4,6 +4,8 @@ Input is an extracted document (whatever the agent read from the PDF). Output is
 amount AP should pay. Nothing here approves or pays anything: it produces a review item for a human.
 
 Rules, in order:
+  already_paid        the AP ledger says this invoice number was already paid: pay nothing (no double payment,
+                      whatever the agent downloaded)
   credit_note         a credit memo is not an invoice: nothing to pay, a human applies it to the balance
   unknown_po          the PO doesn't exist in the order system: a human must find out who ordered it
   duplicate           same supplier, same PO, same lines and total as an invoice already processed
@@ -75,6 +77,9 @@ def _q(x: Decimal) -> Decimal:
 
 
 def match(doc: ExtractedDoc, orders: OrderSystem, ledger: Ledger) -> Verdict:
+    if orders.is_paid(doc.supplier_id, doc.number):
+        return Verdict(doc.number, "already_paid", Decimal("0.00"),
+                       [f"{doc.number} is already in the AP ledger as paid; nothing to pay."])
     if doc.doc_type == "credit_note":
         return Verdict(doc.number, "credit_note", None,
                        [f"Credit memo for {doc.total} against {doc.po_number}; apply to the supplier balance."])
