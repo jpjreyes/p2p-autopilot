@@ -26,7 +26,7 @@ from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
 from legacy_portal.data.generate import generate
-from legacy_portal.portals import chaos
+from legacy_portal.portals import chaos, handwriting
 from legacy_portal.portals.pdf import fmt_date, fmt_money, render, scanned
 
 CREDENTIALS = {
@@ -105,13 +105,14 @@ async def maybe_slow(portal: str):
         await asyncio.sleep(random.uniform(2, 4))
 
 
-OPAQUE: dict[str, tuple[str, str]] = {}  # token -> (kind, document number), for the opaque_icons mode
-
-
 def opaque(kind: str, number: str) -> str:
-    token = hashlib.sha256(f"{SESSION_SECRET}|{kind}|{number}".encode()).hexdigest()[:10]
-    OPAQUE[token] = (kind, number)
-    return token
+    """Meaningless but stable URL token for the opaque_icons mode. Stateless (D5): any instance can resolve it."""
+    return hashlib.sha256(f"{SESSION_SECRET}|{kind}|{number}".encode()).hexdigest()[:10]
+
+
+def resolve_opaque(portal: str, token: str) -> tuple[str, str] | None:
+    return next(((kind, d["number"]) for d in DOCS[portal] for kind in ("mail", "pdf")
+                 if opaque(kind, d["number"]) == token), None)
 
 
 def ctx(request: Request, portal: str, **kw) -> dict:
@@ -139,7 +140,9 @@ def pdf_response(request: Request, portal: str, number: str) -> Response:
         planted = INJECTIONS[sorted(INJECTED).index(doc["doc_id"]) % len(INJECTIONS)]
         doc = {**doc, "notes": (doc.get("notes", "") + " " + planted).strip()}
     body = render(doc, SUPPLIERS[portal])
-    if chaos.active(portal, "scanned"):
+    if chaos.active(portal, "handwritten"):  # ink on paper, then scanned (D15)
+        body = scanned(body, doc["number"], handwriting.annotate(body, doc, fmt_money(doc["total"], portal)))
+    elif chaos.active(portal, "scanned"):
         body = scanned(body, doc["number"])
     return Response(body, media_type="application/pdf",
                     headers={"Content-Disposition": f'inline; filename="{fname}"'})
@@ -230,9 +233,10 @@ async def a_doc(request: Request, no: str, s=GUARD["a"]):
 
 @a.get("/x/{token}")
 async def a_opaque(request: Request, token: str, s=GUARD["a"]):
-    if token not in OPAQUE:
+    hit = resolve_opaque("a", token)
+    if hit is None:
         raise HTTPException(404)
-    kind, no = OPAQUE[token]
+    kind, no = hit
     return await (a_mail_copy if kind == "mail" else a_doc)(request, no, s)
 
 

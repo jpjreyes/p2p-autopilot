@@ -39,7 +39,10 @@ Return exactly what the document says; never compute or guess values that are no
   (US MM/DD/YYYY, European DD.MM.YYYY, or ISO).
 - Money as plain decimal strings with a dot and no thousands separators: "1234.50". Convert European formats
   ("1.234,50" -> "1234.50"). Keep the sign as printed (credit notes are usually negative).
-- lines: one entry per item row: sku, qty (integer), unit_price (positive string)."""
+- lines: one entry per item row: sku, qty (integer), unit_price (positive string).
+- Always extract the PRINTED values. Report handwriting separately: handwritten_notes = each handwritten mark
+  transcribed; amount_changed_by_hand = true if handwriting strikes out, overrides or adds an amount, quantity,
+  price, PO number or date (a signature, "OK to pay" or a remark alone is not a change)."""
 
 SCHEMA = {
     "type": "object",
@@ -53,8 +56,10 @@ SCHEMA = {
         "lines": {"type": "array", "items": {"type": "object", "properties": {
             "sku": {"type": "string"}, "qty": {"type": "integer"}, "unit_price": {"type": "string"}},
             "required": ["sku", "qty", "unit_price"]}},
+        "handwritten_notes": {"type": "array", "items": {"type": "string"}},
+        "amount_changed_by_hand": {"type": "boolean"},
     },
-    "required": ["doc_type", "number", "po_number", "issue_date", "total", "lines"],
+    "required": ["doc_type", "number", "po_number", "issue_date", "total", "lines", "amount_changed_by_hand"],
 }
 
 

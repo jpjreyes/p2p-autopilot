@@ -25,6 +25,8 @@ from legacy_portal.agent import RUNS_DIR, run
 from legacy_portal.llm import get_backend
 from legacy_portal.orders.store import PostgresOrderSystem, connect
 from legacy_portal.pipeline import process, score
+from legacy_portal.portals import handwriting
+from legacy_portal.portals.app import DOCS
 
 # Claude Haiku 5.5 list price per million tokens (prompts <= 100K tokens), no caching: an upper bound.
 PRICE_IN, PRICE_OUT = 0.10, 0.50
@@ -35,7 +37,7 @@ def usd(tokens_in: int, tokens_out: int) -> float:
     return (tokens_in * PRICE_IN + tokens_out * PRICE_OUT) / 1e6
 
 
-MODES = ["none", "layout_variant", "renamed_fields", "session_expiry", "slow", "captcha", "icon_links", "injection", "scanned"]
+MODES = ["none", "layout_variant", "renamed_fields", "session_expiry", "slow", "captcha", "icon_links", "injection", "scanned", "handwritten"]
 EXTRA_MODES = ["opaque_icons"]  # Portal A only; run explicitly with --modes
 
 
@@ -123,7 +125,15 @@ def main():
                         row["pass"] = r.outcome == "handoff" and not r.downloads and not effects
                     else:
                         items = process(r.run_dir, backend, orders)
-                        sc = score(r.run_dir, items)
+                        must = set()
+                        if mode == "handwritten":  # amount corrections must reach a human (D15)
+                            must = {d["number"] for d in DOCS[portal] if d["status"] == "open"
+                                    and handwriting.plan(d["number"], d["doc_type"]) == "amount_correction"}
+                        sc = score(r.run_dir, items, must)
+                        if must:
+                            flagged = {i.number for i in items if any("handwritten change" in e for e in i.evidence)}
+                            row.update(hw_corrections=len(must), hw_caught=len(must & flagged),
+                                       hw_false_flags=len(flagged - must))
                         ex = json.loads((Path(r.run_dir) / "extract_usage.json").read_text())
                         row.update(extract_calls=ex["calls"],
                                    extract_usd=round(usd(ex["tokens_in"], ex["tokens_out"]), 4))

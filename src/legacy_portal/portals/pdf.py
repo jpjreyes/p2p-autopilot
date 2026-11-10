@@ -110,18 +110,19 @@ def render(doc: dict, supplier: dict) -> bytes:
     return bytes(pdf.output())
 
 
-def scanned(pdf_bytes: bytes, seed: str) -> bytes:
+def scanned(pdf_bytes: bytes, seed: str, pages: list[Image.Image] | None = None) -> bytes:
     """The same document as a paper scan: grayscale image at ~150 dpi, slightly rotated, blurred, noisy, JPEG,
     with no text layer. Deterministic per seed, so eval runs are repeatable."""
     rng = random.Random(hashlib.sha256(seed.encode()).hexdigest())
-    pages = []
-    for page in pdfium.PdfDocument(pdf_bytes):
-        img = page.render(scale=150 / 72).to_pil().convert("L")
+    sources = pages or [page.render(scale=150 / 72).to_pil() for page in pdfium.PdfDocument(pdf_bytes)]
+    out_pages = []
+    for src in sources:
+        img = src.convert("L")
         img = img.rotate(rng.uniform(-1.5, 1.5), resample=Image.Resampling.BICUBIC, expand=True, fillcolor=245)
         img = img.filter(ImageFilter.GaussianBlur(0.6))
         noise = Image.effect_noise(img.size, 18).convert("L")
         img = Image.blend(img, noise, 0.08)
-        pages.append(img)
+        out_pages.append(img)
     out = io.BytesIO()
-    pages[0].save(out, "PDF", resolution=150, save_all=True, append_images=pages[1:])
+    out_pages[0].save(out, "PDF", resolution=150, save_all=True, append_images=out_pages[1:])
     return out.getvalue()

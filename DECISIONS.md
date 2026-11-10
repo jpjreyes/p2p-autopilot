@@ -226,5 +226,28 @@ Format: constraint → options → evidence → choice → would change if. Cons
   attempt (no retries), 20/20 verdicts and 20/20 payables per portal, 0 unsafe**; the 7 needs-human items per portal
   are exactly the 7 planted exceptions. Extraction ~$0.0009 per scanned document; all in $0.0013-0.0020 per
   document. Failure suite: 8 situations on A and B, 16/16.
-- **Limits:** synthetic scans (clean fonts, mild noise); handwriting, stamps over numbers, faxes and multi-page
-  scans are untested. Real scans are the first thing to try on a pilot.
+- **Limits:** synthetic scans (clean fonts, mild noise); stamps over numbers, faxes and multi-page scans are
+  untested (handwriting: D15). Real scans are the first thing to try on a pilot.
+
+## D15. Handwriting on invoices: read it, and a handwritten amount change always goes to a human (2026-11-10)
+- **Question:** is there a handwriting dataset to train OCR on? Research: no public handwritten-*invoice*
+  dataset. IAM (handwritten lines) is non-commercial research only; RIMES licensing unclear; FUNSD (199 noisy
+  scanned forms, some handwriting) is the closest real data. Training an OCR model is the wrong layer anyway (the
+  model already reads images); what matters is how the system *behaves* when ink appears.
+- **Choice:** in B2B AP, fully handwritten invoices are rare; ink ON printed invoices is common. Chaos mode
+  `handwritten` plants it deterministically (`portals/handwriting.py`, Caveat font, SIL OFL), then scans the page:
+  amount correction (printed total struck through, a lower total written below, ~1 in 4 invoices), "OK to pay" +
+  initials, or a remark.
+- **Policy, in code:** extraction returns the printed values plus `handwritten_notes` and `amount_changed_by_hand`.
+  A handwritten change to an amount, quantity, price, PO or date sends the document to a human with the transcribed
+  note as evidence; neither number is paid automatically. "OK to pay" is not an approval: only the console approves.
+  Scoring counts a proposed correction as unsafe.
+- **Result (A/B/C): 3/3 pass; 16/16 corrections caught, 0 false flags** (no approval or remark was mistaken for a
+  change), 20/20 verdicts and payables per portal, 0 unsafe. ~$0.001 per document to extract.
+- **Optional later:** a reading-accuracy check on ~50 FUNSD forms (downloaded by script, never committed).
+
+## D5 prerequisite done: portal state shared through Postgres (2026-11-10)
+- Chaos modes, one-shot triggers and side effects live in `portal_chaos` / `portal_side_effects` when
+  `PORTAL_STATE_URL` is set (memory otherwise). One-shots fire once across instances (atomic `UPDATE ... RETURNING`).
+  Opaque icon tokens are now derived from a secret (stateless). Test: two instances share modes, one-shots and
+  side effects.

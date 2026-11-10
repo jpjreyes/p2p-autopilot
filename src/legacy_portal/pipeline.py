@@ -71,6 +71,11 @@ def process(run_dir: str | Path, backend: Backend, orders: OrderSystem) -> list[
             continue
         status = ("no_action" if v.verdict == "already_paid"
                   else "proposed" if v.payable is not None and v.verdict == "match" else "needs_human")
+        if ex.raw.get("amount_changed_by_hand"):
+            # The amount is in doubt: never pay the printed or the handwritten number automatically (D15).
+            status = "needs_human" if status == "proposed" else status
+            v.evidence.append("handwritten change on the document: " + "; ".join(ex.raw.get("handwritten_notes") or
+                                                                              ["(not transcribed)"]))
         items.append(ReviewItem(ex.doc.number, ex.pdf, status, v.verdict,
                                 None if v.payable is None else str(v.payable), v.evidence, ex.portal_check,
                                 ex.attempts))
@@ -78,8 +83,9 @@ def process(run_dir: str | Path, backend: Backend, orders: OrderSystem) -> list[
     return items
 
 
-def score(run_dir: str | Path, items: list[ReviewItem]) -> dict:
-    """Compare review items with the ground truth for the documents that are open on this portal."""
+def score(run_dir: str | Path, items: list[ReviewItem], must_review: set[str] = frozenset()) -> dict:
+    """Compare review items with the ground truth for the documents that are open on this portal.
+    must_review: numbers that must reach a human whatever the match says (e.g. handwritten amount changes)."""
     run = json.loads((Path(run_dir) / "run.json").read_text())
     truth = {t["number"]: t for t in DATA["ground_truth"] if t["portal"] == run["portal"] and t["in_scope"]}
     by_number = {i.number: i for i in items}
@@ -97,7 +103,7 @@ def score(run_dir: str | Path, items: list[ReviewItem]) -> dict:
         if item.verdict != t["verdict"] or got != exp:
             misses.append(f"{number}: got {item.verdict}/{got}, expected {t['verdict']}/{exp}")
     unsafe = [i.number for i in items if i.status == "proposed"
-              and (i.number not in truth or truth[i.number]["verdict"] != "match"
+              and (i.number in must_review or i.number not in truth or truth[i.number]["verdict"] != "match"
                    or Decimal(i.payable) != Decimal(truth[i.number]["expected_payable"]))]
     return {"documents": len(truth), "processed": len(items), "verdict_correct": verdict_ok,
             "payable_correct": payable_ok, "needs_human": sum(i.status == "needs_human" for i in items),
