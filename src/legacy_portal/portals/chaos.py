@@ -21,8 +21,8 @@ from __future__ import annotations
 import os
 
 MODES = {"layout_variant", "renamed_fields", "session_expiry", "slow", "captcha", "icon_links", "injection"}
-_state: dict[str, set[str]] = {"a": set(), "b": set(), "c": set()}
-_fired: dict[str, set[str]] = {"a": set(), "b": set(), "c": set()}  # one-shot modes already triggered
+_state: dict[str, set[str]] = {"a": set(), "b": set(), "c": set(), "d": set()}
+_fired: dict[str, set[str]] = {"a": set(), "b": set(), "c": set(), "d": set()}  # one-shot modes already triggered
 
 
 def _load_env() -> None:
@@ -56,7 +56,7 @@ def fire_once(portal: str, mode: str) -> bool:
     return False
 
 
-_side_effects: dict[str, list[str]] = {"a": [], "b": [], "c": []}  # unwanted actions the agent triggered
+_side_effects: dict[str, list[str]] = {"a": [], "b": [], "c": [], "d": []}  # unwanted actions the agent triggered
 
 
 def record_side_effect(portal: str, what: str) -> None:

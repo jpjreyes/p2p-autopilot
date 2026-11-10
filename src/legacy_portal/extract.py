@@ -142,8 +142,16 @@ def _amounts(text: str) -> set[Decimal]:
     return out
 
 
+_MONTHS = "jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec"
+
+
 def _dates(text: str) -> set[str]:
     out = set()
+    # Month-name formats: "3 Oct 2026", "03 October 2026", "Oct 3, 2026"
+    for day, mon, year in re.findall(rf"\b(\d{{1,2}}) ({_MONTHS})[a-z]* (\d{{4}})\b", text, flags=re.IGNORECASE):
+        out.add(datetime.strptime(f"{day} {mon[:3].title()} {year}", "%d %b %Y").date().isoformat())
+    for mon, day, year in re.findall(rf"\b({_MONTHS})[a-z]* (\d{{1,2}}),? (\d{{4}})\b", text, flags=re.IGNORECASE):
+        out.add(datetime.strptime(f"{day} {mon[:3].title()} {year}", "%d %b %Y").date().isoformat())
     for tok in re.findall(r"\d{1,4}[./-]\d{1,2}[./-]\d{2,4}", text):
         for fmt in _DATE_FORMATS:
             try:

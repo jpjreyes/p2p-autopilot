@@ -59,3 +59,7 @@ def test_details_popup_context_uses_nearby_lines():
     d = ExtractedDoc("SUP-VALVEX", "VX/2026/0338", "invoice", "PO-5624", "2026-10-28", Decimal("4325.55"),
                      (DocLine("BV-050", 1, Decimal("4325.55")),))
     assert cross_check(d, portal_context(popup, "VX/2026/0338"))[0] == "agree"
+
+
+def test_month_name_dates_are_understood():
+    assert {"2026-10-03", "2026-09-28"} <= _dates("Date issued 3 Oct 2026 · Sept 28, 2026")

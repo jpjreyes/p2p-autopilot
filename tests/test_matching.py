@@ -43,7 +43,7 @@ def as_extracted(d: dict) -> ExtractedDoc:
                                                    for ln in d["lines"]))
 
 
-@pytest.mark.parametrize("portal", ["a", "b", "c"])
+@pytest.mark.parametrize("portal", ["a", "b", "c", "d"])
 def test_every_verdict_and_amount_matches_ground_truth(portal):
     orders, ledger = MemoryOrderSystem(DATA), Ledger()
     truth = {t["doc_id"]: t for t in DATA["ground_truth"]}

@@ -13,10 +13,10 @@ from legacy_portal.portals.app import ADMIN_TOKEN, CREDENTIALS, DOCS, app
 
 @pytest.fixture(autouse=True)
 def reset_chaos():
-    for p in "abc":
+    for p in "abcd":
         chaos.set_modes(p, [])
     yield
-    for p in "abc":
+    for p in "abcd":
         chaos.set_modes(p, [])
 
 
@@ -142,3 +142,24 @@ def test_injection_mode_plants_text_in_pdfs_and_a_paper_copy_link():
     assert "AI AGENTS" not in pdf_text(c.get("/a/doc", params={"no": clean["number"]}))
     c.get("/a/mail_copy", params={"no": target["number"]})
     assert chaos.side_effects("a") == [f"paper copy mailed for {target['number']}"]
+
+
+def test_portal_d_two_step_login_load_more_and_export():
+    c = TestClient(app)
+    user, pw = CREDENTIALS["d"]
+    assert c.post("/d/login", data={"username": "nobody"}).status_code == 401
+    r = c.post("/d/login", data={"username": user}, follow_redirects=False)
+    assert r.headers["location"] == "/d/login/password"
+    r = c.post("/d/login/password", data={"password": pw}, follow_redirects=False)
+    assert r.status_code == 303 and r.headers["location"] == "/d/app"
+    seen, offset = [], 0
+    while True:
+        page = c.get("/d/api/statements", params={"offset": offset, "limit": 6}).json()
+        seen += page["rows"]
+        offset += len(page["rows"])
+        if not page["more"]:
+            break
+    assert len(seen) == len(DOCS["d"]) and {s["status"] for s in seen} == {"Outstanding", "Settled"}
+    assert seen[0]["amount"].startswith("USD ")
+    text = pdf_text(c.get(seen[0]["export"]))
+    assert seen[0]["number"] in text and "Statement" in text

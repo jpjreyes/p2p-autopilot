@@ -1,0 +1,20 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Keystone Electrical Supply - Customer Access</title>
+<style>
+body{font-family:Georgia,serif;background:#f4efe6;margin:0}
+.bar{background:#3b2f2f;color:#f4efe6;padding:12px 24px;letter-spacing:1px}
+.card{width:400px;margin:80px auto;background:#fff;padding:26px;border:1px solid #cbbfa8}
+input{width:95%;padding:6px;margin-top:4px}.err{color:#a00}.note{color:#365}
+</style></head>
+<body>
+<div class="bar">KEYSTONE ELECTRICAL SUPPLY · Customer Access</div>
+<div class="card">
+  <p><b>Step 1 of 2</b></p>
+  {% if notice %}<p class="note">{{ notice }}</p>{% endif %}
+  {% if error %}<p class="err">{{ error }}</p>{% endif %}
+  <form method="post" action="/d/login">
+    <p>Username<br><input type="text" name="username" autocomplete="username"></p>
+    <p><button type="submit">Next</button></p>
+  </form>
+</div>
+</body></html>

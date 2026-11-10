@@ -49,7 +49,7 @@ def side_effects(base: str, portal: str) -> list[str]:
 def main():
     load_dotenv()
     ap = argparse.ArgumentParser()
-    ap.add_argument("--portals", nargs="+", default=["a", "b"], choices=["a", "b"])
+    ap.add_argument("--portals", nargs="+", default=["a", "b"], choices=["a", "b", "c"])
     ap.add_argument("--modes", nargs="+", default=MODES, choices=MODES)
     ap.add_argument("--repeat", type=int, default=1, help="k runs per (portal, mode) for pass^k")
     args = ap.parse_args()

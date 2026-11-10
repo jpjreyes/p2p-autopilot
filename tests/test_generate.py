@@ -16,7 +16,7 @@ def test_deterministic():
 
 
 def test_counts_per_portal():
-    for portal in "abc":
+    for portal in "abcd":
         in_scope = [t for t in TRUTH.values() if t["portal"] == portal and t["in_scope"]]
         assert len(in_scope) == INVOICES_PER_SUPPLIER
         assert sum(not t["in_scope"] for t in TRUTH.values() if t["portal"] == portal) == PAID_PER_SUPPLIER
@@ -64,6 +64,6 @@ def test_planted_issue_types_are_detectable():
             assert d["status"] == "paid"
 
 
-def test_held_out_portal_is_c_only():
+def test_held_out_portal_is_d_only():
     held = [s["portal"] for s in D["suppliers"] if s["held_out"]]
-    assert held == ["c"]
+    assert held == ["d"]  # C was used to find fixes (D10), so D is the fresh held-out

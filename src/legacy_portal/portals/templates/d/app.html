@@ -1,0 +1,46 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Keystone Electrical Supply - Account</title>
+<style>
+body{font-family:Georgia,serif;background:#f4efe6;margin:0}
+.bar{background:#3b2f2f;color:#f4efe6;padding:12px 24px;letter-spacing:1px}.bar a{color:#f4efe6;float:right}
+main{background:#fff;margin:20px;padding:20px;border:1px solid #cbbfa8}
+table{border-collapse:collapse;width:100%}td,th{padding:6px;border-bottom:1px solid #e3dccd;text-align:left}
+.Outstanding{color:#8a3b00;font-weight:bold}.Settled{color:#4a6b4a}
+</style></head>
+<body>
+<div class="bar">KEYSTONE ELECTRICAL SUPPLY · Account of {{ user }} <a href="/d/logout">Sign out</a></div>
+<main>
+  <h2>Statements</h2>
+  <p id="summary">Loading your statements…</p>
+  <table>
+    <thead><tr><th>Statement no.</th><th>Date issued</th><th>Your reference</th><th>Type</th><th>Amount</th>
+      <th>Status</th><th></th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <p><button id="more" type="button" style="display:none">Load more</button></p>
+</main>
+<script>
+let offset = 0;
+async function load() {
+  const r = await fetch(`/d/api/statements?offset=${offset}&limit=6`);
+  const data = await r.json();
+  const body = document.getElementById('rows');
+  for (const s of data.rows) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${s.number}</td><td>${s.issued}</td><td>${s.reference}</td><td>${s.kind}</td>
+      <td>${s.amount}</td><td class="${s.status}">${s.status}</td><td></td>`;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Export';
+    btn.addEventListener('click', () => window.open(s.export, '_blank'));
+    tr.lastElementChild.appendChild(btn);
+    body.appendChild(tr);
+  }
+  offset += data.rows.length;
+  document.getElementById('summary').textContent = `Showing ${offset} statements.`;
+  document.getElementById('more').style.display = data.more ? 'inline' : 'none';
+}
+document.getElementById('more').addEventListener('click', load);
+load();
+</script>
+</body></html>

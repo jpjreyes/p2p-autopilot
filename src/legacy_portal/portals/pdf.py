@@ -10,6 +10,8 @@ from fpdf import FPDF
 
 def _fmt_money(value: str, portal: str) -> str:
     d = Decimal(value)
+    if portal == "d":  # USD 1,234.50
+        return f"USD {'-' if d < 0 else ''}{abs(d):,.2f}"
     if portal == "b":  # European format: 1.234,50
         s = f"{abs(d):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         return ("-" if d < 0 else "") + s + " USD"
@@ -18,7 +20,8 @@ def _fmt_money(value: str, portal: str) -> str:
 
 def fmt_date(iso: str, portal: str) -> str:
     d = date.fromisoformat(iso)
-    return {"a": d.strftime("%m/%d/%Y"), "b": d.strftime("%d.%m.%Y"), "c": d.isoformat()}[portal]
+    return {"a": d.strftime("%m/%d/%Y"), "b": d.strftime("%d.%m.%Y"), "c": d.isoformat(),
+            "d": f"{d.day} {d.strftime('%b %Y')}"}[portal]
 
 
 def fmt_money(value: str, portal: str) -> str:
@@ -55,6 +58,15 @@ def render(doc: dict, supplier: dict) -> bytes:
         pdf.set_font("Helvetica", "", 10)
         meta = [("Rechnungs-Nr. / Invoice no.", doc["number"]), ("Datum / Date", fmt_date(doc["issue_date"], portal)),
                 ("Faellig / Due", fmt_date(doc["due_date"], portal)), ("Ihre Bestellung / Your order", doc["po_number"])]
+    elif portal == "d":  # statement style
+        pdf.set_font("Times", "B", 15)
+        pdf.cell(0, 9, supplier["name"], new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font("Times", "", 11)
+        pdf.cell(0, 6, "Statement of account - " + ("Credit" if title == "CREDIT MEMO" else "Charge"),
+                 new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(2)
+        meta = [("Statement no.", doc["number"]), ("Date issued", fmt_date(doc["issue_date"], portal)),
+                ("Pay by", fmt_date(doc["due_date"], portal)), ("Your reference", doc["po_number"])]
     else:  # modern, but meta in a box
         pdf.set_font("Helvetica", "B", 16)
         pdf.cell(0, 10, f"{supplier['name']} - {title.title()}", new_x="LMARGIN", new_y="NEXT")

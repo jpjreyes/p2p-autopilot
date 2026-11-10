@@ -49,10 +49,15 @@ SUPPLIERS = (
              (("BV-050", "Ball valve DN50, PN16", "48.90"), ("GV-080", "Gate valve DN80, cast iron", "132.00"),
               ("CV-025", "Check valve DN25, brass", "21.75"), ("GK-050", "Flange gasket DN50, EPDM", "2.30"),
               ("PG-100", "Pressure gauge 0-10 bar", "17.40"))),
-    Supplier("SUP-SAFEG", "SafeGuard Supply Co.", "c", True, "SG-26-",
+    Supplier("SUP-SAFEG", "SafeGuard Supply Co.", "c", False, "SG-26-",
              (("HH-W", "Hard hat, white, ANSI Z89.1", "12.50"), ("GL-NIT-L", "Nitrile gloves L, box of 100", "9.80"),
               ("SG-CLR", "Safety glasses, clear", "3.15"), ("HV-VEST-XL", "Hi-vis vest XL, class 2", "7.60"),
               ("EP-200", "Ear plugs, box of 200", "18.90"))),
+    # Portal D: the fresh held-out (D10). Nobody runs the agent on it before the final eval.
+    Supplier("SUP-KEYST", "Keystone Electrical Supply", "d", True, "KES/26/",
+             (("CB-20A", "Circuit breaker 20A, 1-pole", "11.40"), ("WR-12-250", "THHN wire 12 AWG, 250 ft", "42.75"),
+              ("JB-4SQ", "Junction box 4in square", "3.85"), ("LT-LED-4", "LED troffer 2x4, 40W", "68.00"),
+              ("CN-WN-100", "Wire nuts, bag of 100", "6.20"))),
 )
 
 # Planted issues per supplier (the rest are clean matches). Order matters for reproducibility.
@@ -145,12 +150,12 @@ def generate(seed: int = SEED) -> dict:
         first_match = plan.index("match")
         plan[0], plan[first_match] = plan[first_match], plan[0]
         issued: list[Document] = []  # normal invoices (match / price / qty) that later documents can refer to
-        inv_seq = {"a": 1040, "b": 310, "c": 40210}[sup.portal]
+        inv_seq = {"a": 1040, "b": 310, "c": 40210, "d": 7700}[sup.portal]
 
         def next_number(sup: Supplier = sup) -> str:
             nonlocal inv_seq
             inv_seq += rng.randint(1, 4)
-            return f"{sup.invoice_prefix}{inv_seq:04d}" if sup.portal != "c" else f"{sup.invoice_prefix}{inv_seq:05d}"
+            return f"{sup.invoice_prefix}{inv_seq:04d}" if sup.portal in "ab" else f"{sup.invoice_prefix}{inv_seq:05d}"
 
         def new_po(order_day: date, sup: Supplier = sup) -> tuple[PurchaseOrder, GoodsReceipt]:
             nonlocal po_seq, gr_seq
