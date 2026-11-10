@@ -198,6 +198,10 @@ Format: constraint → options → evidence → choice → would change if. Cons
   cloud. That state moves to Postgres before deploying.
 - **Demo mode:** replay first (a recorded run with every step and screenshot always works), plus a live "Run" button
   behind the existing guardrails (one run at a time, runs per hour) and a spend cap on the key.
+- **Infrastructure as code (2026-11-10): Terraform.** Modules written here are reused by my Contract Radar and Secure Agent Ops projects
+  (lambda_container, sqs_worker with a dead-letter queue, s3_private, secrets, budget_alarm); `terraform plan` in CI.
+- **Tracing (2026-11-10):** OpenTelemetry, one trace per run (decisions, browser actions, extraction, match),
+  same library across this project, Order Ops Agent and Contract Radar.
 - **Blocked on:** the API key (the CLI backend can't run in the cloud).
 
 ## D6. Headline numbers: three, always together, plus time saved (decided 2026-11-10)
