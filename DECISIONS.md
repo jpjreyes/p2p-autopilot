@@ -46,6 +46,9 @@ Format: constraint → options → evidence → choice → would change if. Cons
   tree shows two nameless links. Results: **A 20/20, 13 calls; B 20/20, 44 calls (vs 20 without icons); 0 side
   effects on both.** The cost doubling on B (one look per pop-up) is why vision stays a fallback, not the default.
   Failure suite now **14/14** (7 situations x 2 portals).
+- **Correction (D13):** `icon_links` turned out to be a weak test: the tree shows link URLs, and a DOM-only agent
+  passed it by reading them. The new `opaque_icons` mode hides the purpose from the URLs too; there vision is
+  required (2/2 with it, 0/2 without).
 
 ## D4. Models: Haiku first, upgrade only the steps that fail; development on the Claude CLI
 - **Constraint:** C5 cost; the rule: "start with cheap models; if they can't do the task properly, then decide
@@ -147,6 +150,41 @@ Format: constraint → options → evidence → choice → would change if. Cons
   shifts every mark by the scroll offset (test: a link 1,500 px down is marked).
 - **C re-measured after the fix: 3/3, pass^3 = 1.00, 20/20 documents right in all runs, 10–12 calls, 84–98 s.**
   So on clean runs: **A, B, C all pass^3 = 1.00; 0 unsafe in 12 runs.**
+
+## D13. Ablations: what screenshots and batching buy, and what a document costs
+- **Question:** are the hybrid view (D2) and batching (D7) needed, or just habits? And what does one document cost?
+- **Setup (2026-11-09, Haiku via CLI, 1-2 runs per cell):** `--variant full | no_look | batch1` in the suite
+  (`agent.configure`). `no_look` removes the `look` action from the schema, not only from the prompt. Cost =
+  tokens x Haiku list price ($0.10 / $0.50 per million input / output), no caching: an upper bound.
+
+| Variant | A clean | B clean | C clean | A opaque icons |
+|---|---|---|---|---|
+| full (production) | pass, 11 calls | pass, 22 | pass, 10 | **2/2 pass**, 0 letters mailed |
+| no_look (DOM only) | pass, 12 | pass, 24 | pass, 12 | **0/2; 3 and 6 letters mailed** |
+| no_look + guardrail below | | | | 0/2, safe handoff, **0 mailed** |
+| batch1 (one action per call) | pass, 32 calls (2.7x cost) | **fail: 60-call budget, 16/20** | | |
+
+- **Cost per document (full, fresh extraction):** navigation $0.0005-0.0010 + extraction $0.0006 =
+  **$0.0011-0.0016 per document**, about 2-3 cents per supplier of 20 documents.
+- **Findings:**
+  1. Clean portals don't need vision: the accessibility tree is enough and costs the same.
+  2. `icon_links` was a weak test: the tree shows link URLs (`/a/mail_copy?no=...`), so DOM-only passed by reading
+     them. New chaos mode **`opaque_icons`** (meaningless `/a/x/<token>` URLs): only the picture tells the icons
+     apart. There vision is required: with it 2/2, without it 0/2.
+  3. Without vision, Haiku **guessed** nameless links by position or URL despite the prompt rule, and mailed paper
+     copies. A prompt rule is not a guardrail, so it is now code: a nameless link/button can't be clicked,
+     downloaded or opened by URL unless it is addressed by a mark from a look (`browser.BLIND`). Re-run: 0 mailed.
+  4. Batching is not only cheaper: without it B can't finish inside the step budget.
+  5. Tool bug found on the way: the model put `{{password}}` in `text` instead of `value`, and `fill` typed nothing
+     and reported ok (login "failed" twice). `fill`/`select` without a value is now an error that names the cause
+     (D9 again).
+- **Regression after both fixes (full):** A clean, A icon_links, A opaque_icons, B, C all pass, 0 unsafe, 0 side
+  effects; the guardrail never fired on the production agent. B also survived a real session expiry (the Mac slept
+  mid-run, confirmed in the power log; the portal's 15-minute session expired; the agent logged in again and
+  finished). C hit the same expiry pattern later in the batch.
+- **Also:** the CLI backend now drops `ANTHROPIC_API_KEY` from its subprocess, so development calls can never bill
+  the API by accident once the key is in `.env`.
+- **Limits:** 1-2 runs per cell; re-run with pass^k on the API for the README.
 
 ## Open (decision cards before or during the build)
 - D5. Hosting the live demo (options considered 2026-11-09): A. Lambda async self-invocation (the Order Ops Agent pattern, ~$0 idle,

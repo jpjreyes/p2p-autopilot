@@ -11,6 +11,7 @@ Dev credentials are in CREDENTIALS below (test environment only).
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import os
 import random
 import time
@@ -63,7 +64,8 @@ templates.env.globals.update(fmt_date=fmt_date, fmt_money=fmt_money, quote=quote
                              ICON_MAIL=ICON_MAIL)
 
 app = FastAPI(title="Mock supplier portals", docs_url=None, redoc_url=None)
-app.add_middleware(SessionMiddleware, secret_key=os.environ.get("PORTAL_SESSION_SECRET", "dev-only-secret"),
+SESSION_SECRET = os.environ.get("PORTAL_SESSION_SECRET", "dev-only-secret")
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET,
                    session_cookie="portal_session", max_age=None)
 
 
@@ -103,10 +105,21 @@ async def maybe_slow(portal: str):
         await asyncio.sleep(random.uniform(2, 4))
 
 
+OPAQUE: dict[str, tuple[str, str]] = {}  # token -> (kind, document number), for the opaque_icons mode
+
+
+def opaque(kind: str, number: str) -> str:
+    token = hashlib.sha256(f"{SESSION_SECRET}|{kind}|{number}".encode()).hexdigest()[:10]
+    OPAQUE[token] = (kind, number)
+    return token
+
+
 def ctx(request: Request, portal: str, **kw) -> dict:
+    opaque_icons = chaos.active(portal, "opaque_icons")
     return {"request": request, "supplier": SUPPLIERS[portal],
             "variant": chaos.active(portal, "layout_variant"), "renamed": chaos.active(portal, "renamed_fields"),
-            "icons": chaos.active(portal, "icon_links"), "inject": chaos.active(portal, "injection"), **kw}
+            "icons": chaos.active(portal, "icon_links") or opaque_icons, "opaque": opaque_icons,
+            "inject": chaos.active(portal, "injection"), "opaque_url": opaque, **kw}
 
 
 def find_doc(portal: str, number: str) -> dict:
@@ -210,6 +223,14 @@ async def a_mail_copy(request: Request, no: str, s=GUARD["a"]):
 @a.get("/doc")
 async def a_doc(request: Request, no: str, s=GUARD["a"]):
     return pdf_response(request, "a", no)
+
+
+@a.get("/x/{token}")
+async def a_opaque(request: Request, token: str, s=GUARD["a"]):
+    if token not in OPAQUE:
+        raise HTTPException(404)
+    kind, no = OPAQUE[token]
+    return await (a_mail_copy if kind == "mail" else a_doc)(request, no, s)
 
 
 # --------------------------------------------------------------------------------------------- portal B

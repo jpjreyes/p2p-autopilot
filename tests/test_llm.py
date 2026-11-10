@@ -50,3 +50,9 @@ def test_refusal_and_truncation_raise_so_the_agent_stops_safely(stop):
     b, _ = backend({"actions": []}, stop_reason=stop)
     with pytest.raises(RuntimeError):
         b.complete("s", "p", ACTION_SCHEMA)
+
+
+def test_cli_backend_never_passes_the_api_key(monkeypatch):
+    from legacy_portal.llm import _cli_env
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+    assert "ANTHROPIC_API_KEY" not in _cli_env()

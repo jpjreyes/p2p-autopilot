@@ -49,7 +49,7 @@ class ClaudeCLIBackend:
         t0 = time.monotonic()
         for attempt in (1, 2):  # the CLI occasionally returns an empty answer; one retry, then a clear error
             out = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=self.timeout_s,
-                                 cwd="/tmp")
+                                 cwd="/tmp", env=_cli_env())
             if out.returncode != 0:
                 err = f"claude CLI failed ({out.returncode}): {out.stderr[-300:] or out.stdout[-300:]}"
             else:
@@ -79,7 +79,7 @@ class ClaudeCLIBackend:
         t0 = time.monotonic()
         for attempt in (1, 2):
             out = subprocess.run(cmd, check=False, input=msg, capture_output=True, text=True,
-                                 timeout=self.timeout_s, cwd="/tmp")
+                                 timeout=self.timeout_s, cwd="/tmp", env=_cli_env())
             events = [json.loads(ln) for ln in out.stdout.splitlines() if ln.strip().startswith("{")]
             result = next((e for e in reversed(events) if e.get("type") == "result"), {})
             data = result.get("structured_output")
@@ -91,6 +91,12 @@ class ClaudeCLIBackend:
             if attempt == 2:
                 raise RuntimeError(f"claude CLI (images) gave no structured answer: {out.stderr[-200:]}")
         raise AssertionError("unreachable")
+
+
+def _cli_env() -> dict[str, str]:
+    """The CLI backend must run on the developer's Claude login. If ANTHROPIC_API_KEY were inherited (e.g. from .env),
+    `claude -p` would silently bill the API instead, so it is removed here; only the anthropic backend uses the key."""
+    return {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
 
 
 MODEL_IDS = {"haiku": "claude-haiku-5-5", "sonnet": "claude-sonnet-5-5", "opus": "claude-opus-5-5"}

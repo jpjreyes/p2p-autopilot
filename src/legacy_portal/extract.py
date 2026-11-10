@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 from dataclasses import dataclass, field
 from datetime import date, datetime
@@ -66,6 +67,7 @@ class Extraction:
     attempts: int = 1
     tokens_in: int = 0
     latency_s: float = 0.0
+    tokens_out: int = 0
 
     @property
     def needs_human(self) -> bool:
@@ -192,7 +194,9 @@ def extract(pdf: str | Path, supplier_id: str, backend: Backend, context_snapsho
     text = pdf_text(pdf)
     key = hashlib.sha256(f"{model}|{text}".encode()).hexdigest()[:24]
     cached = CACHE_DIR / f"{key}.json"
-    if cached.exists():  # identical PDF already read and validated: reuse the model output, re-run every check
+    # identical PDF already read and validated: reuse the model output, re-run every check
+    # (LPA_NO_EXTRACT_CACHE=1 forces fresh model reads, e.g. to measure cost)
+    if cached.exists() and not os.environ.get("LPA_NO_EXTRACT_CACHE"):
         raw = json.loads(cached.read_text())
         doc, errors = validate(raw, supplier_id)
         if doc is not None:
@@ -200,18 +204,20 @@ def extract(pdf: str | Path, supplier_id: str, backend: Backend, context_snapsho
             return Extraction(str(pdf), doc, raw, [], check, notes, 0, 0, 0.0)
     prompt = f"Document text:\n---\n{text}\n---"
     res = backend.complete(SYSTEM, prompt, SCHEMA, model=model)
-    tokens, latency, attempts = res.input_tokens, res.latency_s, 1
+    tokens, latency, attempts, out_tokens = res.input_tokens, res.latency_s, 1, res.output_tokens
     doc, errors = validate(res.data, supplier_id)
     if errors:  # one retry, with the problems spelled out
         retry = (f"{prompt}\n\nYour previous answer:\n{res.data}\n\nIt failed these checks:\n- " + "\n- ".join(errors)
                  + "\nRe-read the document and answer again. Only change what the document supports.")
         res = backend.complete(SYSTEM, retry, SCHEMA, model=model)
         tokens, latency, attempts = tokens + res.input_tokens, latency + res.latency_s, 2
+        out_tokens += res.output_tokens
         doc, errors = validate(res.data, supplier_id)
     if doc is None:
-        return Extraction(str(pdf), None, res.data, errors, "unavailable", [], attempts, tokens, latency)
+        return Extraction(str(pdf), None, res.data, errors, "unavailable", [], attempts, tokens, latency,
+                          out_tokens)
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cached.write_text(json.dumps(res.data))
     context = portal_context(context_snapshot or "", doc.number)
     check, notes = cross_check(doc, context)
-    return Extraction(str(pdf), doc, res.data, [], check, notes, attempts, tokens, latency)
+    return Extraction(str(pdf), doc, res.data, [], check, notes, attempts, tokens, latency, out_tokens)

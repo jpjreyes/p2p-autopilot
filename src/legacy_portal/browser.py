@@ -30,6 +30,13 @@ MAX_MARKS = 120
 MAX_LOGIN_POSTS = 3  # C4 account safety: more than this and the run is stopped in code, whatever the model wants
 
 
+# A nameless link or button can do anything (mail a letter, cancel an order). Acting on one without having seen it
+# is a guess, and the prompt rule against guessing was not enough (D13: 3 and 6 letters mailed without vision).
+# So it is enforced here: only a mark from a look, i.e. an element the model has seen, can be used.
+BLIND = ("this element has no name, so its purpose is unknown; use look and address it by its mark "
+         "(or hand off) instead of guessing by position or URL")
+
+
 @dataclass
 class ActionResult:
     ok: bool
@@ -184,7 +191,22 @@ class BrowserTools:
             return self.marks[mark]
         if action.get("text") and not action.get("role"):
             return self._locate_text(action.get("frame", ""), action["text"], action.get("nth"))
+        if action.get("role") in ("link", "button") and not action.get("name"):
+            raise LookupError(BLIND)
         return self._locate(action.get("frame", ""), action.get("role", ""), action.get("name", ""), action.get("nth"))
+
+    def _nameless_hrefs(self) -> set[str]:
+        """Absolute URLs of links on the page that have no accessible name (icons without alt text or label)."""
+        js = """() => [...document.querySelectorAll('a[href]')].filter(a => !a.innerText.trim()
+            && !a.getAttribute('aria-label') && !a.getAttribute('title')
+            && ![...a.querySelectorAll('img')].some(i => (i.alt || '').trim())).map(a => a.href)"""
+        urls: set[str] = set()
+        for f in self.page.frames:
+            try:
+                urls.update(f.evaluate(js))
+            except PWError:
+                pass
+        return urls
 
     def _locate_text(self, frame: str, text: str, nth: int | None = None) -> Locator:
         """By visible text, for clickable things with no standard role (e.g. a collapsed section header).
@@ -207,6 +229,10 @@ class BrowserTools:
     def run(self, action: dict) -> ActionResult:
         kind = action.get("action")
         _frame, role, name, value = (action.get(k, "") for k in ("frame", "role", "name", "value"))
+        if kind in ("fill", "select") and not value:
+            # never type an empty string and report success: say what was wrong (D13)
+            hint = f" (you sent text={action['text']!r}; \"text\" only addresses elements)" if action.get("text") else ""
+            return ActionResult(False, f"{kind} needs \"value\": the text to type or the option to choose{hint}")
         try:
             if kind == "click":
                 self._target(action).click(timeout=5000)
@@ -228,6 +254,8 @@ class BrowserTools:
                 url = urljoin(self.page.url, value)
                 if urlparse(url).netloc != urlparse(self.allowed_origin).netloc:
                     return ActionResult(False, f"blocked: {url} is outside the allowed portal")
+                if url in self._nameless_hrefs():
+                    return ActionResult(False, f"blocked: {BLIND}")
                 try:
                     self.page.goto(url)
                 except PWError as e:

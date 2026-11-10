@@ -27,6 +27,28 @@ def test_ambiguous_target_is_an_error_and_nth_picks_one(tools):
     assert tools.page.locator("input").nth(1).input_value() == "secret"  # placeholder replaced in code only
 
 
+def test_fill_without_value_fails_instead_of_typing_nothing(tools):
+    """Found by the no-look ablation (D13): the model put {{password}} in "text" and the old tool reported ok."""
+    tools.page.set_content("<input aria-label='User'>")
+    res = tools.run({"action": "fill", "role": "textbox", "name": "User", "text": "{{username}}"})
+    assert not res.ok and "needs" in res.message and "text" in res.message
+
+
+def test_nameless_link_needs_a_mark_not_a_guess(tools):
+    """D13: without vision the agent mailed letters by clicking nameless icons by position or opening their URLs."""
+    tools.allowed_origin = "http://127.0.0.1"
+    tools.page.route("http://127.0.0.1/**", lambda r: r.fulfill(
+        body='<a href="/x/1"><img src="data:,"></a> <a href="/x/2"><img src="data:,"></a>', content_type="text/html"))
+    tools.page.goto("http://127.0.0.1/list")
+    for action in ({"action": "click", "role": "link", "name": "", "nth": 0},
+                   {"action": "download", "role": "link", "name": "", "nth": 1},
+                   {"action": "goto", "value": "/x/1"}):
+        res = tools.run(action)
+        assert not res.ok and "mark" in res.message, action
+    tools.look()
+    assert len(tools.marks) == 2  # after a look, the seen elements are usable by mark
+
+
 def test_new_tab_is_closed_and_reported(tools):
     tools.page.set_content('<a href="about:blank" target="_blank">Open</a>')
     res = tools.run({"action": "click", "role": "link", "name": "Open"})

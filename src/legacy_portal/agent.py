@@ -86,6 +86,24 @@ ACTION_SCHEMA = {
     },
     "required": ["actions", "reason"],
 }
+_LOOK_LINE = SYSTEM[SYSTEM.index("  look "):SYSTEM.index("  done ")]
+_BATCH_RULE = SYSTEM[SYSTEM.index("You may batch"):SYSTEM.index("- Keep")]
+
+
+def configure(max_batch: int = MAX_BATCH, allow_look: bool = True) -> tuple[str, dict]:
+    """System prompt and action schema for an ablation variant (D13). The defaults are the production agent."""
+    system, schema = SYSTEM, json.loads(json.dumps(ACTION_SCHEMA))
+    if max_batch == 1:
+        system = system.replace(_BATCH_RULE, "Send exactly one action per reply.\n")
+    if not allow_look:  # DOM-only: the action does not exist, so the model cannot ask for a screenshot
+        system = system.replace(_LOOK_LINE, "").replace('; "look" must be the last', "")
+        system = system.replace("Never guess element names. If an action fails, look at the page again",
+                                "Never guess element names. If an action fails, read the page again")
+        system = system.replace("If names don't tell you, look first.", "If names don't tell you, hand off.")
+        schema["properties"]["actions"]["items"]["properties"]["action"]["enum"].remove("look")
+        del schema["properties"]["actions"]["items"]["properties"]["mark"]
+    schema["properties"]["actions"]["maxItems"] = max_batch
+    return system, schema
 
 
 @dataclass
@@ -113,8 +131,11 @@ class RunResult:
 
 
 def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL, max_steps: int = 60,
-        headless: bool = True, run_id: str | None = None, on_step=None) -> RunResult:
-    """on_step(idx, n, action, ok, message, screenshot) is called after every step (live replay, audit log)."""
+        headless: bool = True, run_id: str | None = None, on_step=None, max_batch: int = MAX_BATCH,
+        allow_look: bool = True) -> RunResult:
+    """on_step(idx, n, action, ok, message, screenshot) is called after every step (live replay, audit log).
+    max_batch and allow_look exist for ablations (D13); production uses the defaults."""
+    system, schema = configure(max_batch, allow_look)
     run_dir = RUNS_DIR / (run_id or f"{datetime.now():%Y%m%d-%H%M%S}-{portal}")
     run_dir.mkdir(parents=True, exist_ok=True)
     user, pw = CREDENTIALS[portal]
@@ -147,12 +168,12 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                            + pending_look[1][:6000])
                 pending_look = None
             try:
-                llm = backend.complete(SYSTEM, prompt, ACTION_SCHEMA, model=model, images=images)
+                llm = backend.complete(system, prompt, schema, model=model, images=images)
             except (RuntimeError, subprocess.TimeoutExpired, json.JSONDecodeError, KeyError) as e:
                 # model or CLI failure: stop safely, never guess
                 result.outcome, result.reason = "error", f"model call failed: {e}"
                 break
-            batch, reason = llm.data["actions"][:MAX_BATCH], llm.data.get("reason", "")
+            batch, reason = llm.data["actions"][:max_batch], llm.data.get("reason", "")
             terminal = next((a for a in batch if a["action"] in ("done", "handoff")), None)
             if terminal:
                 shot = tools.screenshot(f"{n:03d}-{terminal['action']}")
@@ -161,7 +182,7 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                 result.outcome, result.reason = terminal["action"], reason
                 break
             for i, action in enumerate(batch):
-                if action["action"] == "look":
+                if action["action"] == "look" and allow_look:
                     looks_in_a_row += 1
                     if looks_in_a_row >= MAX_LOOKS_IN_A_ROW:  # enforced in code: stop burning calls on a loop
                         result.outcome = "handoff"

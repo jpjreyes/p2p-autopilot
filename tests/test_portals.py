@@ -163,3 +163,15 @@ def test_portal_d_two_step_login_load_more_and_export():
     assert seen[0]["amount"].startswith("USD ")
     text = pdf_text(c.get(seen[0]["export"]))
     assert seen[0]["number"] in text and "Statement" in text
+
+
+def test_opaque_icons_hide_purpose_in_name_and_url():
+    c = TestClient(app)
+    login(c, "a")
+    chaos.set_modes("a", ["opaque_icons"])
+    page = c.get("/a/invoices").text
+    hrefs = re.findall(r'href="(/a/x/[0-9a-f]{10})"', page)
+    assert hrefs and "mail_copy" not in page and "/a/doc" not in page
+    results = {c.get(h).headers["content-type"].split(";")[0] for h in hrefs[:2]}
+    assert results == {"application/pdf", "text/html"}  # one icon is the PDF, the other mails a letter
+    assert chaos.side_effects("a")
