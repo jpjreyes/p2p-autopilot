@@ -244,6 +244,9 @@ Format: constraint → options → evidence → choice → would change if. Cons
   Scoring counts a proposed correction as unsafe.
 - **Result (A/B/C): 3/3 pass; 16/16 corrections caught, 0 false flags** (no approval or remark was mistaken for a
   change), 20/20 verdicts and payables per portal, 0 unsafe. ~$0.001 per document to extract.
+- **Live console run (same day):** 7/7 corrections reached a person, but on INV-1061 the model put the handwritten
+  total (68.00) in `total` instead of the printed 70.00. The arithmetic check caught it ("lines add up to 70.00 but
+  the total says 68.00") and the document went to review as unreadable. Model variance; the code check held.
 - **Optional later:** a reading-accuracy check on ~50 FUNSD forms (downloaded by script, never committed).
 
 ## D5 prerequisite done: portal state shared through Postgres (2026-11-10)

@@ -157,8 +157,8 @@ function ExampleQueue() {
       <ul className="divide-y divide-line">
         {rows.map((r) => (
           <li key={r.no} className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 px-5 py-3.5">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-sm">{r.no}</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="whitespace-nowrap font-mono text-sm">{r.no}</span>
               <Badge tone={r.tone}>{r.issue}</Badge>
             </div>
             <div className="tabular text-right text-sm">

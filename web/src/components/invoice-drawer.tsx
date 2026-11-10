@@ -79,7 +79,7 @@ export function InvoiceDrawer({ itemId, onClose, onDecided }: {
               <>
                 <section className="grid grid-cols-2 gap-3">
                   <Figure label="Billed" value={money(ex.total)} />
-                  <Figure label="Proposed to pay" value={money(item.payable)} strong />
+                  <Figure label={item.status === "proposed" ? "Proposed to pay" : "Matched amount"} value={money(item.payable)} strong />
                 </section>
 
                 {hasHandwritingChange(item) && (

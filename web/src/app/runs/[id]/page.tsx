@@ -88,7 +88,7 @@ export default function RunPage() {
         <p className="mt-1 text-sm text-muted">{portal?.name} · run {run.run_id}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Stat label="Invoices collected" value={run.downloads} />
         <Stat label="Model calls" value={run.calls || "…"} note="several clicks per call when targets are visible" />
         <Stat label="Duration" value={run.seconds ? `${Math.round(Number(run.seconds))} s` : "…"} note="unattended" />
@@ -103,8 +103,8 @@ export default function RunPage() {
       )}
 
       <Card className="overflow-hidden">
-        <div className="grid lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="border-b border-line lg:border-b-0 lg:border-r">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="min-w-0 border-b border-line lg:border-b-0 lg:border-r">
             <div className="flex items-center gap-3 border-b border-line bg-surface-2 px-4 py-2.5">
               <span className="flex gap-1.5"><i className="size-2.5 rounded-full bg-line-strong" /><i className="size-2.5 rounded-full bg-line-strong" /><i className="size-2.5 rounded-full bg-line-strong" /></span>
               <span className="flex-1 truncate rounded-md bg-surface px-3 py-1 text-xs text-muted">{portal?.name ?? "supplier portal"}</span>

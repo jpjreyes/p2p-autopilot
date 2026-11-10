@@ -8,6 +8,8 @@ anywhere in the agent; a human approves every payment in the review console.
 > Test environment: four mock supplier portals built for this project and generated invoices with known answers.
 > No real third-party site is automated. See [CLIENT_BRIEF.md](CLIENT_BRIEF.md) for the scenario.
 
+![Review console: the invoice next to the 3-way match, with a handwritten correction flagged](docs/img/review-drawer.png)
+
 ## Results
 
 Development numbers, Claude Haiku. Final numbers will be re-run on the production API backend.
@@ -57,6 +59,16 @@ portal (no API) ──► agent loop (Playwright + Claude)          what the mod
   when it couldn't: [D13](DECISIONS.md));
 - secrets never reach the model, navigation outside the portal is blocked, login attempts are capped;
 - a person approves every payment.
+
+## The review console
+
+Next.js console for the AP team: start a run (optionally breaking the portal on purpose), replay every step the
+agent took with its screenshots and reasoning, and review exceptions with the invoice next to the PO and goods
+receipt. Approve and reject are the only money actions, and they belong to people.
+
+| Run replay | Evals |
+|---|---|
+| ![Run replay](docs/img/run-replay.png) | ![Evals](docs/img/evals.png) |
 
 ## What the experiments showed
 

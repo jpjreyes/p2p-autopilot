@@ -27,7 +27,7 @@ export default function ReviewPage() {
         3-way match line by line.
       </PageHeader>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Stat label="Waiting for a person" value={s.review.length} note={`${money(s.reviewBilled)} billed`} tone="warn" />
         <Stat label="Proposed for payment" value={money(s.proposed)} note="matched to PO and receipt" />
         <Stat label="Overbilling caught" value={money(s.caught)} note="price above PO, short deliveries, duplicates" tone="ok" />

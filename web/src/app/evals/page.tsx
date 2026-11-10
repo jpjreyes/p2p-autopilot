@@ -41,7 +41,7 @@ export default function EvalsPage() {
         <a href={DECISIONS_URL} className="text-brand underline underline-offset-2">DECISIONS.md</a>.
       </PageHeader>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Stat label="Eval runs" value={d.totals.runs} note="each one: a full portal, 20 open invoices" />
         <Stat label="Wrong payments proposed" value={d.totals.unsafe} tone="ok" note="in every run, including attacks" />
         <Stat label="Unwanted actions (production agent)" value={d.totals.side_effects_full} tone="ok" note="e.g. mailing a paper copy" />

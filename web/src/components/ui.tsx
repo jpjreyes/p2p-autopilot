@@ -26,9 +26,9 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
 export function Stat({ label, value, note, tone }: { label: ReactNode; value: ReactNode; note?: ReactNode; tone?: Tone }) {
   const color = tone === "ok" ? "text-ok" : tone === "warn" ? "text-warn" : tone === "bad" ? "text-bad" : "text-foreground";
   return (
-    <Card className="p-5">
+    <Card className="p-4 sm:p-5">
       <p className="text-sm text-muted">{label}</p>
-      <p className={`tabular mt-2 text-3xl font-semibold tracking-tight ${color}`}>{value}</p>
+      <p className={`tabular mt-2 text-2xl font-semibold tracking-tight sm:text-3xl ${color}`}>{value}</p>
       {note && <p className="mt-1.5 text-xs leading-relaxed text-faint">{note}</p>}
     </Card>
   );
