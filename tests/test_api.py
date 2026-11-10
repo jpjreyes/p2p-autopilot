@@ -15,8 +15,12 @@ def client():
     from legacy_portal.pipeline import ReviewItem
     from legacy_portal.runstore import RunStore
 
+    from legacy_portal.data.generate import generate
+    from legacy_portal.orders.store import load
+
     with TestClient(app) as c:  # runs the lifespan: pool open + schema once
         with POOL.connection() as conn:
+            load(conn, generate())  # a fresh CI database has no order system yet
             rs = RunStore(conn)
             conn.execute("DELETE FROM runs WHERE run_id='test-run'")
             rs.start("test-run", "a")
