@@ -17,6 +17,7 @@ dependencies = [
     "psycopg[binary,pool]>=3.2",
     "python-dotenv>=1.2.4",
     "pillow>=13.0.0",
+    "anthropic>=0.70",
 ]
 
 [dependency-groups]

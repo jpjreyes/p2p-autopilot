@@ -93,8 +93,74 @@ class ClaudeCLIBackend:
         raise AssertionError("unreachable")
 
 
+MODEL_IDS = {"haiku": "claude-haiku-5-5", "sonnet": "claude-sonnet-5-5", "opus": "claude-opus-5-5"}
+_UNSUPPORTED = {"minimum", "maximum", "multipleOf", "minLength", "maxLength", "minItems", "maxItems"}
+
+
+def api_schema(schema: dict) -> dict:
+    """Structured outputs need additionalProperties: false on every object and no numeric/array constraints.
+    The removed constraints are enforced in our own code (e.g. batches are cut to MAX_BATCH in agent.py)."""
+    if isinstance(schema, dict):
+        out = {k: api_schema(v) for k, v in schema.items() if k not in _UNSUPPORTED}
+        if out.get("type") == "object":
+            out["additionalProperties"] = False
+        return out
+    if isinstance(schema, list):
+        return [api_schema(v) for v in schema]
+    return schema
+
+
+class AnthropicBackend:
+    """The Claude API (final evals and the live demo). Same interface as the CLI backend.
+
+    The client is injectable so tests run without a key or any spend.
+    """
+
+    def __init__(self, client=None, effort: str | None = None, max_tokens: int = 16000):
+        if client is None:
+            import anthropic  # imported here so the CLI backend works without the package configured
+            client = anthropic.Anthropic()
+        self.client = client
+        self.effort = effort or os.environ.get("LPA_EFFORT")  # None = the model's default
+        self.max_tokens = max_tokens
+
+    def complete(self, system: str, prompt: str, schema: dict, model: str = DEFAULT_MODEL,
+                 images: list[bytes] | None = None) -> LLMResult:
+        import anthropic
+        content: list[dict] = [{"type": "image", "source": {"type": "base64", "media_type": "image/png",
+                                                            "data": base64.standard_b64encode(img).decode()}}
+                               for img in images or []]
+        content.append({"type": "text", "text": prompt})
+        output_config: dict = {"format": {"type": "json_schema", "schema": api_schema(schema)}}
+        if self.effort:
+            output_config["effort"] = self.effort
+        t0 = time.monotonic()
+        try:
+            resp = self.client.messages.create(
+                model=MODEL_IDS.get(model, model), max_tokens=self.max_tokens, system=system,
+                messages=[{"role": "user", "content": content}], output_config=output_config)
+        except anthropic.RateLimitError as e:
+            raise RuntimeError(f"rate limited by the API: {e}") from e
+        except anthropic.APIStatusError as e:
+            raise RuntimeError(f"API error {e.status_code}: {e}") from e
+        except anthropic.APIConnectionError as e:
+            raise RuntimeError(f"could not reach the API: {e}") from e
+        if resp.stop_reason == "refusal":
+            raise RuntimeError(f"model refused: {getattr(resp, 'stop_details', None)}")
+        if resp.stop_reason == "max_tokens":
+            raise RuntimeError("answer cut off at max_tokens")
+        text = next((b.text for b in resp.content if b.type == "text"), None)
+        if text is None:
+            raise RuntimeError("no text block in the answer")
+        u = resp.usage
+        tokens_in = u.input_tokens + (u.cache_creation_input_tokens or 0) + (u.cache_read_input_tokens or 0)
+        return LLMResult(json.loads(text), tokens_in, u.output_tokens, time.monotonic() - t0, model)
+
+
 def get_backend(name: str | None = None) -> Backend:
     name = name or os.environ.get("LPA_BACKEND", "claude-cli")
     if name == "claude-cli":
         return ClaudeCLIBackend()
-    raise ValueError(f"unknown backend {name!r} (the 'anthropic' backend arrives with the API key)")
+    if name == "anthropic":
+        return AnthropicBackend()
+    raise ValueError(f"unknown backend {name!r}; use claude-cli or anthropic")
