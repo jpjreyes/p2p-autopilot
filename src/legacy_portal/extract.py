@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import os
 import re
@@ -20,6 +21,7 @@ from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
+import pypdfium2 as pdfium
 from pypdf import PdfReader
 
 from legacy_portal.llm import DEFAULT_MODEL, Backend
@@ -68,6 +70,7 @@ class Extraction:
     tokens_in: int = 0
     latency_s: float = 0.0
     tokens_out: int = 0
+    source: str = "text"           # "text" (PDF text layer) | "image" (scan read from page images, D14)
 
     @property
     def needs_human(self) -> bool:
@@ -76,6 +79,20 @@ class Extraction:
 
 def pdf_text(path: str | Path) -> str:
     return "\n".join(page.extract_text() or "" for page in PdfReader(str(path)).pages)
+
+
+MIN_TEXT_CHARS = 30  # less than this = no usable text layer (a scan): read the page images instead (D14)
+MAX_PAGES = 3
+
+
+def page_images(path: str | Path, dpi: int = 150) -> list[bytes]:
+    """PNG of each page (up to MAX_PAGES), for scanned documents with no text layer."""
+    out = []
+    for page in list(pdfium.PdfDocument(str(path)))[:MAX_PAGES]:
+        buf = io.BytesIO()
+        page.render(scale=dpi / 72).to_pil().convert("L").save(buf, "PNG", optimize=True)
+        out.append(buf.getvalue())
+    return out
 
 
 def _dec(value: str, what: str, errors: list[str]) -> Decimal | None:
@@ -192,7 +209,10 @@ def cross_check(doc: ExtractedDoc, context: str | None) -> tuple[str, list[str]]
 def extract(pdf: str | Path, supplier_id: str, backend: Backend, context_snapshot: str | None = None,
             model: str = DEFAULT_MODEL) -> Extraction:
     text = pdf_text(pdf)
-    key = hashlib.sha256(f"{model}|{text}".encode()).hexdigest()[:24]
+    images = page_images(pdf) if len(text.strip()) < MIN_TEXT_CHARS else None
+    source = "image" if images else "text"
+    content = Path(pdf).read_bytes() if images else text.encode()
+    key = hashlib.sha256(f"{model}|".encode() + content).hexdigest()[:24]
     cached = CACHE_DIR / f"{key}.json"
     # identical PDF already read and validated: reuse the model output, re-run every check
     # (LPA_NO_EXTRACT_CACHE=1 forces fresh model reads, e.g. to measure cost)
@@ -201,23 +221,25 @@ def extract(pdf: str | Path, supplier_id: str, backend: Backend, context_snapsho
         doc, errors = validate(raw, supplier_id)
         if doc is not None:
             check, notes = cross_check(doc, portal_context(context_snapshot or "", doc.number))
-            return Extraction(str(pdf), doc, raw, [], check, notes, 0, 0, 0.0)
-    prompt = f"Document text:\n---\n{text}\n---"
-    res = backend.complete(SYSTEM, prompt, SCHEMA, model=model)
+            return Extraction(str(pdf), doc, raw, [], check, notes, 0, 0, 0.0, source=source)
+    prompt = (f"Document text:\n---\n{text}\n---" if not images else
+              "The document is a scan with no text layer; its page images are attached. Read every field from the "
+              "images. If a character is unreadable, give your best reading: arithmetic checks run afterwards.")
+    res = backend.complete(SYSTEM, prompt, SCHEMA, model=model, images=images)
     tokens, latency, attempts, out_tokens = res.input_tokens, res.latency_s, 1, res.output_tokens
     doc, errors = validate(res.data, supplier_id)
     if errors:  # one retry, with the problems spelled out
         retry = (f"{prompt}\n\nYour previous answer:\n{res.data}\n\nIt failed these checks:\n- " + "\n- ".join(errors)
                  + "\nRe-read the document and answer again. Only change what the document supports.")
-        res = backend.complete(SYSTEM, retry, SCHEMA, model=model)
+        res = backend.complete(SYSTEM, retry, SCHEMA, model=model, images=images)
         tokens, latency, attempts = tokens + res.input_tokens, latency + res.latency_s, 2
         out_tokens += res.output_tokens
         doc, errors = validate(res.data, supplier_id)
     if doc is None:
         return Extraction(str(pdf), None, res.data, errors, "unavailable", [], attempts, tokens, latency,
-                          out_tokens)
+                          out_tokens, source)
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cached.write_text(json.dumps(res.data))
     context = portal_context(context_snapshot or "", doc.number)
     check, notes = cross_check(doc, context)
-    return Extraction(str(pdf), doc, res.data, [], check, notes, attempts, tokens, latency, out_tokens)
+    return Extraction(str(pdf), doc, res.data, [], check, notes, attempts, tokens, latency, out_tokens, source)

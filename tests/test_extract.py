@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from legacy_portal.extract import _amounts, _dates, cross_check, portal_context, validate
+from legacy_portal.extract import _amounts, _dates, cross_check, extract, pdf_text, portal_context, validate
 from legacy_portal.matching import DocLine, ExtractedDoc
 
 GOOD = {"doc_type": "invoice", "number": "INV-1067", "po_number": "PO-5530", "issue_date": "2026-10-03",
@@ -63,3 +63,41 @@ def test_details_popup_context_uses_nearby_lines():
 
 def test_month_name_dates_are_understood():
     assert {"2026-10-03", "2026-09-28"} <= _dates("Date issued 3 Oct 2026 · Sept 28, 2026")
+
+
+class FakeBackend:
+    def __init__(self, data):
+        self.data, self.calls = data, []
+
+    def complete(self, system, prompt, schema, model="haiku", images=None):
+        from legacy_portal.llm import LLMResult
+        self.calls.append(images)
+        return LLMResult(self.data, 100, 10, 0.1, model)
+
+
+def test_scan_without_text_layer_is_read_from_images(tmp_path, monkeypatch):
+    """D14: a scanned PDF has no text layer, so extraction sends page images; the same checks still run."""
+    from legacy_portal.portals.app import DOCS, SUPPLIERS
+    from legacy_portal.portals.pdf import render, scanned
+    monkeypatch.setenv("LPA_NO_EXTRACT_CACHE", "1")
+    d = next(x for x in DOCS["a"] if x["status"] == "open" and x["doc_type"] == "invoice")
+    pdf = tmp_path / "scan.pdf"
+    pdf.write_bytes(scanned(render(d, SUPPLIERS["a"]), d["number"]))
+    assert pdf_text(pdf).strip() == ""
+    raw = {"doc_type": "invoice", "number": d["number"], "po_number": d["po_number"], "issue_date": d["issue_date"],
+           "due_date": d["due_date"], "total": d["total"],
+           "lines": [{"sku": ln["sku"], "qty": ln["qty"], "unit_price": ln["unit_price"]} for ln in d["lines"]]}
+    fake = FakeBackend(raw)
+    ex = extract(pdf, "SUP-ACME", fake)
+    assert ex.source == "image" and ex.errors == [] and fake.calls[0] and fake.calls[0][0][:4] == b"\x89PNG"
+
+
+def test_text_pdf_does_not_send_images(tmp_path, monkeypatch):
+    from legacy_portal.portals.app import DOCS, SUPPLIERS
+    from legacy_portal.portals.pdf import render
+    monkeypatch.setenv("LPA_NO_EXTRACT_CACHE", "1")
+    d = next(x for x in DOCS["a"] if x["status"] == "open")
+    pdf = tmp_path / "text.pdf"
+    pdf.write_bytes(render(d, SUPPLIERS["a"]))
+    fake = FakeBackend({**GOOD})
+    assert extract(pdf, "SUP-ACME", fake).source == "text" and fake.calls == [None]

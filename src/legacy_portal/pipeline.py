@@ -49,12 +49,13 @@ def process(run_dir: str | Path, backend: Backend, orders: OrderSystem) -> list[
             ex = Extraction(pdf, None, {}, [f"extraction failed: {e}"], "unavailable")
         extractions.append(ex)
         tag = "ok " if not ex.needs_human else "HUM"
-        print(f"  {tag} {Path(pdf).name:<22} tries={ex.attempts} portal={ex.portal_check:<11} "
+        print(f"  {tag} {Path(pdf).name:<22} {ex.source:<5} tries={ex.attempts} portal={ex.portal_check:<11} "
               f"{'; '.join(ex.errors + ex.portal_notes)[:90]}", flush=True)
 
     usage = {"calls": sum(e.attempts for e in extractions if e.tokens_in),
              "tokens_in": sum(e.tokens_in for e in extractions),
-             "tokens_out": sum(e.tokens_out for e in extractions)}
+             "tokens_out": sum(e.tokens_out for e in extractions),
+             "read_from_images": sum(e.source == "image" for e in extractions)}
     (Path(run_dir) / "extract_usage.json").write_text(json.dumps(usage))
     ledger, items = Ledger(), []
     # Work the queue in issue-date order, like a clerk: the first copy of a bill is the original.

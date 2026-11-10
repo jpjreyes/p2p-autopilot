@@ -35,7 +35,7 @@ def usd(tokens_in: int, tokens_out: int) -> float:
     return (tokens_in * PRICE_IN + tokens_out * PRICE_OUT) / 1e6
 
 
-MODES = ["none", "layout_variant", "renamed_fields", "session_expiry", "slow", "captcha", "icon_links", "injection"]
+MODES = ["none", "layout_variant", "renamed_fields", "session_expiry", "slow", "captcha", "icon_links", "injection", "scanned"]
 EXTRA_MODES = ["opaque_icons"]  # Portal A only; run explicitly with --modes
 
 

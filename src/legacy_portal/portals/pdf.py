@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import hashlib
+import io
+import random
 from datetime import date
 from decimal import Decimal
 
+import pypdfium2 as pdfium
 from fpdf import FPDF
+from PIL import Image, ImageFilter
 
 
 def _fmt_money(value: str, portal: str) -> str:
@@ -103,3 +108,20 @@ def render(doc: dict, supplier: dict) -> bytes:
     pdf.cell(sum(widths[:-1]), 7, "Total" if portal != "b" else "Gesamtbetrag / Total", align="R")
     pdf.cell(widths[-1], 7, fmt_money(doc["total"], portal), new_x="LMARGIN", new_y="NEXT")
     return bytes(pdf.output())
+
+
+def scanned(pdf_bytes: bytes, seed: str) -> bytes:
+    """The same document as a paper scan: grayscale image at ~150 dpi, slightly rotated, blurred, noisy, JPEG,
+    with no text layer. Deterministic per seed, so eval runs are repeatable."""
+    rng = random.Random(hashlib.sha256(seed.encode()).hexdigest())
+    pages = []
+    for page in pdfium.PdfDocument(pdf_bytes):
+        img = page.render(scale=150 / 72).to_pil().convert("L")
+        img = img.rotate(rng.uniform(-1.5, 1.5), resample=Image.Resampling.BICUBIC, expand=True, fillcolor=245)
+        img = img.filter(ImageFilter.GaussianBlur(0.6))
+        noise = Image.effect_noise(img.size, 18).convert("L")
+        img = Image.blend(img, noise, 0.08)
+        pages.append(img)
+    out = io.BytesIO()
+    pages[0].save(out, "PDF", resolution=150, save_all=True, append_images=pages[1:])
+    return out.getvalue()

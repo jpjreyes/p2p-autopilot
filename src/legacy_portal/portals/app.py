@@ -27,7 +27,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from legacy_portal.data.generate import generate
 from legacy_portal.portals import chaos
-from legacy_portal.portals.pdf import fmt_date, fmt_money, render
+from legacy_portal.portals.pdf import fmt_date, fmt_money, render, scanned
 
 CREDENTIALS = {
     "a": ("acme_ap", "acme-pass-2026"),
@@ -138,7 +138,10 @@ def pdf_response(request: Request, portal: str, number: str) -> Response:
     if chaos.active(portal, "injection") and doc["doc_id"] in INJECTED:
         planted = INJECTIONS[sorted(INJECTED).index(doc["doc_id"]) % len(INJECTIONS)]
         doc = {**doc, "notes": (doc.get("notes", "") + " " + planted).strip()}
-    return Response(render(doc, SUPPLIERS[portal]), media_type="application/pdf",
+    body = render(doc, SUPPLIERS[portal])
+    if chaos.active(portal, "scanned"):
+        body = scanned(body, doc["number"])
+    return Response(body, media_type="application/pdf",
                     headers={"Content-Disposition": f'inline; filename="{fname}"'})
 
 

@@ -186,9 +186,45 @@ Format: constraint → options → evidence → choice → would change if. Cons
   the API by accident once the key is in `.env`.
 - **Limits:** 1-2 runs per cell; re-run with pass^k on the API for the README.
 
-## Open (decision cards before or during the build)
-- D5. Hosting the live demo (options considered 2026-11-09): A. Lambda async self-invocation (the Order Ops Agent pattern, ~$0 idle,
-  Chromium flags + screenshots in S3) · B. ECS Fargate task per run (no time limit, more setup, 1-2 min start) ·
-  C. hosted browser (Browserbase/Steel; vendor dependency). Blocked on the API key anyway (the CLI backend can't
-  run in the cloud); the `anthropic` backend is built and tested with a fake client.
-- D6. What counts toward the headline success number (clean runs only vs. including injected failures).
+## D5. Hosting: a queue and a worker Lambda (decided 2026-11-10)
+- **Options:** A. Lambda async self-invocation · **A'. API -> SQS -> worker Lambda (container with Chromium) ->
+  steps in Neon, screenshots in S3** · B. ECS Fargate task per run · C. hosted browser (Browserbase/Steel).
+- **Choice: A'.** The standard job-queue shape: the queue's concurrency limit is
+  also the abuse limit, retries and a dead-letter queue come free, ~$0 idle, same Lambda tooling as my Order Ops Agent. Runs take
+  1.5-5 min, inside Lambda's 15. Self-invocation (A) works but is improvised; Fargate (B) is the documented scale path
+  for long runs; a hosted browser (C) hides the part worth showing.
+- **Prerequisite found while deciding:** the mock portals keep chaos switches, opaque-icon tokens and side-effect
+  counts in process memory. Several Lambda instances don't share memory, so the chaos tests would be flaky in the
+  cloud. That state moves to Postgres before deploying.
+- **Demo mode:** replay first (a recorded run with every step and screenshot always works), plus a live "Run" button
+  behind the existing guardrails (one run at a time, runs per hour) and a spend cap on the key.
+- **Blocked on:** the API key (the CLI backend can't run in the cloud).
+
+## D6. Headline numbers: three, always together, plus time saved (decided 2026-11-10)
+1. **Reliability:** pass^3 on the clean development portals.
+2. **Generalization:** held-out Portal D on first contact, whatever it is, then the fixes and the re-measured number.
+   D runs once, on the API backend, as the final eval; nothing is tuned on D before that.
+3. **Safety:** unsafe payment proposals across every run, including chaos and injection (target 0).
+4. **Time saved:** agent time per invoice vs. a manual baseline. Baseline = a small time study (a person does the
+   clerk's job on a few invoices with a stopwatch: log in, find, download, key the fields, 3-way match), with
+   published figures only as context (10-15 min of manual touch time per invoice is widely quoted, IOFM avg
+   12.5 min, but only via secondary sources). Report what the human still does: review of flagged items only.
+- Chaos runs are reported as their own table, never averaged into one number.
+
+## D14. Scanned invoices: the model reads the page image, the same checks run (decided 2026-11-10)
+- **Problem:** extraction needed a PDF text layer; many real supplier invoices are scans.
+- **Options:** A. leave as a known weak spot · B. Tesseract OCR -> text -> the model (free, deterministic, but a
+  system binary in the container and weaker on table layouts) · **C. the model reads the page images** when there is
+  no text layer (< 30 characters), same schema, same `validate` + `cross_check`.
+- **Choice: C** (scanned-PDF support was a requirement; the engine choice followed). A misread digit still has to pass the
+  arithmetic check and agree with the portal row, so the checks, not the OCR engine, are the safety.
+- **Test data:** chaos mode `scanned` serves every PDF as a grayscale, tilted, blurred, noisy JPEG scan with no text
+  layer (deterministic per document).
+- **First reading (Portal B invoice, European formats):** every field right on the first try; ~5.8k input tokens,
+  ~$0.0009 per page at list price (vs ~$0.0006 for a text PDF).
+- **Result (chaos mode `scanned`, A/B/C, 2026-11-10): 3/3 pass. 60/60 scans read from images, all on the first
+  attempt (no retries), 20/20 verdicts and 20/20 payables per portal, 0 unsafe**; the 7 needs-human items per portal
+  are exactly the 7 planted exceptions. Extraction ~$0.0009 per scanned document; all in $0.0013-0.0020 per
+  document. Failure suite: 8 situations on A and B, 16/16.
+- **Limits:** synthetic scans (clean fonts, mild noise); handwriting, stamps over numbers, faxes and multi-page
+  scans are untested. Real scans are the first thing to try on a pilot.

@@ -175,3 +175,13 @@ def test_opaque_icons_hide_purpose_in_name_and_url():
     results = {c.get(h).headers["content-type"].split(";")[0] for h in hrefs[:2]}
     assert results == {"application/pdf", "text/html"}  # one icon is the PDF, the other mails a letter
     assert chaos.side_effects("a")
+
+
+def test_scanned_mode_serves_pdfs_without_a_text_layer():
+    c = TestClient(app)
+    login(c, "a")
+    chaos.set_modes("a", ["scanned"])
+    number = next(d["number"] for d in DOCS["a"] if d["status"] == "open")
+    r = c.get(f"/a/doc?no={number}")
+    assert r.headers["content-type"] == "application/pdf"
+    assert "".join(p.extract_text() or "" for p in PdfReader(io.BytesIO(r.content)).pages).strip() == ""
