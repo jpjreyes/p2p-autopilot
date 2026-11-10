@@ -137,6 +137,8 @@ Format: constraint → options → evidence → choice → would change if. Cons
   with no portal row to compare against) -> add field-level provenance (quote the span each value came from).
 
 ## Open (decision cards before or during the build)
-- D5. Hosting the live demo: Lambda container with headless Chromium (default), ECS Fargate per run (fallback), or a
-  hosted browser service.
+- D5. Hosting the live demo (options considered 2026-11-09): A. Lambda async self-invocation (the Order Ops Agent pattern, ~$0 idle,
+  Chromium flags + screenshots in S3) · B. ECS Fargate task per run (no time limit, more setup, 1-2 min start) ·
+  C. hosted browser (Browserbase/Steel; vendor dependency). Blocked on the API key anyway (the CLI backend can't
+  run in the cloud); the `anthropic` backend is built and tested with a fake client.
 - D6. What counts toward the headline success number (clean runs only vs. including injected failures).
