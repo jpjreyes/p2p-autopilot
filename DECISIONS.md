@@ -136,6 +136,16 @@ Format: constraint → options → evidence → choice → would change if. Cons
 - **Would change if:** an injection ever changes an extracted field that the checks can't catch (e.g. a PO number
   with no portal row to compare against) -> add field-level provenance (quote the span each value came from).
 
+## D12. Reliability: pass^k on clean runs (k = 3)
+- **Constraint:** C2 (an agent that works 2 times out of 3 fails a clerk every few days).
+- **Result (2026-11-09, Haiku via CLI):** A 3/3 and B 3/3 (**pass^3 = 1.00, 20/20 documents right in every run**);
+  C 2/3 (pass^3 = 0.00) but **20/20 documents right in all 3 runs and 0 unsafe**: in run 3 the agent had every
+  document yet handed off because it couldn't confirm completeness ("the 2026-05 row is cut off at the screenshot
+  edge ... the page is truncated"). A safe, honest failure.
+- **Root cause (tools, again):** the accessibility snapshot was capped at 7,000 characters and `look` captured only
+  the viewport; the fully expanded C page exceeds both. **Fix:** cap 16,000; `look` takes a full-page screenshot and
+  shifts every mark by the scroll offset (test: a link 1,500 px down is marked). C re-measured below.
+
 ## Open (decision cards before or during the build)
 - D5. Hosting the live demo (options considered 2026-11-09): A. Lambda async self-invocation (the Order Ops Agent pattern, ~$0 idle,
   Chromium flags + screenshots in S3) · B. ECS Fargate task per run (no time limit, more setup, 1-2 min start) ·

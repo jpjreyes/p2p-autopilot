@@ -57,3 +57,13 @@ def test_click_by_text_opens_a_collapsed_section_and_marks_include_summary(tools
     assert "September 2026" in legend  # <summary> has no standard role but is marked
     assert tools.run({"action": "click", "text": "September 2026 (5)"}).ok
     assert tools.page.get_by_role("link", name="PDF").is_visible()
+
+
+def test_look_covers_the_whole_page_not_just_the_window(tools):
+    tools.page.set_viewport_size({"width": 800, "height": 300})
+    tools.page.set_content("<div style='height:1500px'>top</div><a href='#end'>Last link</a>")
+    png, legend = tools.look()
+    import io
+
+    from PIL import Image
+    assert "Last link" in legend and Image.open(io.BytesIO(png)).height > 1000

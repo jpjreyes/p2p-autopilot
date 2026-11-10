@@ -23,7 +23,7 @@ from playwright.sync_api import Error as PWError
 from playwright.sync_api import Frame, Locator, Page
 from playwright.sync_api import TimeoutError as PWTimeout
 
-MAX_SNAPSHOT_CHARS = 7000
+MAX_SNAPSHOT_CHARS = 16000  # 7000 cut off long pages (held-out C, all months expanded) -> safe but needless handoff
 MARK_ROLES = ("link", "button", "textbox", "combobox", "checkbox", "tab")
 CLICKABLE_CSS = "summary, [onclick], [role=tab], [tabindex]:not([tabindex='-1'])"
 MAX_MARKS = 120
@@ -135,10 +135,13 @@ class BrowserTools:
                     self.marks[n] = el
                     boxes.append((n, box))
                     legend.append(f"[{n}] {role} {name.splitlines()[0][:40] if name else ''!r} (frame {label!r})")
-        img = Image.open(io.BytesIO(self.page.screenshot())).convert("RGB")
+        # Full page, not just the visible window (a cut-off screenshot made the agent unsure the list was complete).
+        # bounding_box() is relative to the viewport, so shift every box by the page's scroll offset.
+        sx, sy = self.page.evaluate("[window.scrollX, window.scrollY]")
+        img = Image.open(io.BytesIO(self.page.screenshot(full_page=True))).convert("RGB")
         draw = ImageDraw.Draw(img)
         for n, b in boxes:
-            x, y, w, h = b["x"], b["y"], b["width"], b["height"]
+            x, y, w, h = b["x"] + sx, b["y"] + sy, b["width"], b["height"]
             draw.rectangle([x - 1, y - 1, x + w + 1, y + h + 1], outline=(230, 0, 0), width=2)
             draw.rectangle([x - 1, y - 13, x + 7 * len(str(n)) + 3, y - 1], fill=(230, 0, 0))
             draw.text((x + 1, y - 13), str(n), fill=(255, 255, 255))
