@@ -23,3 +23,13 @@ def test_missing_downloads_match_file_names_across_separators():
     assert missing_downloads(rows, ["/runs/x/VX-2026-0311.pdf"]) == [r for r in sorted(rows) if "0315" in r]
     assert missing_downloads(rows, ["/runs/x/VX-2026-0311.pdf", "/runs/x/VX-2026-0315.pdf"]) == []
     assert len(missing_downloads(rows, [])) == 2
+
+
+def test_stored_paths_survive_a_repo_rename_and_cannot_escape_runs():
+    import os
+    os.environ.setdefault("DATABASE_URL", "postgresql://unused")
+    from legacy_portal.api import RUNS_DIR, _local
+    assert _local("/home/x/other-checkout/runs/r1/001.png") == str((RUNS_DIR / "r1/001.png").resolve())
+    assert _local("/etc/passwd") == ""
+    assert _local("/x/runs/../../etc/passwd") == ""
+    assert _local("gs://bucket/runs/r1/001.png") == "gs://bucket/runs/r1/001.png"

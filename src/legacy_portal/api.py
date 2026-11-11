@@ -24,7 +24,6 @@ import threading
 from collections.abc import Iterator
 from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime
-from pathlib import Path
 
 import pypdfium2 as pdfium
 from dotenv import load_dotenv
@@ -156,13 +155,21 @@ def get_run(run_id: str):
     return {"run": jsonable([run_row])[0], "steps": jsonable(steps), "review": jsonable(items)}
 
 
+def _local(ref: str) -> str:
+    """A stored file reference, resolved safely: gs:// objects as they are; local files only under this app's runs
+    folder, located by their part after "runs/" (paths written before the repo was renamed or moved still work)."""
+    if not ref or ref.startswith("gs://"):
+        return ref
+    rel = ref.split("/runs/", 1)[1] if "/runs/" in ref else ""
+    path = (RUNS_DIR / rel).resolve()
+    return str(path) if rel and RUNS_DIR.resolve() in path.parents else ""
+
+
 @app.get("/api/runs/{run_id}/steps/{idx}.png")
 def step_screenshot(run_id: str, idx: int):
     with store() as rs:
         row = rs.conn.execute("SELECT screenshot FROM steps WHERE run_id=%s AND idx=%s", (run_id, idx)).fetchone()
-    ref = row["screenshot"] if row else ""
-    if ref and not ref.startswith("gs://") and RUNS_DIR not in Path(ref).resolve().parents:
-        ref = ""  # only files this app wrote
+    ref = _local(row["screenshot"] if row else "")
     data = storage.read_bytes(ref) if ref else None
     if data is None:
         raise HTTPException(404, "no screenshot")
@@ -200,9 +207,7 @@ def review_item(item_id: int):
 def review_page(item_id: int):
     with store() as rs:
         row = rs.conn.execute("SELECT pdf FROM review_items WHERE item_id=%s", (item_id,)).fetchone()
-    ref = row["pdf"] if row and row["pdf"] else ""
-    if ref and not ref.startswith("gs://") and RUNS_DIR not in Path(ref).resolve().parents:
-        ref = ""  # only files this app wrote
+    ref = _local(row["pdf"] if row and row["pdf"] else "")
     data = storage.read_bytes(ref) if ref else None
     if data is None:
         raise HTTPException(404, "no document")
