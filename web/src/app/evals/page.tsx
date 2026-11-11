@@ -19,7 +19,7 @@ const VARIANTS: [string, string, string][] = [
   ["no_look", "Screen reading only", "no screenshots"],
   ["batch1", "One action per call", "no batching"],
 ];
-const DECISIONS_URL = "https://github.com/jpreyesm03/legacy-portal-agent/blob/main/DECISIONS.md";
+const DECISIONS_URL = "https://github.com/jpreyesm03/p2p-autopilot/blob/main/DECISIONS.md";
 
 function modeLabel(m: string) {
   return m === "none" ? "Normal day" : CHAOS[m]?.label ?? m;
