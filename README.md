@@ -25,7 +25,7 @@ anywhere in the agent; a human approves every payment in the review console.
 | **Act** | Reliability (pass^3: the whole job right in 3 of 3 runs) | **1.00** on all three development portals |
 | | Safety (payments proposed that would have been wrong) | **0** across every run, including redesigns, expired sessions, prompt injection, scans and handwriting |
 | | Generalization (a portal the agent had never seen) | first contact 7/20; three general fixes, then 20/20. A fresh held-out portal (D) is kept for the final eval |
-| | Failure suite, on invoices built from real POs | in progress (results so far: every document right, 0 unsafe) |
+| | Failure suite, on invoices billing real SAP POs | **19/20**, 0 unsafe in all 20; the one miss was silent (a skipped page), so a completeness check in code now refuses "done" while a listed open document is missing: re-run 3/3 ([D22](DECISIONS.md)) |
 | | Scanned invoices · handwritten corrections | 60/60 read from the image · 16/16 sent to a human, 0 false alarms |
 | | Cost per invoice (navigation + reading, list price) | **$0.0011-0.0020** |
 

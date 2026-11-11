@@ -431,3 +431,17 @@ were fixed on the July calibration month. Unit = invoice (lines recorded togethe
   no goods receipt yet ..."). Evidence only: tested that verdict, status and payable are identical with and without
   it. On the portals, every real "invoiced before the goods arrived" case reads high and >= 80% of clean matches read
   low. Scores for all 211,379 invoiced lines are written by `predict --worklist` (`m_line_block_score`).
+
+## D22. Failure suite on invoices from real POs, and a completeness check in code
+- **Suite (10 conditions x portals A and B, invoices billing real SAP POs, D17):** **19/20 passed, 0 unsafe
+  payment proposals in all 20** (CAPTCHA handed to a person both times, as it should).
+- **The one failure was silent, which is worse than wrong:** portal B with renamed columns, the agent clicked to
+  page 2 before downloading page 1, downloaded page 2's 10 invoices, and finished saying "with page 1 covers all 20
+  open documents". 10/20 processed, nothing unsafe, but nobody would have been told (breaks C2: never fail silently).
+- **Fix in code, not in the prompt (like D13):** every table row seen listed as open (open / offen / outstanding /
+  unpaid / due) on any page is remembered; "done" is refused while one of those rows has no downloaded document
+  (matched by its number in the file name), up to 2 times with the missing rows named; after that the run is handed
+  to a person with the list. General on purpose: no portal-specific totals, so it applies to the held-out portal too.
+- **Re-run:** the failing condition 3 times: **3/3, 20/20 each, pass^3 = 1.00**; a normal day on A and B: 2/2 (no
+  false refusals). Honest limit: the check didn't need to fire in these runs (the agent didn't skip a page again);
+  the refusal path itself is covered by unit tests, not yet by a live run.
