@@ -11,3 +11,5 @@ evals/runs/*/screens/
 study/
 data/generated/
 /runs/
+data/bpi/*.duckdb
+data/bpi/*.duckdb.wal

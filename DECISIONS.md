@@ -258,3 +258,21 @@ Format: constraint → options → evidence → choice → would change if. Cons
   `PORTAL_STATE_URL` is set (memory otherwise). One-shots fire once across instances (atomic `UPDATE ... RETURNING`).
   Opaque icon tokens are now derived from a secret (stateless). Test: two instances share modes, one-shots and
   side effects.
+
+## D16. The merge with Process Copilot: the real SAP log lives in DuckDB, the operational state in Postgres
+- **What changed (restructure, 2026-11-10):** Process Copilot (process mining on the real BPI
+  Challenge 2019 purchase-to-pay log) and this project become one product: **see → predict → act** on
+  purchase-to-pay. The original Process Copilot repo stays public as the first version.
+- **Decision (2026-11-11): DuckDB for the event log, Postgres for operations.** The log is read-only history
+  scanned by analytics and ML (1,595,923 events, 251,734 PO lines; 78 MB as DuckDB, built in 6 s); Postgres holds
+  what the agent changes (POs, invoices, runs, review queue). The deployed Postgres is Neon's free tier (0.5 GB): the
+  log would not fit, and a columnar file baked into the image costs $0. Classic OLAP / OLTP split.
+- **No regression:** Process Copilot's build (cleaning rules D1–D7 there), its metrics and its 37-question golden set were ported
+  unchanged (`legacy_portal/process/`, `evals/process_golden_set.toml`); all 30 stored keys reproduce on the new
+  warehouse, including **€1,753,787 paid before any goods receipt** (655 lines) and **€1,015,808 open longer than
+  the vendor usually takes** (828 lines). The events CSV (14.6 MB, CC BY 4.0) is committed so CI and the cloud build
+  can rebuild the warehouse.
+- **What to predict (2026-11-11):** main model = **payment block** (55,839 of 251,734 lines, 22%, need someone to
+  remove a block); second model on the same features = **slow payment** (beyond the vendor's own p90). "Paid before
+  goods receipt" (655 of 183,374 paid 3-way lines, 0.36%) is caught exactly by a rule at payment time, so it's shown
+  as rule vs ML rather than modeled; next-activity prediction dropped (weakest business case).
