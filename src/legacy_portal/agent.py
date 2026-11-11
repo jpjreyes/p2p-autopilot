@@ -21,6 +21,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
 
+from legacy_portal import tracing
 from legacy_portal.browser import BrowserTools
 from legacy_portal.llm import DEFAULT_MODEL, Backend, get_backend
 from legacy_portal.portals.app import CREDENTIALS
@@ -134,7 +135,18 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
         headless: bool = True, run_id: str | None = None, on_step=None, max_batch: int = MAX_BATCH,
         allow_look: bool = True) -> RunResult:
     """on_step(idx, n, action, ok, message, screenshot) is called after every step (live replay, audit log).
-    max_batch and allow_look exist for ablations (D13); production uses the defaults."""
+    max_batch and allow_look exist for ablations (D13); production uses the defaults. One trace per run."""
+    with tracing.span("agent_run", "AGENT", **{"lpa.portal": portal, "lpa.max_batch": max_batch,
+                                              "lpa.allow_look": allow_look}) as s:
+        result = _run(portal, base_url, backend, model, max_steps, headless, run_id, on_step, max_batch, allow_look)
+        for k, v in (("outcome", result.outcome), ("downloads", len(result.downloads)), ("steps", len(result.steps)),
+                     ("seconds", result.seconds)):
+            s.set_attribute(f"lpa.{k}", v)
+        return result
+
+
+def _run(portal: str, base_url: str, backend: Backend, model: str, max_steps: int, headless: bool,
+         run_id: str | None, on_step, max_batch: int, allow_look: bool) -> RunResult:
     system, schema = configure(max_batch, allow_look)
     run_dir = RUNS_DIR / (run_id or f"{datetime.now():%Y%m%d-%H%M%S}-{portal}")
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -201,7 +213,12 @@ def run(portal: str, base_url: str, backend: Backend, model: str = DEFAULT_MODEL
                     print(f"[{portal} {n:02d}.{i}] look     {n_marks} marks", flush=True)
                     break
                 looks_in_a_row = 0
-                res = tools.run(action)
+                with tracing.span("browser.action", "TOOL", **{"lpa.action": action["action"], "lpa.step": n,
+                                                              "lpa.role": action.get("role"),
+                                                              "lpa.mark": action.get("mark")}) as sp:
+                    res = tools.run(action)
+                    sp.set_attribute("lpa.ok", res.ok)
+                    sp.set_attribute("lpa.result", res.message[:200])
                 shot = tools.screenshot(f"{n:03d}-{i}-{action['action']}")
                 cost_in, cost_out, lat = (llm.input_tokens, llm.output_tokens, llm.latency_s) if i == 0 else (0, 0, 0)
                 record(Step(n, {**action, "reason": reason}, res.ok, res.message, shot, cost_in,

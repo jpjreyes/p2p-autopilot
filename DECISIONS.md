@@ -343,3 +343,14 @@ Format: constraint → options → evidence → choice → would change if. Cons
   as of that week); EUR 33,776 on 4 lines paid before any goods receipt; 0 unverified numbers. Tests: the latest brief
   reproduces Process Copilot's headline exactly, older weeks have no model section, and an invented number is caught and named in
   the retry.
+
+## D20. Tracing: one OpenTelemetry trace per agent run, same design as Contract Radar
+- **What:** every model call is an LLM span (model, tokens, cost, latency, GenAI conventions); every browser action is
+  a tool span (action, step, ok, result); the invoice pipeline is a process_run span with one span per document
+  (extraction source, attempts, portal check) and a match span (verdict, payable); the weekly brief is its own trace.
+  OpenInference span kinds so Arize Phoenix shows them as an agent tree locally; any OTLP backend in production
+  (Cloud Trace on GCP). Off unless `LPA_TRACE_ENDPOINT` is set.
+- **Privacy:** spans carry ids, counts, verdicts, tokens, cost and timing, never prompt text, invoice contents or
+  credentials (tested: a prompt with a password and an amount leaves no trace of either).
+- **Why it matters here:** cost and latency per invoice were computed from run logs; with traces they're visible per
+  step in production, and a wrong verdict can be walked back to the exact browser action and model call.

@@ -164,9 +164,13 @@ class AnthropicBackend:
 
 
 def get_backend(name: str | None = None) -> Backend:
+    """The model backend, wrapped so every call is an LLM span when tracing is configured (legacy_portal.tracing)."""
+    from legacy_portal import tracing
     name = name or os.environ.get("LPA_BACKEND", "claude-cli")
     if name == "claude-cli":
-        return ClaudeCLIBackend()
-    if name == "anthropic":
-        return AnthropicBackend()
-    raise ValueError(f"unknown backend {name!r}; use claude-cli or anthropic")
+        inner = ClaudeCLIBackend()
+    elif name == "anthropic":
+        inner = AnthropicBackend()
+    else:
+        raise ValueError(f"unknown backend {name!r}; use claude-cli or anthropic")
+    return tracing.TracedBackend(inner, name) if tracing.setup() else inner

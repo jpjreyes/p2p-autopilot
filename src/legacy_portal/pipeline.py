@@ -16,6 +16,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from legacy_portal import tracing
 from legacy_portal.data.generate import generate
 from legacy_portal.extract import Extraction, extract
 from legacy_portal.llm import Backend, get_backend
@@ -40,14 +41,27 @@ class ReviewItem:
 
 
 def process(run_dir: str | Path, backend: Backend, orders: OrderSystem) -> list[ReviewItem]:
+    with tracing.span("process_run", "CHAIN", **{"lpa.run_dir": Path(run_dir).name}) as s:
+        items = _process(run_dir, backend, orders)
+        s.set_attribute("lpa.documents", len(items))
+        s.set_attribute("lpa.needs_human", sum(i.status == "needs_human" for i in items))
+        return items
+
+
+def _process(run_dir: str | Path, backend: Backend, orders: OrderSystem) -> list[ReviewItem]:
     run = json.loads((Path(run_dir) / "run.json").read_text())
     supplier = SUPPLIER_BY_PORTAL[run["portal"]]
     extractions: list[Extraction] = []
     for pdf in run["downloads"]:
-        try:
-            ex = extract(pdf, supplier, backend, run.get("contexts", {}).get(pdf))
-        except RuntimeError as e:  # one bad model call must never stop the batch: this document goes to a human
-            ex = Extraction(pdf, None, {}, [f"extraction failed: {e}"], "unavailable")
+        with tracing.span("document", "CHAIN", **{"lpa.pdf": Path(pdf).name}) as sp:
+            try:
+                ex = extract(pdf, supplier, backend, run.get("contexts", {}).get(pdf))
+            except RuntimeError as e:  # one bad model call must never stop the batch: this document goes to a human
+                ex = Extraction(pdf, None, {}, [f"extraction failed: {e}"], "unavailable")
+            sp.set_attribute("lpa.source", ex.source)
+            sp.set_attribute("lpa.attempts", ex.attempts)
+            sp.set_attribute("lpa.portal_check", ex.portal_check)
+            sp.set_attribute("lpa.needs_human", ex.needs_human)
         extractions.append(ex)
         tag = "ok " if not ex.needs_human else "HUM"
         print(f"  {tag} {Path(pdf).name:<22} {ex.source:<5} tries={ex.attempts} portal={ex.portal_check:<11} "
@@ -65,7 +79,10 @@ def process(run_dir: str | Path, backend: Backend, orders: OrderSystem) -> list[
             items.append(ReviewItem(Path(ex.pdf).stem, ex.pdf, "needs_human", "extraction_failed", None,
                                     ex.errors, ex.portal_check, ex.attempts, ex.raw))
             continue
-        v = match(ex.doc, orders, ledger)
+        with tracing.span("match", "TOOL", **{"lpa.number": ex.doc.number, "lpa.po": ex.doc.po_number}) as sp:
+            v = match(ex.doc, orders, ledger)
+            sp.set_attribute("lpa.verdict", v.verdict)
+            sp.set_attribute("lpa.payable", "" if v.payable is None else str(v.payable))
         if ex.portal_check == "disagree":
             items.append(ReviewItem(ex.doc.number, ex.pdf, "needs_human", "portal_mismatch", None,
                                     ex.portal_notes + v.evidence, ex.portal_check, ex.attempts, ex.raw))

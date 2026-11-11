@@ -112,6 +112,15 @@ def write_summary(sections: dict, backend, as_of: date) -> tuple[dict, list[str]
 
 
 def brief(as_of: date | None = None, use_llm: bool = True, db: Path = DEFAULT_DB, out_dir: Path = BRIEFS) -> dict:
+    from legacy_portal import tracing
+    with tracing.span("weekly_brief", "CHAIN", **{"lpa.as_of": str(as_of) if as_of else "latest"}) as s:
+        out = _brief(as_of, use_llm, db, out_dir)
+        s.set_attribute("lpa.sections", len(out["sections"]))
+        s.set_attribute("lpa.unverified_numbers", len(out.get("unverified_numbers", [])))
+        return out
+
+
+def _brief(as_of: date | None, use_llm: bool, db: Path, out_dir: Path) -> dict:
     con = duckdb.connect(str(db), read_only=True)
     data_end = con.execute("SELECT data_end FROM m_data_end").fetchone()[0]
     as_of = as_of or data_end + timedelta(days=1)  # the brief for the week that ends with the data
