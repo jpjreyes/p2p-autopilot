@@ -32,6 +32,16 @@ def fmt_money(value: str, portal: str) -> str:
     return _fmt_money(value, portal)
 
 
+def _fit(pdf: FPDF, text: str, width_mm: float) -> str:
+    """Cut a cell's text to its column's printed width (a character count overflows in wide fonts: a long description
+    ran into the Qty column and made a scanned credit note unreadable, D22)."""
+    if pdf.get_string_width(text) <= width_mm:
+        return text
+    while text and pdf.get_string_width(text + "...") > width_mm:
+        text = text[:-1]
+    return text.rstrip() + "..."
+
+
 def render(doc: dict, supplier: dict) -> bytes:
     portal = doc["portal"]
     pdf = FPDF(format="Letter")
@@ -97,8 +107,8 @@ def render(doc: dict, supplier: dict) -> bytes:
     sign = -1 if doc["doc_type"] == "credit_note" else 1
     for ln in doc["lines"]:
         amount = str(Decimal(ln["unit_price"]) * ln["qty"] * sign)
-        row = (ln["sku"], ln["description"][:44], str(ln["qty"]), fmt_money(ln["unit_price"], portal),
-               fmt_money(amount, portal))
+        row = (ln["sku"], _fit(pdf, ln["description"], widths[1] - 2), str(ln["qty"]),
+               fmt_money(ln["unit_price"], portal), fmt_money(amount, portal))
         for w, v in zip(widths, row):
             pdf.cell(w, 6, v)
         pdf.ln()

@@ -185,3 +185,17 @@ def test_scanned_mode_serves_pdfs_without_a_text_layer():
     r = c.get(f"/a/doc?no={number}")
     assert r.headers["content-type"] == "application/pdf"
     assert "".join(p.extract_text() or "" for p in PdfReader(io.BytesIO(r.content)).pages).strip() == ""
+
+
+def test_long_descriptions_are_cut_to_their_column_width():
+    """D22: a long description ran into the Qty column and made a scanned credit note unreadable."""
+    from fpdf import FPDF
+
+    from legacy_portal.portals.pdf import _fit
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Courier", size=9)
+    text = "Credit: MRO (components), PO item 00010 (damaged in transit)"
+    cut = _fit(pdf, text, 80)
+    assert cut.endswith("...") and pdf.get_string_width(cut) <= 80
+    assert _fit(pdf, "Short", 80) == "Short"
