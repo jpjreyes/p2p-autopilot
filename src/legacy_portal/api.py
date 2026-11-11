@@ -21,7 +21,6 @@ from __future__ import annotations
 import io
 import os
 import threading
-import time
 from collections.abc import Iterator
 from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime
@@ -31,17 +30,17 @@ import pypdfium2 as pdfium
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import Response
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 from pydantic import BaseModel
 
-from legacy_portal.agent import RUNS_DIR, run
-from legacy_portal.llm import get_backend
+from legacy_portal import storage
+from legacy_portal.agent import RUNS_DIR
 from legacy_portal.orders.store import PostgresOrderSystem
-from legacy_portal.pipeline import process
 from legacy_portal.process.api import router as process_router
 from legacy_portal.runstore import RunStore, ensure_schema, jsonable
+from legacy_portal.worker import execute
 
 load_dotenv()
 PORTAL_BASE = os.environ.get("PORTAL_BASE_URL", "http://127.0.0.1:8061")
@@ -67,8 +66,8 @@ app = FastAPI(title="Legacy Portal Agent API", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=os.environ.get("CONSOLE_ORIGINS", "http://localhost:3061").split(","),
                    allow_methods=["GET", "POST"], allow_headers=["*"])
 
-_lock = threading.Lock()
-_started: list[float] = []
+_lock = threading.Lock()  # local runner: one run at a time inside this process
+RUNNER = os.environ.get("LPA_RUNNER", "thread")  # thread (local) | cloudrun (a Cloud Run Job execution per run)
 
 
 @contextmanager
@@ -88,33 +87,25 @@ class Decision(BaseModel):
     reviewer: str = "demo-reviewer"
 
 
-def _set_chaos(portal: str, modes: list[str]) -> None:
-    import json
-    import urllib.request
-    req = urllib.request.Request(f"{PORTAL_BASE}/admin/chaos", method="POST",
-                                 data=json.dumps({"portal": portal, "modes": modes}).encode(),
-                                 headers={"Content-Type": "application/json",
-                                          "X-Admin-Token": os.environ.get("PORTAL_ADMIN_TOKEN", "dev-admin-token")})
-    urllib.request.urlopen(req, timeout=10).read()
-
-
 def _execute(run_id: str, portal: str, chaos: str) -> None:
     try:
-        with store() as rs:
-            try:
-                _set_chaos(portal, [chaos] if chaos else [])
-                result = run(portal, PORTAL_BASE, get_backend(), run_id=run_id,
-                             on_step=lambda idx, n, action, ok, msg, shot: rs.step(run_id, idx, n, action, ok, msg,
-                                                                                    shot))
-                calls = sum(1 for s in result.steps if s.tokens_in)
-                rs.finish(run_id, result.outcome, result.reason, len(result.downloads), calls, result.seconds)
-                if result.downloads:
-                    rs.save_review(run_id, process(result.run_dir, get_backend(), PostgresOrderSystem(rs.conn)))
-            except Exception as e:  # noqa: BLE001 -- a failed demo run is recorded, never left "running"
-                rs.finish(run_id, "error", repr(e)[:300], 0, 0, 0)
+        with POOL.connection() as conn:
+            execute(run_id, portal, chaos, conn)
     finally:
-        _set_chaos(portal, [])
         _lock.release()
+
+
+def _launch_job(run_id: str, portal: str, chaos: str) -> None:
+    """Cloud Run Jobs: start one execution of the agent job with this run's parameters (D21). The API's service
+    account may only run this one job (a custom role with run.jobs.runWithOverrides on it, nothing else)."""
+    import google.auth
+    from google.auth.transport.requests import AuthorizedSession
+    creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    job = os.environ["LPA_RUN_JOB"]  # projects/<p>/locations/<region>/jobs/<name>
+    env = [{"name": "RUN_ID", "value": run_id}, {"name": "PORTAL", "value": portal}, {"name": "CHAOS", "value": chaos}]
+    resp = AuthorizedSession(creds).post(f"https://run.googleapis.com/v2/{job}:run",
+                                         json={"overrides": {"containerOverrides": [{"env": env}]}}, timeout=30)
+    resp.raise_for_status()
 
 
 @app.post("/api/runs")
@@ -123,17 +114,27 @@ def start_run(body: StartRun):
         raise HTTPException(400, "only portals a, b and c can be run from the console (d is held out)")
     if body.chaos not in CHAOS_MODES:
         raise HTTPException(400, f"unknown chaos mode {body.chaos!r}")
-    now = time.time()
-    _started[:] = [t for t in _started if now - t < 3600]
-    if len(_started) >= RUNS_PER_HOUR:
+    with store() as rs:  # limits live in Postgres, so they hold across API instances (D21)
+        recent = rs.conn.execute(
+            "SELECT count(*) FILTER (WHERE started_at > now() - interval '1 hour') AS last_hour, "
+            "count(*) FILTER (WHERE status = 'running' AND started_at > now() - interval '20 minutes') AS running "
+            "FROM runs").fetchone()
+    if recent["last_hour"] >= RUNS_PER_HOUR:
         raise HTTPException(429, "run limit reached for this hour")
-    if not _lock.acquire(blocking=False):
+    if recent["running"] or (RUNNER == "thread" and not _lock.acquire(blocking=False)):
         raise HTTPException(409, "a run is already in progress")
-    _started.append(now)
     run_id = f"{datetime.now():%Y%m%d-%H%M%S}-{body.portal}"
     with store() as rs:
         rs.start(run_id, body.portal, body.chaos)
-    threading.Thread(target=_execute, args=(run_id, body.portal, body.chaos), daemon=True).start()
+    if RUNNER == "cloudrun":
+        try:
+            _launch_job(run_id, body.portal, body.chaos)
+        except Exception as e:
+            with store() as rs:
+                rs.finish(run_id, "error", f"could not start the job: {e!r}"[:300], 0, 0, 0)
+            raise HTTPException(502, "could not start the run") from e
+    else:
+        threading.Thread(target=_execute, args=(run_id, body.portal, body.chaos), daemon=True).start()
     return {"run_id": run_id}
 
 
@@ -159,10 +160,13 @@ def get_run(run_id: str):
 def step_screenshot(run_id: str, idx: int):
     with store() as rs:
         row = rs.conn.execute("SELECT screenshot FROM steps WHERE run_id=%s AND idx=%s", (run_id, idx)).fetchone()
-    path = Path(row["screenshot"]) if row and row["screenshot"] else None
-    if not path or not path.is_file() or RUNS_DIR not in path.resolve().parents:
+    ref = row["screenshot"] if row else ""
+    if ref and not ref.startswith("gs://") and RUNS_DIR not in Path(ref).resolve().parents:
+        ref = ""  # only files this app wrote
+    data = storage.read_bytes(ref) if ref else None
+    if data is None:
         raise HTTPException(404, "no screenshot")
-    return FileResponse(path, media_type="image/png")
+    return Response(data, media_type="image/png")
 
 
 @app.get("/api/review")
@@ -196,11 +200,14 @@ def review_item(item_id: int):
 def review_page(item_id: int):
     with store() as rs:
         row = rs.conn.execute("SELECT pdf FROM review_items WHERE item_id=%s", (item_id,)).fetchone()
-    path = Path(row["pdf"]) if row and row["pdf"] else None
-    if not path or not path.is_file() or RUNS_DIR not in path.resolve().parents:
+    ref = row["pdf"] if row and row["pdf"] else ""
+    if ref and not ref.startswith("gs://") and RUNS_DIR not in Path(ref).resolve().parents:
+        ref = ""  # only files this app wrote
+    data = storage.read_bytes(ref) if ref else None
+    if data is None:
         raise HTTPException(404, "no document")
     buf = io.BytesIO()
-    pdfium.PdfDocument(str(path))[0].render(scale=1.6).to_pil().save(buf, "PNG", optimize=True)
+    pdfium.PdfDocument(data)[0].render(scale=1.6).to_pil().save(buf, "PNG", optimize=True)
     return Response(buf.getvalue(), media_type="image/png", headers={"Cache-Control": "max-age=3600"})
 
 

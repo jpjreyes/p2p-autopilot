@@ -27,3 +27,28 @@ jobs:
       - run: uv run ruff check src tests
       - run: uv run python -m legacy_portal.process.warehouse  # real SAP log -> DuckDB (6 s), so the golden keys run
       - run: uv run pytest -q
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the cloud image (warehouse, worklist and Chromium baked in)
+        run: docker build -t p2p-autopilot:ci .
+      - name: Smoke test the image
+        run: |
+          docker run --rm p2p-autopilot:ci python -c "
+          from fastapi.testclient import TestClient
+          from legacy_portal.process.api import router
+          from fastapi import FastAPI
+          app = FastAPI(); app.include_router(router)
+          c = TestClient(app)
+          o = c.get('/api/process/overview').json(); assert o['totals']['lines'] == 251734, o
+          r = c.get('/api/process/risk?limit=1').json(); assert r['summary']['flagged'] > 0, r
+          print('image ok', o['totals'], r['summary'])"
+      - name: Terraform format and validate (no cloud credentials needed)
+        run: |
+          curl -fsSL https://releases.hashicorp.com/terraform/1.17.1/terraform_1.17.1_linux_amd64.zip -o tf.zip
+          unzip -o -q tf.zip terraform -d /usr/local/bin
+          terraform -chdir=infra/gcp fmt -check -recursive
+          terraform -chdir=infra/gcp init -backend=false -input=false >/dev/null
+          terraform -chdir=infra/gcp validate

@@ -354,3 +354,24 @@ Format: constraint → options → evidence → choice → would change if. Cons
   credentials (tested: a prompt with a password and an amount leaves no trace of either).
 - **Why it matters here:** cost and latency per invoice were computed from run logs; with traces they're visible per
   step in production, and a wrong verdict can be walked back to the exact browser action and model call.
+
+## D21. GCP deploy: Cloud Run services + one Cloud Run Job execution per agent run (Terraform, replaces D5)
+- **Why GCP (2026-11-10):** long headless-browser runs are Cloud Run Jobs' native workload: a container that runs
+  to completion (no 15-minute ceiling like Lambda), no queue to build, billed only while a run executes. The portfolio
+  deploys each project where its workload fits (Secure Agent Ops and Order Ops on AWS, Contract Radar on Azure, this one on GCP).
+- **Shape (`infra/gcp`, `terraform validate` in CI):** API and mock portals as Cloud Run services (scale to zero, max
+  2 instances); the agent as a Cloud Run Job started once per run by the API (`LPA_RUNNER=cloudrun`, the job reads
+  RUN_ID / PORTAL / CHAOS from the execution's overrides); the weekly brief as a second job on a Cloud Scheduler
+  trigger (Mondays 07:00); screenshots, invoice PDFs and briefs in a private bucket read only through the API
+  (30-day expiry for run evidence); Postgres stays on Neon (free tier) for runs, steps, the review queue, the order
+  system and the portals' shared state; secrets in Secret Manager; traces to Cloud Trace; budget alert; web on Vercel.
+- **One image for everything:** Python + Chromium, with the process warehouse and the scored worklist built in during
+  the image build (6 s + a few seconds), so "see" and "predict" need no database at runtime. CI builds it and checks
+  that the baked warehouse answers (251,734 lines, a non-empty worklist).
+- **Least privilege:** one service account per piece; each gets only its secrets (the API never sees the Anthropic
+  key: it doesn't call the model) and only the bucket rights it uses (writers can't read, the API can't write); the
+  API may start exactly one job, through a custom role with `run.jobs.runWithOverrides` on that job, nothing else.
+- **Guardrails moved out of process memory:** "one run at a time" and the runs-per-hour limit are now queries on the
+  runs table, so they hold across API instances and job executions (they were a lock and a list in one process).
+- **Not done yet:** a GCP project and billing account, then `scripts/gcp_deploy.sh` (builds the image
+  with Cloud Build, applies Terraform, lists the secrets to fill: Anthropic key, Neon URL, portal tokens).

@@ -131,11 +131,17 @@ def _brief(as_of: date | None, use_llm: bool, db: Path, out_dir: Path) -> dict:
         from legacy_portal.llm import get_backend
         summary, unverified = write_summary(sections, get_backend(), as_of)
         out.update(summary=summary, unverified_numbers=unverified)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / f"brief-{as_of}.json"
-    path.write_text(json.dumps(out, indent=1, default=str))
-    out["path"] = str(path)
+    from legacy_portal import storage  # local runs/briefs, or the private bucket in the cloud (D21)
+    text = json.dumps(out, indent=1, default=str)
+    out["path"] = (storage.put_text(f"briefs/brief-{as_of}.json", text, out_dir) if out_dir == BRIEFS
+                   else _write_local(out_dir / f"brief-{as_of}.json", text))
     return out
+
+
+def _write_local(path: Path, text: str) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text)
+    return str(path)
 
 
 def main() -> None:

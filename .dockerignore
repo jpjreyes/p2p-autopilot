@@ -1,0 +1,11 @@
+.venv
+web
+runs
+study
+docs
+tests
+.git
+.env
+data/generated
+data/bpi/*.duckdb
+**/__pycache__

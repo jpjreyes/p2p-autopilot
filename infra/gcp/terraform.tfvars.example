@@ -1,0 +1,7 @@
+# Copy to terraform.tfvars (gitignored) and fill in. Secrets are NOT set here: add their values with
+#   gcloud secrets versions add <name> --data-file=-
+project_id      = "your-project-id"
+region          = "us-central1"
+image           = "us-central1-docker.pkg.dev/your-project-id/p2p-autopilot/app:v1"
+console_origin  = "https://your-console.vercel.app"
+billing_account = "" # e.g. 0X0X0X-0X0X0X-0X0X0X, for the budget alert

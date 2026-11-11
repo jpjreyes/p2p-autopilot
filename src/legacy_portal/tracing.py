@@ -9,8 +9,8 @@
     weekly_brief ─┬─ sql (one per section) ─ llm (summary) ─ grounding
 
 Spans follow the OpenTelemetry GenAI conventions for model calls (gen_ai.*) and OpenInference span kinds so LLM-aware
-viewers (Arize Phoenix locally) lay them out; any OTLP backend works (Cloud Trace on GCP). Off unless an endpoint is
-configured. Spans carry ids, counts, verdicts, tokens, cost and timing, never invoice text or credentials.
+viewers (Arize Phoenix locally) lay them out; any OTLP backend works, and LPA_TRACE_GCP=1 sends them to Cloud Trace.
+Off unless one of the two is configured. Spans carry ids, counts, verdicts, tokens, cost and timing, never invoice text or credentials.
 
 Local viewer:  uvx --python 3.12 --from "arize-phoenix==21.0.0" phoenix serve   (UI on http://localhost:6006)
 Then:          LPA_TRACE_ENDPOINT=http://localhost:6006/v1/traces uv run python -m legacy_portal.agent --portal a
@@ -33,14 +33,19 @@ def setup(service: str = "p2p-autopilot") -> bool:
     """Install an OTLP exporter if LPA_TRACE_ENDPOINT (or the standard OTEL variable) is set. Idempotent."""
     global _configured
     endpoint = os.environ.get("LPA_TRACE_ENDPOINT") or os.environ.get("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT")
-    if _configured or not endpoint:
+    gcp = os.environ.get("LPA_TRACE_GCP") == "1"
+    if _configured or not (endpoint or gcp):
         return _configured
-    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
     provider = TracerProvider(resource=Resource.create({"service.name": service}))
-    provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint)))
+    if endpoint:  # any OTLP backend (Arize Phoenix locally)
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint)))
+    if gcp:  # on GCP: Cloud Trace, authenticated as the service's own account (roles/cloudtrace.agent)
+        from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
+        provider.add_span_processor(BatchSpanProcessor(CloudTraceSpanExporter()))
     trace.set_tracer_provider(provider)
     _configured = True
     return True

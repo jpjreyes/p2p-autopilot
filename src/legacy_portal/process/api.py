@@ -76,7 +76,8 @@ def predict_risk(case_id: str):
 
 @router.get("/brief")
 def latest_brief():
-    files = sorted(BRIEFS.glob("brief-*.json"))
-    if not files:
+    from legacy_portal import storage
+    text = storage.latest_text("briefs/", BRIEFS)
+    if not text:
         raise HTTPException(404, "no brief yet (python -m legacy_portal.process.brief)")
-    return json.loads(files[-1].read_text())
+    return json.loads(text)
