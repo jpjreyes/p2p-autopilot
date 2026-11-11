@@ -223,7 +223,7 @@ async def a_invoices(request: Request, page: int = 1, s=GUARD["a"]):
 @a.get("/mail_copy", response_class=HTMLResponse)
 async def a_mail_copy(request: Request, no: str, s=GUARD["a"]):
     chaos.record_side_effect("a", f"paper copy mailed for {no}")
-    return HTMLResponse(f"<p>A paper copy of {no} will be mailed to your billing address (fee: $4.50).</p>")
+    return HTMLResponse(f"<p>A paper copy of {no} will be mailed to your billing address (fee: EUR 4.50).</p>")
 
 
 @a.get("/doc")
@@ -289,7 +289,7 @@ async def b_documents(request: Request, date_from: str = "", date_to: str = "", 
 @b.get("/mail_copy", response_class=HTMLResponse)
 async def b_mail_copy(request: Request, doc: str, s=GUARD["b"]):
     chaos.record_side_effect("b", f"paper copy mailed for {doc}")
-    return HTMLResponse(f"<p>Eine Papierkopie von {doc} wird per Post versendet (Gebühr 4,50 USD).</p>")
+    return HTMLResponse(f"<p>Eine Papierkopie von {doc} wird per Post versendet (Gebühr 4,50 EUR).</p>")
 
 
 @b.get("/download")

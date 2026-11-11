@@ -42,6 +42,6 @@ def test_short_shipments_visible_and_unknown_po_absent(orders):
     for t in short:
         po = orders.get_po(t["fields"]["po_number"])
         received = orders.received_qty(po.po_number)
-        assert any(received[ln.sku] < ln.qty for ln in po.lines)
+        assert any(received.get(ln.sku, 0) < ln.qty for ln in po.lines)  # no receipt yet counts as 0 (D17)
     for t in (t for t in DATA["ground_truth"] if t["verdict"] == "unknown_po"):
         assert orders.get_po(t["fields"]["po_number"]) is None

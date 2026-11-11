@@ -38,9 +38,10 @@ def test_expected_payable_recomputed_independently():
     for t in TRUTH.values():
         d = DOCS[t["doc_id"]]
         if t["verdict"] in ("match", "price_above_po", "qty_above_received"):
-            po, gr = POS[d["po_number"]], GRS[d["po_number"]]
+            po, gr = POS[d["po_number"]], GRS.get(d["po_number"], {"lines": []})  # no receipt yet = nothing received
             received = {g["sku"]: g["qty_received"] for g in gr["lines"]}
-            expected = sum((Decimal(ln["unit_price"]) * min(ln["qty"], received[ln["sku"]]) for ln in po["lines"]),
+            expected = sum((Decimal(ln["unit_price"]) * min(ln["qty"], received.get(ln["sku"], 0))
+                            for ln in po["lines"]),
                            Decimal(0))
             assert Decimal(t["expected_payable"]) == expected.quantize(Decimal("0.01")), t["number"]
         if t["verdict"] == "match":
@@ -67,3 +68,15 @@ def test_planted_issue_types_are_detectable():
 def test_held_out_portal_is_d_only():
     held = [s["portal"] for s in D["suppliers"] if s["held_out"]]
     assert held == ["d"]  # C was used to find fixes (D10), so D is the fresh held-out
+
+
+def test_purchase_orders_are_real_sap_orders():
+    """D17: every PO billed on a portal is a real BPI 2019 purchase order of that supplier's SAP vendor."""
+    import json
+
+    from legacy_portal.data.generate import SAMPLE
+    real = json.loads(SAMPLE.read_text())["vendors"]
+    vendor_pos = {p: {f"PO-{r['po']}" for g in ("goods_first", "invoice_first") for r in v[g]} for p, v in real.items()}
+    for t in TRUTH.values():
+        if t["verdict"] in ("match", "price_above_po", "qty_above_received", "already_paid"):
+            assert DOCS[t["doc_id"]]["po_number"] in vendor_pos[t["portal"]], t["number"]

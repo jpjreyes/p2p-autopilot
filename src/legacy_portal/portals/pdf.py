@@ -15,12 +15,11 @@ from PIL import Image, ImageFilter
 
 def _fmt_money(value: str, portal: str) -> str:
     d = Decimal(value)
-    if portal == "d":  # USD 1,234.50
-        return f"USD {'-' if d < 0 else ''}{abs(d):,.2f}"
-    if portal == "b":  # European format: 1.234,50
+    # amounts are the SAP values, in EUR (D17); written "EUR", the PDF core fonts have no euro sign
+    if portal == "b":  # European format: 1.234,50 EUR
         s = f"{abs(d):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        return ("-" if d < 0 else "") + s + " USD"
-    return f"{'-' if d < 0 else ''}${abs(d):,.2f}"
+        return ("-" if d < 0 else "") + s + " EUR"
+    return f"EUR {'-' if d < 0 else ''}{abs(d):,.2f}"  # EUR 1,234.50
 
 
 def fmt_date(iso: str, portal: str) -> str:

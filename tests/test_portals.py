@@ -76,7 +76,7 @@ def test_portal_b_needs_a_search_and_uses_european_formats():
         page += 1
     open_docs = [d for d in DOCS["b"] if d["status"] == "open"]
     assert sorted(found) == sorted(d["number"] for d in open_docs)
-    assert re.search(r"\d{2}\.\d{2}\.2026", html) and " USD" in html  # 03.10.2026, 1.234,50 USD
+    assert re.search(r"\d{2}\.\d{2}\.20\d{2}", html) and " EUR" in html  # 03.10.2018, 1.234,50 EUR
     doc = open_docs[0]
     assert doc["number"] in pdf_text(c.get("/b/download", params={"doc": doc["number"]}))
 
@@ -160,7 +160,7 @@ def test_portal_d_two_step_login_load_more_and_export():
         if not page["more"]:
             break
     assert len(seen) == len(DOCS["d"]) and {s["status"] for s in seen} == {"Outstanding", "Settled"}
-    assert seen[0]["amount"].startswith("USD ")
+    assert seen[0]["amount"].startswith("EUR ")
     text = pdf_text(c.get(seen[0]["export"]))
     assert seen[0]["number"] in text and "Statement" in text
 

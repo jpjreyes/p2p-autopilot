@@ -1,0 +1,5382 @@
+{
+ "source": "BPI Challenge 2019 (4TU, CC BY 4.0), via legacy_portal.process.warehouse",
+ "vendors": {
+  "a": {
+   "vendor": "vendorID_0660",
+   "spend_area": "MRO (components)",
+   "goods_first": [
+    {
+     "po": "4507002988",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2546.0,
+       "ordered": "2018-01-15",
+       "goods_received": "2018-01-15",
+       "invoiced": "2018-01-16",
+       "paid": "2018-02-22",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-01-15",
+       "goods_received": "2018-01-15",
+       "invoiced": "2018-01-16",
+       "paid": "2018-02-22",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507004562",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3091.0,
+       "ordered": "2018-01-22",
+       "goods_received": "2018-01-22",
+       "invoiced": "2018-01-23",
+       "paid": "2018-02-22",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-01-22",
+       "goods_received": "2018-01-22",
+       "invoiced": "2018-01-23",
+       "paid": "2018-02-22",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507004560",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3273.0,
+       "ordered": "2018-01-22",
+       "goods_received": "2018-01-22",
+       "invoiced": "2018-01-23",
+       "paid": "2018-02-22",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-01-22",
+       "goods_received": "2018-01-22",
+       "invoiced": "2018-01-23",
+       "paid": "2018-02-22",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507006262",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3273.0,
+       "ordered": "2018-01-30",
+       "goods_received": "2018-01-30",
+       "invoiced": "2018-01-31",
+       "paid": "2018-02-22",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-01-30",
+       "goods_received": "2018-01-30",
+       "invoiced": "2018-01-31",
+       "paid": "2018-02-22",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507008277",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3065.0,
+       "ordered": "2018-02-07",
+       "goods_received": "2018-02-07",
+       "invoiced": "2018-02-21",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-02-07",
+       "goods_received": "2018-02-07",
+       "invoiced": "2018-02-21",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507011589",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3065.0,
+       "ordered": "2018-02-21",
+       "goods_received": "2018-02-21",
+       "invoiced": "2018-03-05",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-02-21",
+       "goods_received": "2018-02-21",
+       "invoiced": "2018-03-05",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507011588",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3117.0,
+       "ordered": "2018-02-21",
+       "goods_received": "2018-02-21",
+       "invoiced": "2018-03-05",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-02-21",
+       "goods_received": "2018-02-21",
+       "invoiced": "2018-03-05",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507011585",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3091.0,
+       "ordered": "2018-02-21",
+       "goods_received": "2018-02-21",
+       "invoiced": "2018-03-05",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-02-21",
+       "goods_received": "2018-02-21",
+       "invoiced": "2018-03-05",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507011584",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3039.0,
+       "ordered": "2018-02-21",
+       "goods_received": "2018-02-21",
+       "invoiced": "2018-03-05",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-02-21",
+       "goods_received": "2018-02-21",
+       "invoiced": "2018-03-05",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507014163",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3247.0,
+       "ordered": "2018-03-05",
+       "goods_received": "2018-03-05",
+       "invoiced": "2018-03-07",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-03-05",
+       "goods_received": "2018-03-05",
+       "invoiced": "2018-03-07",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507014161",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3247.0,
+       "ordered": "2018-03-05",
+       "goods_received": "2018-03-05",
+       "invoiced": "2018-03-07",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-03-05",
+       "goods_received": "2018-03-05",
+       "invoiced": "2018-03-07",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507015902",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3117.0,
+       "ordered": "2018-03-13",
+       "goods_received": "2018-03-13",
+       "invoiced": "2018-03-27",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-03-13",
+       "goods_received": "2018-03-13",
+       "invoiced": "2018-03-27",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507015923",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 554.0,
+       "ordered": "2018-03-13",
+       "goods_received": "2018-03-13",
+       "invoiced": "2018-03-27",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-03-13",
+       "goods_received": "2018-03-13",
+       "invoiced": "2018-09-14",
+       "paid": null,
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507018921",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3273.0,
+       "ordered": "2018-03-26",
+       "goods_received": "2018-03-26",
+       "invoiced": "2018-04-03",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-03-26",
+       "goods_received": "2018-03-26",
+       "invoiced": "2018-04-03",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507018413",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 909.0,
+       "ordered": "2018-03-22",
+       "goods_received": "2018-03-23",
+       "invoiced": "2018-04-03",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-03-22",
+       "goods_received": "2018-03-23",
+       "invoiced": "2018-04-03",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1385.0,
+       "ordered": "2018-03-22",
+       "goods_received": "2018-03-23",
+       "invoiced": "2018-04-03",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507018919",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2221.0,
+       "ordered": "2018-03-26",
+       "goods_received": "2018-03-26",
+       "invoiced": "2018-04-03",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-03-26",
+       "goods_received": "2018-03-26",
+       "invoiced": "2018-04-03",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507018412",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3273.0,
+       "ordered": "2018-03-22",
+       "goods_received": "2018-03-23",
+       "invoiced": "2018-04-04",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-03-22",
+       "goods_received": "2018-03-23",
+       "invoiced": "2018-04-04",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507018410",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1558.0,
+       "ordered": "2018-03-22",
+       "goods_received": "2018-03-23",
+       "invoiced": "2018-04-09",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-03-22",
+       "goods_received": "2018-03-23",
+       "invoiced": "2018-04-09",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507021946",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3117.0,
+       "ordered": "2018-04-10",
+       "goods_received": "2018-04-10",
+       "invoiced": "2018-04-17",
+       "paid": "2018-05-24",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-04-10",
+       "goods_received": "2018-04-10",
+       "invoiced": "2018-04-17",
+       "paid": "2018-05-24",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507021949",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1753.0,
+       "ordered": "2018-04-10",
+       "goods_received": "2018-04-10",
+       "invoiced": "2018-04-17",
+       "paid": "2018-05-24",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-04-10",
+       "goods_received": "2018-04-10",
+       "invoiced": "2018-04-17",
+       "paid": "2018-05-24",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507023686",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3273.0,
+       "ordered": "2018-04-17",
+       "goods_received": "2018-04-18",
+       "invoiced": "2018-04-18",
+       "paid": "2018-05-24",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-04-17",
+       "goods_received": "2018-04-18",
+       "invoiced": "2018-04-18",
+       "paid": "2018-05-24",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507030184",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1342.0,
+       "ordered": "2018-05-18",
+       "goods_received": "2018-05-19",
+       "invoiced": "2018-06-06",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-05-18",
+       "goods_received": "2018-05-19",
+       "invoiced": "2018-06-06",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507035655",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1472.0,
+       "ordered": "2018-06-11",
+       "goods_received": "2018-06-12",
+       "invoiced": "2018-06-13",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-06-11",
+       "goods_received": "2018-06-12",
+       "invoiced": "2018-06-13",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507035657",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2143.0,
+       "ordered": "2018-06-11",
+       "goods_received": "2018-06-12",
+       "invoiced": "2018-06-13",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-06-11",
+       "goods_received": "2018-06-12",
+       "invoiced": "2018-06-13",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507039583",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1117.0,
+       "ordered": "2018-06-27",
+       "goods_received": "2018-06-28",
+       "invoiced": "2018-07-03",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-06-27",
+       "goods_received": "2018-06-28",
+       "invoiced": "2018-07-03",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507035661",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 294.0,
+       "ordered": "2018-06-11",
+       "goods_received": "2018-06-12",
+       "invoiced": "2018-07-05",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-06-11",
+       "goods_received": "2018-06-12",
+       "invoiced": "2018-07-05",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507035659",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1493.0,
+       "ordered": "2018-06-11",
+       "goods_received": "2018-06-12",
+       "invoiced": "2018-07-06",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 389.0,
+       "ordered": "2018-06-11",
+       "goods_received": "2018-06-12",
+       "invoiced": "2018-07-06",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-06-11",
+       "goods_received": "2018-06-12",
+       "invoiced": "2018-07-06",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508045889",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2468.0,
+       "ordered": "2018-07-27",
+       "goods_received": "2018-07-27",
+       "invoiced": "2018-07-30",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-07-27",
+       "goods_received": "2018-07-27",
+       "invoiced": "2018-07-30",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508045354",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1039.0,
+       "ordered": "2018-07-25",
+       "goods_received": "2018-07-25",
+       "invoiced": "2018-07-31",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-07-25",
+       "goods_received": "2018-07-25",
+       "invoiced": "2018-07-31",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508043105",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3273.0,
+       "ordered": "2018-07-13",
+       "goods_received": "2018-07-13",
+       "invoiced": "2018-07-31",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-07-13",
+       "goods_received": "2018-07-13",
+       "invoiced": "2018-07-31",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508053266",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3304.0,
+       "ordered": "2018-09-03",
+       "goods_received": "2018-09-03",
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-28",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-09-03",
+       "goods_received": "2018-09-03",
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-28",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508053267",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1991.0,
+       "ordered": "2018-09-03",
+       "goods_received": "2018-09-03",
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-28",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-09-03",
+       "goods_received": "2018-09-03",
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-28",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508057548",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1030.0,
+       "ordered": "2018-09-25",
+       "goods_received": "2018-09-26",
+       "invoiced": "2018-09-26",
+       "paid": "2018-10-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 795.0,
+       "ordered": "2018-09-25",
+       "goods_received": "2018-09-26",
+       "invoiced": "2018-09-26",
+       "paid": "2018-10-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508054912",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3277.0,
+       "ordered": "2018-09-11",
+       "goods_received": "2018-09-11",
+       "invoiced": "2018-09-26",
+       "paid": "2018-10-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-09-11",
+       "goods_received": "2018-09-11",
+       "invoiced": "2018-09-26",
+       "paid": "2018-10-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508056482",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1239.0,
+       "ordered": "2018-09-19",
+       "goods_received": "2018-09-19",
+       "invoiced": "2018-09-26",
+       "paid": "2018-10-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-09-19",
+       "goods_received": "2018-09-19",
+       "invoiced": "2018-09-26",
+       "paid": "2018-10-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508054913",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2065.0,
+       "ordered": "2018-09-11",
+       "goods_received": "2018-09-11",
+       "invoiced": "2018-09-26",
+       "paid": "2018-10-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-09-11",
+       "goods_received": "2018-09-11",
+       "invoiced": "2018-09-26",
+       "paid": "2018-10-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508065321",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3469.0,
+       "ordered": "2018-10-31",
+       "goods_received": "2018-11-01",
+       "invoiced": "2018-11-02",
+       "paid": "2018-11-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-10-31",
+       "goods_received": "2018-11-01",
+       "invoiced": "2018-11-02",
+       "paid": "2018-11-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508061656",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2753.0,
+       "ordered": "2018-10-15",
+       "goods_received": "2018-10-16",
+       "invoiced": "2018-11-13",
+       "paid": "2018-11-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-10-15",
+       "goods_received": "2018-10-16",
+       "invoiced": "2018-11-13",
+       "paid": "2018-11-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508069347",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 311.0,
+       "ordered": "2018-11-20",
+       "goods_received": "2018-11-20",
+       "invoiced": "2018-11-23",
+       "paid": "2019-01-04",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508070179",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1385.0,
+       "ordered": "2018-11-23",
+       "goods_received": "2018-11-23",
+       "invoiced": "2018-11-30",
+       "paid": "2019-01-04",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 519.0,
+       "ordered": "2018-11-23",
+       "goods_received": "2018-11-23",
+       "invoiced": "2018-11-30",
+       "paid": "2019-01-04",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508066749",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3277.0,
+       "ordered": "2018-11-07",
+       "goods_received": "2018-11-07",
+       "invoiced": "2018-12-04",
+       "paid": "2019-01-04",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-11-07",
+       "goods_received": "2018-11-07",
+       "invoiced": "2018-12-04",
+       "paid": "2019-01-04",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508067232",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2299.0,
+       "ordered": "2018-11-09",
+       "goods_received": "2018-12-06",
+       "invoiced": "2018-12-07",
+       "paid": "2019-01-04",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 692.0,
+       "ordered": "2018-11-09",
+       "goods_received": "2018-12-06",
+       "invoiced": "2018-12-07",
+       "paid": "2019-01-04",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-11-09",
+       "goods_received": "2018-12-06",
+       "invoiced": "2018-12-07",
+       "paid": "2019-01-04",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508057546",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1239.0,
+       "ordered": "2018-09-25",
+       "goods_received": "2018-09-26",
+       "invoiced": "2018-12-14",
+       "paid": "2018-12-17",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-09-25",
+       "goods_received": "2018-09-26",
+       "invoiced": "2018-12-14",
+       "paid": "2018-12-17",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508053268",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2478.0,
+       "ordered": "2018-09-03",
+       "goods_received": "2018-09-03",
+       "invoiced": "2018-12-14",
+       "paid": "2018-12-17",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-09-03",
+       "goods_received": "2018-09-03",
+       "invoiced": "2018-12-14",
+       "paid": "2018-12-17",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508073374",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1184.0,
+       "ordered": "2018-12-10",
+       "goods_received": "2018-12-10",
+       "invoiced": "2019-01-02",
+       "paid": null,
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1385.0,
+       "ordered": "2018-12-10",
+       "goods_received": "2018-12-10",
+       "invoiced": "2019-01-02",
+       "paid": null,
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-12-10",
+       "goods_received": "2018-12-10",
+       "invoiced": "2019-01-02",
+       "paid": null,
+       "received_before_invoice": true
+      }
+     ]
+    }
+   ],
+   "invoice_first": [
+    {
+     "po": "4507001859",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3091.0,
+       "ordered": "2018-01-09",
+       "goods_received": "2018-01-22",
+       "invoiced": "2018-01-16",
+       "paid": "2018-02-22",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-01-09",
+       "goods_received": "2018-01-22",
+       "invoiced": "2018-01-16",
+       "paid": "2018-02-22",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507020939",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2727.0,
+       "ordered": "2018-04-05",
+       "goods_received": null,
+       "invoiced": "2018-04-17",
+       "paid": "2018-05-24",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-04-05",
+       "goods_received": null,
+       "invoiced": "2018-04-17",
+       "paid": "2018-05-24",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508042334",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1385.0,
+       "ordered": "2018-07-10",
+       "goods_received": null,
+       "invoiced": "2018-07-12",
+       "paid": "2018-07-26",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-07-10",
+       "goods_received": null,
+       "invoiced": "2018-07-12",
+       "paid": "2018-07-26",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508042335",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1732.0,
+       "ordered": "2018-07-10",
+       "goods_received": "2018-07-11",
+       "invoiced": "2018-07-12",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-07-10",
+       "goods_received": null,
+       "invoiced": "2018-07-12",
+       "paid": "2018-07-26",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508044175",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3091.0,
+       "ordered": "2018-07-19",
+       "goods_received": "2018-08-01",
+       "invoiced": "2018-07-27",
+       "paid": "2018-08-30",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-07-19",
+       "goods_received": "2018-08-01",
+       "invoiced": "2018-07-27",
+       "paid": "2018-08-30",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508044178",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3091.0,
+       "ordered": "2018-07-19",
+       "goods_received": null,
+       "invoiced": "2018-07-27",
+       "paid": "2018-08-30",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-07-19",
+       "goods_received": null,
+       "invoiced": "2018-07-27",
+       "paid": "2018-08-30",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508042339",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3091.0,
+       "ordered": "2018-07-10",
+       "goods_received": "2018-07-11",
+       "invoiced": "2018-07-27",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-07-10",
+       "goods_received": null,
+       "invoiced": "2018-07-27",
+       "paid": "2018-08-30",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508042337",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2727.0,
+       "ordered": "2018-07-10",
+       "goods_received": "2018-07-11",
+       "invoiced": "2018-07-31",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-07-10",
+       "goods_received": null,
+       "invoiced": "2018-07-31",
+       "paid": "2018-08-30",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508044183",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2061.0,
+       "ordered": "2018-07-19",
+       "goods_received": null,
+       "invoiced": "2018-07-31",
+       "paid": "2018-08-30",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-07-19",
+       "goods_received": null,
+       "invoiced": "2018-07-31",
+       "paid": "2018-08-30",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508044180",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3091.0,
+       "ordered": "2018-07-19",
+       "goods_received": null,
+       "invoiced": "2018-07-31",
+       "paid": "2018-08-30",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-07-19",
+       "goods_received": null,
+       "invoiced": "2018-07-31",
+       "paid": "2018-08-30",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508051508",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2208.0,
+       "ordered": "2018-08-27",
+       "goods_received": null,
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-08-27",
+       "goods_received": null,
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508051516",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1948.0,
+       "ordered": "2018-08-27",
+       "goods_received": null,
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-08-27",
+       "goods_received": null,
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508051518",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2727.0,
+       "ordered": "2018-08-27",
+       "goods_received": null,
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-08-27",
+       "goods_received": null,
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508051998",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2061.0,
+       "ordered": "2018-08-29",
+       "goods_received": null,
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-08-29",
+       "goods_received": null,
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508051517",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 3117.0,
+       "ordered": "2018-08-27",
+       "goods_received": null,
+       "invoiced": "2018-09-06",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-08-27",
+       "goods_received": null,
+       "invoiced": "2018-09-06",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508064088",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2065.0,
+       "ordered": "2018-10-25",
+       "goods_received": null,
+       "invoiced": "2018-11-12",
+       "paid": "2018-11-29",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 744.0,
+       "ordered": "2018-10-25",
+       "goods_received": null,
+       "invoiced": "2018-11-12",
+       "paid": "2018-11-29",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-10-25",
+       "goods_received": null,
+       "invoiced": "2018-11-12",
+       "paid": "2018-11-29",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508064093",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2712.0,
+       "ordered": "2018-10-25",
+       "goods_received": null,
+       "invoiced": "2018-11-12",
+       "paid": "2018-11-29",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-10-25",
+       "goods_received": null,
+       "invoiced": "2018-11-12",
+       "paid": "2018-11-29",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508060646",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 826.0,
+       "ordered": "2018-10-09",
+       "goods_received": null,
+       "invoiced": "2018-11-12",
+       "paid": "2018-11-29",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1558.0,
+       "ordered": "2018-10-09",
+       "goods_received": null,
+       "invoiced": "2018-11-12",
+       "paid": "2018-11-29",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-10-09",
+       "goods_received": null,
+       "invoiced": "2018-11-12",
+       "paid": "2018-11-29",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508069339",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2272.0,
+       "ordered": "2018-11-20",
+       "goods_received": null,
+       "invoiced": "2018-11-22",
+       "paid": "2019-01-04",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-11-20",
+       "goods_received": null,
+       "invoiced": "2018-11-22",
+       "paid": "2019-01-04",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508071074",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1652.0,
+       "ordered": "2018-11-28",
+       "goods_received": null,
+       "invoiced": "2018-11-29",
+       "paid": "2019-01-04",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 770.0,
+       "ordered": "2018-11-28",
+       "goods_received": null,
+       "invoiced": "2018-11-29",
+       "paid": "2019-01-04",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508068462",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1385.0,
+       "ordered": "2018-11-15",
+       "goods_received": null,
+       "invoiced": "2018-12-04",
+       "paid": "2019-01-04",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-11-15",
+       "goods_received": null,
+       "invoiced": "2018-12-04",
+       "paid": "2019-01-04",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508075392",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 936.0,
+       "ordered": "2018-12-19",
+       "goods_received": null,
+       "invoiced": "2018-12-27",
+       "paid": null,
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 181.0,
+       "ordered": "2018-12-19",
+       "goods_received": null,
+       "invoiced": "2018-12-27",
+       "paid": null,
+       "received_before_invoice": false
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 129.0,
+       "ordered": "2018-12-19",
+       "goods_received": null,
+       "invoiced": "2018-12-27",
+       "paid": null,
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508072522",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1652.0,
+       "ordered": "2018-12-05",
+       "goods_received": null,
+       "invoiced": "2019-01-04",
+       "paid": null,
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 450.0,
+       "ordered": "2018-12-05",
+       "goods_received": null,
+       "invoiced": "2019-01-04",
+       "paid": null,
+       "received_before_invoice": false
+      }
+     ]
+    }
+   ]
+  },
+  "b": {
+   "vendor": "vendorID_0011",
+   "spend_area": "MRO (components)",
+   "goods_first": [
+    {
+     "po": "2000000031",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 22.0,
+       "ordered": "2018-01-15",
+       "goods_received": "2018-01-22",
+       "invoiced": "2018-01-23",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000000012",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 320.0,
+       "ordered": "2018-01-10",
+       "goods_received": "2018-02-26",
+       "invoiced": "2018-03-05",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000000194",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 267.0,
+       "ordered": "2018-02-23",
+       "goods_received": "2018-03-28",
+       "invoiced": "2018-04-03",
+       "paid": "2018-04-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000000184",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 320.0,
+       "ordered": "2018-02-20",
+       "goods_received": "2018-02-21",
+       "invoiced": "2018-05-10",
+       "paid": "2018-05-24",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000000133",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 320.0,
+       "ordered": "2018-02-06",
+       "goods_received": "2018-02-12",
+       "invoiced": "2018-05-14",
+       "paid": "2018-05-24",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000013505",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 320.0,
+       "ordered": "2018-03-29",
+       "goods_received": "2018-06-01",
+       "invoiced": "2018-06-18",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000013444",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 320.0,
+       "ordered": "2018-03-15",
+       "goods_received": "2018-03-16",
+       "invoiced": "2018-06-18",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000013500",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 320.0,
+       "ordered": "2018-03-29",
+       "goods_received": "2018-03-30",
+       "invoiced": "2018-07-17",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000013640",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 267.0,
+       "ordered": "2018-05-16",
+       "goods_received": "2018-05-22",
+       "invoiced": "2018-07-17",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000013645",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 133.0,
+       "ordered": "2018-05-17",
+       "goods_received": "2018-05-23",
+       "invoiced": "2018-07-17",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00002",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 107.0,
+       "ordered": "2018-05-17",
+       "goods_received": "2018-05-23",
+       "invoiced": "2018-07-17",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000013624",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 320.0,
+       "ordered": "2018-05-06",
+       "goods_received": "2018-05-22",
+       "invoiced": "2018-08-07",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000013584",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 320.0,
+       "ordered": "2018-04-24",
+       "goods_received": "2018-04-30",
+       "invoiced": "2018-08-07",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000033497",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 107.0,
+       "ordered": "2018-06-22",
+       "goods_received": "2018-07-04",
+       "invoiced": "2018-08-13",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00002",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 267.0,
+       "ordered": "2018-06-22",
+       "goods_received": "2018-07-04",
+       "invoiced": "2018-08-13",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00003",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 53.0,
+       "ordered": "2018-06-22",
+       "goods_received": "2018-07-04",
+       "invoiced": "2018-08-13",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000033542",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 81.0,
+       "ordered": "2018-07-10",
+       "goods_received": "2018-08-17",
+       "invoiced": "2018-09-11",
+       "paid": "2018-09-28",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000033590",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 7.0,
+       "ordered": "2018-08-04",
+       "goods_received": "2018-08-08",
+       "invoiced": "2018-10-04",
+       "paid": "2018-10-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00002",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 535.0,
+       "ordered": "2018-08-04",
+       "goods_received": "2018-08-08",
+       "invoiced": "2018-10-04",
+       "paid": "2018-10-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000052701",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 32.0,
+       "ordered": "2018-09-12",
+       "goods_received": "2018-09-18",
+       "invoiced": "2018-10-16",
+       "paid": "2018-11-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000052730",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 80.0,
+       "ordered": "2018-09-26",
+       "goods_received": "2018-09-28",
+       "invoiced": "2018-10-23",
+       "paid": "2018-11-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00002",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 160.0,
+       "ordered": "2018-09-26",
+       "goods_received": "2018-10-02",
+       "invoiced": "2018-10-23",
+       "paid": "2018-11-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00003",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 80.0,
+       "ordered": "2018-09-26",
+       "goods_received": "2018-10-02",
+       "invoiced": "2018-10-23",
+       "paid": "2018-11-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000052775",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 166.0,
+       "ordered": "2018-10-15",
+       "goods_received": "2018-10-22",
+       "invoiced": "2018-12-17",
+       "paid": "2019-01-04",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00002",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 166.0,
+       "ordered": "2018-10-15",
+       "goods_received": "2018-10-22",
+       "invoiced": "2018-12-17",
+       "paid": "2019-01-04",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00003",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 166.0,
+       "ordered": "2018-10-15",
+       "goods_received": "2018-10-22",
+       "invoiced": "2018-12-17",
+       "paid": "2019-01-04",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000052734",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 320.0,
+       "ordered": "2018-09-27",
+       "goods_received": "2018-12-18",
+       "invoiced": "2018-12-19",
+       "paid": "2019-01-03",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000052885",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 133.0,
+       "ordered": "2018-11-21",
+       "goods_received": "2018-11-28",
+       "invoiced": "2019-01-09",
+       "paid": null,
+       "received_before_invoice": true
+      },
+      {
+       "item": "00002",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 133.0,
+       "ordered": "2018-11-21",
+       "goods_received": "2018-11-28",
+       "invoiced": "2019-01-09",
+       "paid": null,
+       "received_before_invoice": true
+      },
+      {
+       "item": "00003",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 107.0,
+       "ordered": "2018-11-21",
+       "goods_received": "2018-11-27",
+       "invoiced": "2019-01-09",
+       "paid": null,
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "2000052838",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 116.0,
+       "ordered": "2018-11-06",
+       "goods_received": "2018-11-22",
+       "invoiced": "2019-01-10",
+       "paid": null,
+       "received_before_invoice": true
+      }
+     ]
+    }
+   ],
+   "invoice_first": [
+    {
+     "po": "2000033523",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 320.0,
+       "ordered": "2018-07-03",
+       "goods_received": "2018-09-25",
+       "invoiced": "2018-09-11",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "2000033621",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 320.0,
+       "ordered": "2018-08-23",
+       "goods_received": "2019-01-11",
+       "invoiced": "2019-01-09",
+       "paid": null,
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "2000052836",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00001",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 320.0,
+       "ordered": "2018-11-05",
+       "goods_received": "2019-01-14",
+       "invoiced": "2019-01-09",
+       "paid": null,
+       "received_before_invoice": false
+      }
+     ]
+    }
+   ]
+  },
+  "c": {
+   "vendor": "vendorID_0122",
+   "spend_area": "Laboratory Supplies & Services",
+   "goods_first": [
+    {
+     "po": "4507012694",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 728.0,
+       "ordered": "2018-02-27",
+       "goods_received": "2018-03-06",
+       "invoiced": "2018-03-06",
+       "paid": "2018-03-22",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507013811",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 17.0,
+       "ordered": "2018-03-02",
+       "goods_received": "2018-03-06",
+       "invoiced": "2018-03-07",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507015021",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 91.0,
+       "ordered": "2018-03-08",
+       "goods_received": "2018-03-14",
+       "invoiced": "2018-03-22",
+       "paid": "2018-04-19",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507017971",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00040",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 3442.0,
+       "ordered": "2018-03-21",
+       "goods_received": "2018-03-27",
+       "invoiced": "2018-03-29",
+       "paid": "2018-04-12",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507017709",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 18.0,
+       "ordered": "2018-03-20",
+       "goods_received": "2018-03-27",
+       "invoiced": "2018-03-29",
+       "paid": "2018-04-12",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507017389",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 604.0,
+       "ordered": "2018-03-19",
+       "goods_received": "2018-03-27",
+       "invoiced": "2018-03-29",
+       "paid": "2018-04-12",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Trading products (old structure)",
+       "value_eur": 58.0,
+       "ordered": "2018-03-19",
+       "goods_received": "2018-03-27",
+       "invoiced": "2018-03-29",
+       "paid": "2018-04-12",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507017409",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 145.0,
+       "ordered": "2018-03-19",
+       "goods_received": "2018-03-27",
+       "invoiced": "2018-03-29",
+       "paid": "2018-04-12",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 96.0,
+       "ordered": "2018-03-19",
+       "goods_received": "2018-03-27",
+       "invoiced": "2018-03-29",
+       "paid": "2018-04-12",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 295.0,
+       "ordered": "2018-03-19",
+       "goods_received": "2018-03-27",
+       "invoiced": "2018-03-29",
+       "paid": "2018-04-12",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507018468",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 48.0,
+       "ordered": "2018-03-23",
+       "goods_received": "2018-03-26",
+       "invoiced": "2018-03-30",
+       "paid": "2018-04-19",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 386.0,
+       "ordered": "2018-03-23",
+       "goods_received": "2018-03-26",
+       "invoiced": "2018-03-30",
+       "paid": "2018-04-19",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 931.0,
+       "ordered": "2018-03-23",
+       "goods_received": "2018-03-26",
+       "invoiced": "2018-03-30",
+       "paid": "2018-04-19",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507018462",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 2061.0,
+       "ordered": "2018-03-23",
+       "goods_received": "2018-03-27",
+       "invoiced": "2018-03-30",
+       "paid": "2018-04-19",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507017925",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 2333.0,
+       "ordered": "2018-03-21",
+       "goods_received": "2018-04-06",
+       "invoiced": "2018-04-09",
+       "paid": "2018-04-19",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 3089.0,
+       "ordered": "2018-03-21",
+       "goods_received": "2018-04-06",
+       "invoiced": "2018-04-09",
+       "paid": "2018-04-19",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507021231",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 2754.0,
+       "ordered": "2018-04-06",
+       "goods_received": "2018-04-10",
+       "invoiced": "2018-04-10",
+       "paid": "2018-05-03",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507024409",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 822.0,
+       "ordered": "2018-04-20",
+       "goods_received": "2018-04-24",
+       "invoiced": "2018-04-24",
+       "paid": "2018-05-17",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 987.0,
+       "ordered": "2018-04-20",
+       "goods_received": "2018-04-24",
+       "invoiced": "2018-04-24",
+       "paid": "2018-05-17",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 151.0,
+       "ordered": "2018-04-20",
+       "goods_received": "2018-04-24",
+       "invoiced": "2018-04-24",
+       "paid": "2018-05-17",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507024475",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1032.0,
+       "ordered": "2018-04-20",
+       "goods_received": "2018-04-24",
+       "invoiced": "2018-04-24",
+       "paid": "2018-05-17",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507024009",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00130",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1304.0,
+       "ordered": "2018-04-18",
+       "goods_received": "2018-04-24",
+       "invoiced": "2018-04-27",
+       "paid": "2018-05-09",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507025899",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Trading products (old structure)",
+       "value_eur": 1320.0,
+       "ordered": "2018-04-26",
+       "goods_received": "2018-05-01",
+       "invoiced": "2018-05-01",
+       "paid": "2018-05-24",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507027359",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 162.0,
+       "ordered": "2018-05-04",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-15",
+       "paid": "2018-05-31",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507027136",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 137.0,
+       "ordered": "2018-05-03",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-15",
+       "paid": "2018-05-31",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507027595",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 43.0,
+       "ordered": "2018-05-07",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-15",
+       "paid": "2018-05-31",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507031718",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 154.0,
+       "ordered": "2018-05-25",
+       "goods_received": "2018-05-29",
+       "invoiced": "2018-05-30",
+       "paid": "2018-06-21",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507032750",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 34.0,
+       "ordered": "2018-05-30",
+       "goods_received": "2018-06-05",
+       "invoiced": "2018-06-05",
+       "paid": "2018-06-21",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 36.0,
+       "ordered": "2018-05-30",
+       "goods_received": "2018-06-05",
+       "invoiced": "2018-06-05",
+       "paid": "2018-06-21",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 36.0,
+       "ordered": "2018-05-30",
+       "goods_received": "2018-06-05",
+       "invoiced": "2018-06-05",
+       "paid": "2018-06-21",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507033119",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 631.0,
+       "ordered": "2018-06-01",
+       "goods_received": "2018-06-04",
+       "invoiced": "2018-06-06",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 473.0,
+       "ordered": "2018-06-01",
+       "goods_received": "2018-06-04",
+       "invoiced": "2018-06-06",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507035284",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 17.0,
+       "ordered": "2018-06-08",
+       "goods_received": "2018-06-12",
+       "invoiced": "2018-06-15",
+       "paid": "2018-07-05",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507036935",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 208.0,
+       "ordered": "2018-06-15",
+       "goods_received": "2018-06-19",
+       "invoiced": "2018-06-19",
+       "paid": "2018-07-12",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507037443",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 576.0,
+       "ordered": "2018-06-19",
+       "goods_received": "2018-06-26",
+       "invoiced": "2018-06-28",
+       "paid": "2018-07-12",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507040181",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 486.0,
+       "ordered": "2018-06-29",
+       "goods_received": "2018-07-03",
+       "invoiced": "2018-07-03",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508043012",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 23533.0,
+       "ordered": "2018-07-13",
+       "goods_received": "2018-07-16",
+       "invoiced": "2018-07-23",
+       "paid": "2018-08-09",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 2166.0,
+       "ordered": "2018-07-13",
+       "goods_received": "2018-07-16",
+       "invoiced": "2018-07-23",
+       "paid": "2018-08-09",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508044576",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Trading products (old structure)",
+       "value_eur": 56.0,
+       "ordered": "2018-07-20",
+       "goods_received": "2018-07-24",
+       "invoiced": "2018-07-25",
+       "paid": "2018-08-16",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508047077",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 3133.0,
+       "ordered": "2018-08-03",
+       "goods_received": "2018-08-07",
+       "invoiced": "2018-08-07",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 197.0,
+       "ordered": "2018-08-03",
+       "goods_received": "2018-08-07",
+       "invoiced": "2018-08-07",
+       "paid": "2018-08-30",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508049725",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 221.0,
+       "ordered": "2018-08-17",
+       "goods_received": "2018-08-21",
+       "invoiced": "2018-08-21",
+       "paid": "2018-09-13",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508050487",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 234.0,
+       "ordered": "2018-08-22",
+       "goods_received": "2018-08-23",
+       "invoiced": "2018-08-24",
+       "paid": "2018-09-13",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 12396.0,
+       "ordered": "2018-08-22",
+       "goods_received": "2018-08-23",
+       "invoiced": "2018-08-24",
+       "paid": "2018-09-13",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508050739",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1017.0,
+       "ordered": "2018-08-23",
+       "goods_received": "2018-08-24",
+       "invoiced": "2018-08-28",
+       "paid": "2018-09-13",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 6200.0,
+       "ordered": "2018-08-23",
+       "goods_received": "2018-08-24",
+       "invoiced": "2018-08-28",
+       "paid": "2018-09-13",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508050831",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 117.0,
+       "ordered": "2018-08-23",
+       "goods_received": "2018-08-28",
+       "invoiced": "2018-08-29",
+       "paid": "2018-09-13",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 48.0,
+       "ordered": "2018-08-23",
+       "goods_received": "2018-08-28",
+       "invoiced": "2018-08-29",
+       "paid": "2018-09-13",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508052461",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 3741.0,
+       "ordered": "2018-08-31",
+       "goods_received": "2018-09-04",
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-20",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508054106",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 8515.0,
+       "ordered": "2018-09-06",
+       "goods_received": "2018-09-10",
+       "invoiced": "2018-09-10",
+       "paid": "2018-09-28",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 5320.0,
+       "ordered": "2018-09-06",
+       "goods_received": "2018-09-10",
+       "invoiced": "2018-09-10",
+       "paid": "2018-09-28",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 6792.0,
+       "ordered": "2018-09-06",
+       "goods_received": "2018-09-10",
+       "invoiced": "2018-09-10",
+       "paid": "2018-09-28",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508056529",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 326.0,
+       "ordered": "2018-09-19",
+       "goods_received": "2018-09-25",
+       "invoiced": "2018-09-25",
+       "paid": "2018-10-11",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508057057",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 54.0,
+       "ordered": "2018-09-21",
+       "goods_received": "2018-09-25",
+       "invoiced": "2018-09-26",
+       "paid": "2018-10-18",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508059767",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 265.0,
+       "ordered": "2018-10-05",
+       "goods_received": "2018-10-09",
+       "invoiced": "2018-10-10",
+       "paid": "2018-11-01",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1263.0,
+       "ordered": "2018-10-05",
+       "goods_received": "2018-10-09",
+       "invoiced": "2018-10-10",
+       "paid": "2018-11-01",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508059748",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 50.0,
+       "ordered": "2018-10-05",
+       "goods_received": "2018-10-09",
+       "invoiced": "2018-10-10",
+       "paid": "2018-11-01",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508060415",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 109.0,
+       "ordered": "2018-10-09",
+       "goods_received": "2018-10-11",
+       "invoiced": "2018-10-12",
+       "paid": "2018-11-01",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1109.0,
+       "ordered": "2018-10-09",
+       "goods_received": "2018-10-11",
+       "invoiced": "2018-10-12",
+       "paid": "2018-11-01",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1109.0,
+       "ordered": "2018-10-09",
+       "goods_received": "2018-10-11",
+       "invoiced": "2018-10-12",
+       "paid": "2018-11-01",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508044450",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Trading products (old structure)",
+       "value_eur": 352.0,
+       "ordered": "2018-07-20",
+       "goods_received": "2018-07-24",
+       "invoiced": "2018-10-15",
+       "paid": "2018-10-18",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Trading products (old structure)",
+       "value_eur": 440.0,
+       "ordered": "2018-07-20",
+       "goods_received": "2018-07-24",
+       "invoiced": "2018-10-15",
+       "paid": "2018-10-18",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508065224",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 295.0,
+       "ordered": "2018-10-31",
+       "goods_received": "2018-11-06",
+       "invoiced": "2018-11-07",
+       "paid": "2018-11-22",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508067324",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 149.0,
+       "ordered": "2018-11-09",
+       "goods_received": "2018-11-13",
+       "invoiced": "2018-11-14",
+       "paid": "2018-12-07",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508067162",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 6173.0,
+       "ordered": "2018-11-09",
+       "goods_received": "2018-11-12",
+       "invoiced": "2018-11-14",
+       "paid": "2018-12-07",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1054.0,
+       "ordered": "2018-11-09",
+       "goods_received": "2018-11-12",
+       "invoiced": "2018-11-14",
+       "paid": "2018-12-07",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508069837",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 96.0,
+       "ordered": "2018-11-22",
+       "goods_received": "2018-11-27",
+       "invoiced": "2018-11-27",
+       "paid": "2018-12-07",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508071354",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 64.0,
+       "ordered": "2018-11-29",
+       "goods_received": "2018-12-04",
+       "invoiced": "2018-12-04",
+       "paid": "2018-12-07",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 109.0,
+       "ordered": "2018-11-29",
+       "goods_received": "2018-12-04",
+       "invoiced": "2018-12-04",
+       "paid": "2018-12-07",
+       "received_before_invoice": true
+      }
+     ]
+    }
+   ],
+   "invoice_first": [
+    {
+     "po": "4507020993",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Trading products (old structure)",
+       "value_eur": 234.0,
+       "ordered": "2018-04-05",
+       "goods_received": "2018-04-10",
+       "invoiced": "2018-04-09",
+       "paid": "2018-04-26",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507021699",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 324.0,
+       "ordered": "2018-04-10",
+       "goods_received": "2018-04-17",
+       "invoiced": "2018-04-12",
+       "paid": "2018-05-09",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507022385",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 370.0,
+       "ordered": "2018-04-11",
+       "goods_received": "2018-04-17",
+       "invoiced": "2018-04-13",
+       "paid": "2018-05-09",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1102.0,
+       "ordered": "2018-04-11",
+       "goods_received": "2018-04-17",
+       "invoiced": "2018-04-13",
+       "paid": "2018-05-09",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507023942",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00100",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 99.0,
+       "ordered": "2018-04-18",
+       "goods_received": "2018-04-24",
+       "invoiced": "2018-04-19",
+       "paid": "2018-05-09",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507023928",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00130",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 173.0,
+       "ordered": "2018-04-18",
+       "goods_received": "2018-04-24",
+       "invoiced": "2018-04-19",
+       "paid": "2018-05-09",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00140",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 194.0,
+       "ordered": "2018-04-18",
+       "goods_received": "2018-04-24",
+       "invoiced": "2018-04-19",
+       "paid": "2018-05-09",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507024266",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 143.0,
+       "ordered": "2018-04-19",
+       "goods_received": "2018-04-24",
+       "invoiced": "2018-04-23",
+       "paid": "2018-05-09",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 386.0,
+       "ordered": "2018-04-19",
+       "goods_received": "2018-04-24",
+       "invoiced": "2018-04-23",
+       "paid": "2018-05-09",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 295.0,
+       "ordered": "2018-04-19",
+       "goods_received": "2018-04-24",
+       "invoiced": "2018-04-23",
+       "paid": "2018-05-09",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507024264",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00040",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 193.0,
+       "ordered": "2018-04-19",
+       "goods_received": "2018-04-24",
+       "invoiced": "2018-04-23",
+       "paid": "2018-05-09",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507025291",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 2468.0,
+       "ordered": "2018-04-25",
+       "goods_received": "2018-05-01",
+       "invoiced": "2018-04-27",
+       "paid": "2018-11-01",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507025290",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 99.0,
+       "ordered": "2018-04-25",
+       "goods_received": "2018-05-01",
+       "invoiced": "2018-04-27",
+       "paid": "2018-05-17",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507025468",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 386.0,
+       "ordered": "2018-04-25",
+       "goods_received": "2018-05-01",
+       "invoiced": "2018-04-27",
+       "paid": "2018-05-17",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507024806",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 193.0,
+       "ordered": "2018-04-23",
+       "goods_received": "2018-05-01",
+       "invoiced": "2018-04-27",
+       "paid": "2018-05-17",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 386.0,
+       "ordered": "2018-04-23",
+       "goods_received": "2018-05-01",
+       "invoiced": "2018-04-27",
+       "paid": "2018-05-17",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507026188",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 70.0,
+       "ordered": "2018-04-30",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-02",
+       "paid": "2018-05-24",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507026368",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 100.0,
+       "ordered": "2018-04-30",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-02",
+       "paid": "2018-05-24",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507026504",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 274.0,
+       "ordered": "2018-05-01",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-03",
+       "paid": "2018-05-24",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 86.0,
+       "ordered": "2018-05-01",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-07",
+       "paid": "2018-05-24",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507026562",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 129.0,
+       "ordered": "2018-05-01",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-03",
+       "paid": "2018-05-24",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507026742",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 452.0,
+       "ordered": "2018-05-02",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-07",
+       "paid": "2018-05-24",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 260.0,
+       "ordered": "2018-05-02",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-07",
+       "paid": "2018-05-24",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507026976",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00090",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 180.0,
+       "ordered": "2018-05-03",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-07",
+       "paid": "2018-05-24",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00100",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 145.0,
+       "ordered": "2018-05-03",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-07",
+       "paid": "2018-05-24",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00110",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 24.0,
+       "ordered": "2018-05-03",
+       "goods_received": "2018-05-14",
+       "invoiced": "2018-05-07",
+       "paid": "2018-05-24",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507029961",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 386.0,
+       "ordered": "2018-05-17",
+       "goods_received": "2018-05-24",
+       "invoiced": "2018-05-22",
+       "paid": "2018-06-07",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507029180",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 648.0,
+       "ordered": "2018-05-15",
+       "goods_received": "2018-05-24",
+       "invoiced": "2018-05-22",
+       "paid": "2018-06-07",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507029959",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 71.0,
+       "ordered": "2018-05-17",
+       "goods_received": "2018-05-24",
+       "invoiced": "2018-05-22",
+       "paid": "2018-06-07",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507029445",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 156.0,
+       "ordered": "2018-05-16",
+       "goods_received": "2018-05-24",
+       "invoiced": "2018-05-22",
+       "paid": "2018-06-07",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507032316",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 42.0,
+       "ordered": "2018-05-29",
+       "goods_received": "2018-06-05",
+       "invoiced": "2018-05-31",
+       "paid": "2018-06-21",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 32.0,
+       "ordered": "2018-05-29",
+       "goods_received": "2018-06-05",
+       "invoiced": "2018-05-31",
+       "paid": "2018-06-21",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507037379",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1057.0,
+       "ordered": "2018-06-18",
+       "goods_received": "2018-06-26",
+       "invoiced": "2018-06-20",
+       "paid": "2018-07-12",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507041394",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 284.0,
+       "ordered": "2018-07-05",
+       "goods_received": "2018-07-24",
+       "invoiced": "2018-07-10",
+       "paid": "2018-07-26",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507041438",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 551.0,
+       "ordered": "2018-07-05",
+       "goods_received": "2018-07-24",
+       "invoiced": "2018-07-16",
+       "paid": "2018-07-26",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508042507",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 148.0,
+       "ordered": "2018-07-11",
+       "goods_received": "2018-07-24",
+       "invoiced": "2018-07-17",
+       "paid": "2018-08-02",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508043599",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 435.0,
+       "ordered": "2018-07-17",
+       "goods_received": "2018-07-24",
+       "invoiced": "2018-07-23",
+       "paid": "2018-08-09",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508043956",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00060",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Trading products (old structure)",
+       "value_eur": 176.0,
+       "ordered": "2018-07-18",
+       "goods_received": "2018-07-24",
+       "invoiced": "2018-07-23",
+       "paid": "2018-08-09",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508044096",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 433.0,
+       "ordered": "2018-07-19",
+       "goods_received": "2018-07-24",
+       "invoiced": "2018-07-24",
+       "paid": "2018-08-16",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 299.0,
+       "ordered": "2018-07-19",
+       "goods_received": "2018-07-24",
+       "invoiced": "2018-07-23",
+       "paid": "2018-08-09",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508048755",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 176.0,
+       "ordered": "2018-08-13",
+       "goods_received": "2018-08-21",
+       "invoiced": "2018-08-15",
+       "paid": "2018-09-06",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508052561",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 443.0,
+       "ordered": "2018-08-31",
+       "goods_received": "2018-09-06",
+       "invoiced": "2018-09-05",
+       "paid": "2018-09-20",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508055128",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00080",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 152.0,
+       "ordered": "2018-09-12",
+       "goods_received": "2018-09-18",
+       "invoiced": "2018-09-14",
+       "paid": "2018-10-04",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00090",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1.0,
+       "ordered": "2018-09-12",
+       "goods_received": "2018-09-18",
+       "invoiced": "2018-09-14",
+       "paid": "2018-10-04",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00100",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 18.0,
+       "ordered": "2018-09-12",
+       "goods_received": "2018-09-18",
+       "invoiced": "2018-09-14",
+       "paid": "2018-10-04",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508061659",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00050",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 90.0,
+       "ordered": "2018-10-15",
+       "goods_received": "2018-10-23",
+       "invoiced": "2018-10-18",
+       "paid": "2018-11-08",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00060",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 36.0,
+       "ordered": "2018-10-15",
+       "goods_received": "2018-10-23",
+       "invoiced": "2018-10-18",
+       "paid": "2018-11-08",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508062141",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00070",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 406.0,
+       "ordered": "2018-10-17",
+       "goods_received": "2018-10-23",
+       "invoiced": "2018-10-22",
+       "paid": "2018-11-08",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508062003",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1233.0,
+       "ordered": "2018-10-16",
+       "goods_received": "2018-10-23",
+       "invoiced": "2018-10-22",
+       "paid": "2018-11-08",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508063304",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 193.0,
+       "ordered": "2018-10-23",
+       "goods_received": "2018-10-30",
+       "invoiced": "2018-10-26",
+       "paid": "2018-11-15",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 295.0,
+       "ordered": "2018-10-23",
+       "goods_received": "2018-10-30",
+       "invoiced": "2018-10-26",
+       "paid": "2018-11-15",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508067893",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1277.0,
+       "ordered": "2018-11-13",
+       "goods_received": "2018-11-20",
+       "invoiced": "2018-11-16",
+       "paid": "2018-12-07",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508071996",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00040",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 653.0,
+       "ordered": "2018-12-03",
+       "goods_received": "2019-01-02",
+       "invoiced": "2018-12-06",
+       "paid": "2019-01-10",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508071998",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00040",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1945.0,
+       "ordered": "2018-12-03",
+       "goods_received": "2019-01-02",
+       "invoiced": "2018-12-06",
+       "paid": "2019-01-10",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00050",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 136.0,
+       "ordered": "2018-12-03",
+       "goods_received": "2019-01-02",
+       "invoiced": "2018-12-06",
+       "paid": "2019-01-10",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508075626",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "Laboratory Supplies & Services",
+       "value_eur": 1584.0,
+       "ordered": "2018-12-20",
+       "goods_received": "2019-01-02",
+       "invoiced": "2018-12-27",
+       "paid": "2019-01-17",
+       "received_before_invoice": false
+      }
+     ]
+    }
+   ]
+  },
+  "d": {
+   "vendor": "vendorID_0666",
+   "spend_area": "MRO (components)",
+   "goods_first": [
+    {
+     "po": "4507003987",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2853.0,
+       "ordered": "2018-01-19",
+       "goods_received": "2018-01-29",
+       "invoiced": "2018-01-30",
+       "paid": "2018-02-15",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 302.0,
+       "ordered": "2018-01-19",
+       "goods_received": "2018-01-29",
+       "invoiced": "2018-01-30",
+       "paid": "2018-02-15",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507004613",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 134.0,
+       "ordered": "2018-01-23",
+       "goods_received": "2018-02-06",
+       "invoiced": "2018-02-14",
+       "paid": "2018-03-01",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 823.0,
+       "ordered": "2018-01-23",
+       "goods_received": "2018-02-06",
+       "invoiced": "2018-02-14",
+       "paid": "2018-03-01",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1426.0,
+       "ordered": "2018-01-23",
+       "goods_received": "2018-02-06",
+       "invoiced": "2018-02-14",
+       "paid": "2018-03-01",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507010635",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2853.0,
+       "ordered": "2018-02-19",
+       "goods_received": "2018-02-23",
+       "invoiced": "2018-03-07",
+       "paid": "2018-03-15",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507012833",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1219.0,
+       "ordered": "2018-02-28",
+       "goods_received": "2018-03-07",
+       "invoiced": "2018-03-09",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 203.0,
+       "ordered": "2018-02-28",
+       "goods_received": "2018-03-07",
+       "invoiced": "2018-03-09",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 104.0,
+       "ordered": "2018-02-28",
+       "goods_received": "2018-03-07",
+       "invoiced": "2018-03-09",
+       "paid": "2018-03-29",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507017503",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1631.0,
+       "ordered": "2018-03-20",
+       "goods_received": "2018-03-27",
+       "invoiced": "2018-03-29",
+       "paid": "2018-04-12",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 20.0,
+       "ordered": "2018-03-20",
+       "goods_received": "2018-03-27",
+       "invoiced": "2018-03-29",
+       "paid": "2018-04-12",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1185.0,
+       "ordered": "2018-03-20",
+       "goods_received": "2018-03-27",
+       "invoiced": "2018-03-29",
+       "paid": "2018-04-12",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507015816",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 135.0,
+       "ordered": "2018-03-13",
+       "goods_received": "2018-03-20",
+       "invoiced": "2018-04-03",
+       "paid": "2018-04-12",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1517.0,
+       "ordered": "2018-03-13",
+       "goods_received": "2018-03-20",
+       "invoiced": "2018-04-03",
+       "paid": "2018-04-12",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507027728",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 363.0,
+       "ordered": "2018-05-08",
+       "goods_received": "2018-05-16",
+       "invoiced": "2018-05-21",
+       "paid": "2018-06-07",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 167.0,
+       "ordered": "2018-05-08",
+       "goods_received": "2018-05-18",
+       "invoiced": "2018-05-22",
+       "paid": "2018-06-07",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 196.0,
+       "ordered": "2018-05-08",
+       "goods_received": "2018-05-16",
+       "invoiced": "2018-05-21",
+       "paid": "2018-06-07",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507031830",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 4279.0,
+       "ordered": "2018-05-28",
+       "goods_received": "2018-06-08",
+       "invoiced": "2018-06-12",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 999.0,
+       "ordered": "2018-05-28",
+       "goods_received": "2018-06-08",
+       "invoiced": "2018-06-12",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507033650",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2242.0,
+       "ordered": "2018-06-04",
+       "goods_received": "2018-06-11",
+       "invoiced": "2018-06-13",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 157.0,
+       "ordered": "2018-06-04",
+       "goods_received": "2018-06-11",
+       "invoiced": "2018-06-13",
+       "paid": "2018-06-28",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507035457",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2853.0,
+       "ordered": "2018-06-11",
+       "goods_received": "2018-06-15",
+       "invoiced": "2018-06-18",
+       "paid": "2018-07-05",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 487.0,
+       "ordered": "2018-06-11",
+       "goods_received": "2018-06-15",
+       "invoiced": "2018-06-18",
+       "paid": "2018-07-05",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507037125",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2038.0,
+       "ordered": "2018-06-18",
+       "goods_received": "2018-06-26",
+       "invoiced": "2018-07-03",
+       "paid": "2018-07-19",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 363.0,
+       "ordered": "2018-06-18",
+       "goods_received": "2018-06-26",
+       "invoiced": "2018-07-03",
+       "paid": "2018-07-19",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2853.0,
+       "ordered": "2018-06-18",
+       "goods_received": "2018-06-26",
+       "invoiced": "2018-07-03",
+       "paid": "2018-07-19",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507040273",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 569.0,
+       "ordered": "2018-07-02",
+       "goods_received": "2018-07-09",
+       "invoiced": "2018-07-10",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1835.0,
+       "ordered": "2018-07-02",
+       "goods_received": "2018-07-09",
+       "invoiced": "2018-07-10",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508045090",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2853.0,
+       "ordered": "2018-07-25",
+       "goods_received": "2018-08-02",
+       "invoiced": "2018-08-03",
+       "paid": "2018-08-23",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 137.0,
+       "ordered": "2018-07-25",
+       "goods_received": "2018-08-02",
+       "invoiced": "2018-08-03",
+       "paid": "2018-08-23",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508048148",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1835.0,
+       "ordered": "2018-08-09",
+       "goods_received": "2018-08-14",
+       "invoiced": "2018-08-15",
+       "paid": "2018-09-06",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 303.0,
+       "ordered": "2018-08-09",
+       "goods_received": "2018-08-14",
+       "invoiced": "2018-08-15",
+       "paid": "2018-09-06",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508055794",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1211.0,
+       "ordered": "2018-09-17",
+       "goods_received": "2018-09-24",
+       "invoiced": "2018-09-25",
+       "paid": "2018-10-11",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2100.0,
+       "ordered": "2018-09-17",
+       "goods_received": "2018-09-24",
+       "invoiced": "2018-09-25",
+       "paid": "2018-10-11",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508061475",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 138.0,
+       "ordered": "2018-10-15",
+       "goods_received": "2018-10-23",
+       "invoiced": "2018-10-24",
+       "paid": "2018-11-15",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 908.0,
+       "ordered": "2018-10-15",
+       "goods_received": "2018-10-23",
+       "invoiced": "2018-10-24",
+       "paid": "2018-11-15",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 4474.0,
+       "ordered": "2018-10-15",
+       "goods_received": "2018-10-23",
+       "invoiced": "2018-10-24",
+       "paid": "2018-11-15",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508071835",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 207.0,
+       "ordered": "2018-12-03",
+       "goods_received": "2018-12-12",
+       "invoiced": "2018-12-13",
+       "paid": "2019-01-10",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1491.0,
+       "ordered": "2018-12-03",
+       "goods_received": "2018-12-12",
+       "invoiced": "2018-12-13",
+       "paid": "2019-01-10",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 75.0,
+       "ordered": "2018-12-03",
+       "goods_received": "2018-12-12",
+       "invoiced": "2018-12-13",
+       "paid": "2019-01-10",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508074861",
+     "group": "goods_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 634.0,
+       "ordered": "2018-12-18",
+       "goods_received": "2018-12-20",
+       "invoiced": "2018-12-21",
+       "paid": "2019-01-10",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2983.0,
+       "ordered": "2018-12-18",
+       "goods_received": "2018-12-20",
+       "invoiced": "2018-12-21",
+       "paid": "2019-01-10",
+       "received_before_invoice": true
+      }
+     ]
+    }
+   ],
+   "invoice_first": [
+    {
+     "po": "4507001902",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1427.0,
+       "ordered": "2018-01-10",
+       "goods_received": "2018-01-23",
+       "invoiced": "2018-01-23",
+       "paid": "2018-02-15",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 73.0,
+       "ordered": "2018-01-10",
+       "goods_received": "2018-01-23",
+       "invoiced": "2018-01-23",
+       "paid": "2018-02-15",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507015509",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2853.0,
+       "ordered": "2018-03-12",
+       "goods_received": "2018-03-16",
+       "invoiced": "2018-03-16",
+       "paid": "2018-04-05",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 157.0,
+       "ordered": "2018-03-12",
+       "goods_received": "2018-03-16",
+       "invoiced": "2018-03-16",
+       "paid": "2018-04-05",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4507030450",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 948.0,
+       "ordered": "2018-05-22",
+       "goods_received": "2018-06-15",
+       "invoiced": "2018-05-29",
+       "paid": "2018-06-21",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 224.0,
+       "ordered": "2018-05-22",
+       "goods_received": "2018-05-29",
+       "invoiced": "2018-05-29",
+       "paid": "2018-06-21",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 485.0,
+       "ordered": "2018-05-22",
+       "goods_received": "2018-05-29",
+       "invoiced": "2018-05-29",
+       "paid": "2018-06-21",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4507038691",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 711.0,
+       "ordered": "2018-06-25",
+       "goods_received": "2018-07-06",
+       "invoiced": "2018-07-06",
+       "paid": "2018-07-26",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 764.0,
+       "ordered": "2018-06-25",
+       "goods_received": "2018-07-18",
+       "invoiced": "2018-07-23",
+       "paid": "2018-08-09",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 157.0,
+       "ordered": "2018-06-25",
+       "goods_received": "2018-07-10",
+       "invoiced": "2018-07-06",
+       "paid": "2018-07-26",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508044606",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 882.0,
+       "ordered": "2018-07-23",
+       "goods_received": "2018-07-30",
+       "invoiced": "2018-07-30",
+       "paid": "2018-08-16",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1835.0,
+       "ordered": "2018-07-23",
+       "goods_received": "2018-07-30",
+       "invoiced": "2018-07-30",
+       "paid": "2018-08-16",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 303.0,
+       "ordered": "2018-07-23",
+       "goods_received": "2018-07-30",
+       "invoiced": "2018-07-30",
+       "paid": "2018-08-16",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508049770",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 73.0,
+       "ordered": "2018-08-20",
+       "goods_received": "2018-09-24",
+       "invoiced": "2018-09-24",
+       "paid": "2018-10-11",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1517.0,
+       "ordered": "2018-08-20",
+       "goods_received": "2018-08-29",
+       "invoiced": "2018-08-30",
+       "paid": "2018-09-20",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508051620",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 101.0,
+       "ordered": "2018-08-28",
+       "goods_received": "2018-09-07",
+       "invoiced": "2018-09-06",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 485.0,
+       "ordered": "2018-08-28",
+       "goods_received": "2018-09-07",
+       "invoiced": "2018-09-06",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1631.0,
+       "ordered": "2018-08-28",
+       "goods_received": "2018-09-07",
+       "invoiced": "2018-09-06",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508051240",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 823.0,
+       "ordered": "2018-08-27",
+       "goods_received": "2018-09-07",
+       "invoiced": "2018-09-06",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 4279.0,
+       "ordered": "2018-08-27",
+       "goods_received": "2018-09-07",
+       "invoiced": "2018-09-06",
+       "paid": "2018-09-28",
+       "received_before_invoice": false
+      }
+     ]
+    },
+    {
+     "po": "4508052995",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 758.0,
+       "ordered": "2018-09-03",
+       "goods_received": "2018-09-11",
+       "invoiced": "2018-09-12",
+       "paid": "2018-10-04",
+       "received_before_invoice": true
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 894.0,
+       "ordered": "2018-09-03",
+       "goods_received": "2018-09-25",
+       "invoiced": "2018-09-25",
+       "paid": "2018-10-18",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 103.0,
+       "ordered": "2018-09-03",
+       "goods_received": "2018-09-11",
+       "invoiced": "2018-09-12",
+       "paid": "2018-10-04",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508057185",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 1890.0,
+       "ordered": "2018-09-24",
+       "goods_received": "2018-10-12",
+       "invoiced": "2018-10-12",
+       "paid": "2018-11-01",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 75.0,
+       "ordered": "2018-09-24",
+       "goods_received": "2018-10-04",
+       "invoiced": "2018-10-08",
+       "paid": "2018-10-26",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508064491",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 848.0,
+       "ordered": "2018-10-29",
+       "goods_received": "2018-11-07",
+       "invoiced": "2018-11-07",
+       "paid": "2018-11-29",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 761.0,
+       "ordered": "2018-10-29",
+       "goods_received": "2018-10-31",
+       "invoiced": "2018-11-01",
+       "paid": "2018-11-22",
+       "received_before_invoice": true
+      }
+     ]
+    },
+    {
+     "po": "4508068909",
+     "group": "invoice_first",
+     "lines": [
+      {
+       "item": "00010",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 787.0,
+       "ordered": "2018-11-19",
+       "goods_received": "2018-11-28",
+       "invoiced": "2018-11-28",
+       "paid": "2018-12-07",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00020",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 424.0,
+       "ordered": "2018-11-19",
+       "goods_received": "2018-11-28",
+       "invoiced": "2018-11-28",
+       "paid": "2018-12-07",
+       "received_before_invoice": false
+      },
+      {
+       "item": "00030",
+       "category": "3-way match, invoice before GR",
+       "spend_area": "MRO (components)",
+       "value_eur": 2983.0,
+       "ordered": "2018-11-19",
+       "goods_received": "2018-11-28",
+       "invoiced": "2018-11-28",
+       "paid": "2018-12-07",
+       "received_before_invoice": false
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

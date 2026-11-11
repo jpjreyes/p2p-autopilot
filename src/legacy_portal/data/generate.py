@@ -1,5 +1,12 @@
 """Deterministic test data: the client's order system, the suppliers' invoices, and the right answer for each.
 
+Since the merge with Process Copilot (D17), every supplier is the face of one real SAP vendor from the BPI 2019 log, and its
+invoices are built from that vendor's real purchase orders (PO numbers, line items, line amounts in EUR, order, goods
+receipt and invoice dates: `data/bpi/portal_sample.json`, from legacy_portal.process.portal_sample). Synthetic on top:
+supplier names and portals, invoice numbers, the quantity x unit-price split of each line amount, and the planted
+problems the real data doesn't contain (price above PO, duplicates, unknown POs, credit notes). "Billed for more than
+received" is real wherever the vendor invoiced before the goods arrived.
+
 Two sides of the same business, kept separate on purpose:
   - order system (the client's): purchase orders and goods receipts. The agent will compare against these.
   - supplier portals (three suppliers'): invoices and credit notes. The agent has to go and get these.
@@ -22,8 +29,8 @@ from pathlib import Path
 
 CENT = Decimal("0.01")
 SEED = 20261108
-START, END = date(2026, 8, 3), date(2026, 10, 30)
 OUT_DIR = Path(__file__).resolve().parents[3] / "data" / "generated"
+SAMPLE = Path(__file__).resolve().parents[3] / "data" / "bpi" / "portal_sample.json"
 
 
 def money(x) -> Decimal:
@@ -37,27 +44,15 @@ class Supplier:
     portal: str  # "a", "b", "c"
     held_out: bool
     invoice_prefix: str
-    catalog: tuple[tuple[str, str, str], ...]  # (sku, description, unit price)
+    vendor: str  # the real SAP vendor (BPI 2019) whose purchase orders this supplier bills
 
 
 SUPPLIERS = (
-    Supplier("SUP-ACME", "Acme Fasteners Inc.", "a", False, "INV-",
-             (("HB-M8-40", "Hex bolt M8 x 40, zinc", "0.40"), ("HN-M8", "Hex nut M8, zinc", "0.08"),
-              ("FW-M8", "Flat washer M8", "0.05"), ("SS-M6-20", "Socket screw M6 x 20, stainless", "0.62"),
-              ("AN-M10", "Anchor bolt M10 x 100", "1.85"), ("TR-M12-1M", "Threaded rod M12, 1 m", "4.20"))),
-    Supplier("SUP-VALVEX", "Valvex Industrial GmbH", "b", False, "VX/2026/",
-             (("BV-050", "Ball valve DN50, PN16", "48.90"), ("GV-080", "Gate valve DN80, cast iron", "132.00"),
-              ("CV-025", "Check valve DN25, brass", "21.75"), ("GK-050", "Flange gasket DN50, EPDM", "2.30"),
-              ("PG-100", "Pressure gauge 0-10 bar", "17.40"))),
-    Supplier("SUP-SAFEG", "SafeGuard Supply Co.", "c", False, "SG-26-",
-             (("HH-W", "Hard hat, white, ANSI Z89.1", "12.50"), ("GL-NIT-L", "Nitrile gloves L, box of 100", "9.80"),
-              ("SG-CLR", "Safety glasses, clear", "3.15"), ("HV-VEST-XL", "Hi-vis vest XL, class 2", "7.60"),
-              ("EP-200", "Ear plugs, box of 200", "18.90"))),
+    Supplier("SUP-ACME", "Acme Fasteners Inc.", "a", False, "INV-", "vendorID_0660"),
+    Supplier("SUP-VALVEX", "Valvex Industrial GmbH", "b", False, "VX/2026/", "vendorID_0011"),
+    Supplier("SUP-SAFEG", "SafeGuard Supply Co.", "c", False, "SG-26-", "vendorID_0122"),
     # Portal D: the fresh held-out (D10). Nobody runs the agent on it before the final eval.
-    Supplier("SUP-KEYST", "Keystone Electrical Supply", "d", True, "KES/26/",
-             (("CB-20A", "Circuit breaker 20A, 1-pole", "11.40"), ("WR-12-250", "THHN wire 12 AWG, 250 ft", "42.75"),
-              ("JB-4SQ", "Junction box 4in square", "3.85"), ("LT-LED-4", "LED troffer 2x4, 40W", "68.00"),
-              ("CN-WN-100", "Wire nuts, bag of 100", "6.20"))),
+    Supplier("SUP-KEYST", "Keystone Electrical Supply", "d", True, "KES/26/", "vendorID_0666"),
 )
 
 # Planted issues per supplier (the rest are clean matches). Order matters for reproducibility.
@@ -131,19 +126,37 @@ class Truth:
     fields: dict = field(default_factory=dict)
 
 
-def _rand_date(rng: random.Random, lo: date, hi: date) -> date:
-    return lo + timedelta(days=rng.randrange((hi - lo).days + 1))
+def _load_sample() -> dict:
+    return json.loads(SAMPLE.read_text())
+
+
+def _split(rng: random.Random, value: str) -> tuple[int, str]:
+    """The log records a line's amount, not quantity x unit price: split it (D17). Unit price >= 1.00."""
+    v = Decimal(value)
+    qty = rng.choice([q for q in (1, 2, 4, 5, 10, 20, 25, 50, 100) if v / q >= 1] or [1])
+    return qty, str(money(v / qty))
 
 
 def generate(seed: int = SEED) -> dict:
+    """Invoices built from real SAP purchase orders (D17). Per supplier: 20 open documents (13 clean, 7 issues as in
+    PLAN) + 3 already paid. AP processes each invoice on the day it was recorded in SAP, so the order system holds a
+    goods receipt only for lines received BEFORE that day."""
     rng = random.Random(seed)
+    sample = _load_sample()["vendors"]
     pos: list[PurchaseOrder] = []
     grs: list[GoodsReceipt] = []
     docs: list[Document] = []
     truths: list[Truth] = []
-    po_seq, gr_seq = 5500, 8800
 
     for sup in SUPPLIERS:
+        real = sample[sup.portal]
+        goods_first = list(real["goods_first"])
+        invoice_first = list(real["invoice_first"])
+        rng.shuffle(goods_first)
+        rng.shuffle(invoice_first)
+        # the 3 historical paid invoices are real POs SAP shows as paid: reserved before the open ones are drawn
+        paid_pool = [r for r in goods_first if all(ln["paid"] for ln in r["lines"])][:PAID_PER_SUPPLIER]
+        goods_first = [r for r in goods_first if r not in paid_pool]
         plan = PLAN + ["match"] * (INVOICES_PER_SUPPLIER - len(PLAN))
         rng.shuffle(plan)
         # Duplicates and credit notes refer back to an earlier normal invoice, so a plain match goes first.
@@ -157,22 +170,27 @@ def generate(seed: int = SEED) -> dict:
             inv_seq += rng.randint(1, 4)
             return f"{sup.invoice_prefix}{inv_seq:04d}" if sup.portal in "ab" else f"{sup.invoice_prefix}{inv_seq:05d}"
 
-        def new_po(order_day: date, sup: Supplier = sup) -> tuple[PurchaseOrder, GoodsReceipt]:
-            nonlocal po_seq, gr_seq
-            po_seq += rng.randint(1, 7)
-            gr_seq += rng.randint(1, 5)
-            items = rng.sample(sup.catalog, k=rng.randint(1, 3))
-            lines = [Line(sku, desc, rng.choice([10, 20, 25, 50, 100, 200, 500]) if Decimal(p) < 5
-                          else rng.randint(2, 24), p) for sku, desc, p in items]
-            po = PurchaseOrder(f"PO-{po_seq}", sup.id, order_day.isoformat(), lines)
-            gr = GoodsReceipt(f"GR-{gr_seq}", po.po_number, (order_day + timedelta(days=rng.randint(3, 9))).isoformat(),
-                              [{"sku": ln.sku, "qty_received": ln.qty} for ln in lines])
+        def real_po(rec: dict, short: bool = False, sup: Supplier = sup) -> tuple[PurchaseOrder, GoodsReceipt | None]:
+            """PO and goods receipt as SAP had them on the invoice day. `short`: plant a short delivery on one
+            received line (for a vendor that never invoices before delivery)."""
+            lines = []
+            for ln in rec["lines"]:
+                qty, unit = _split(rng, str(ln["value_eur"]))
+                lines.append(Line(f"ITEM-{ln['item']}", f"{ln['spend_area']}, PO item {ln['item']}", qty, unit))
+            po = PurchaseOrder(f"PO-{rec['po']}", sup.id, rec["lines"][0]["ordered"], lines)
+            got = [ln.qty if src["received_before_invoice"] else 0 for ln, src in zip(lines, rec["lines"])]
+            if short:
+                j = rng.randrange(len(lines))
+                got[j] = lines[j].qty - max(1, lines[j].qty // rng.choice([5, 10, 4])) if lines[j].qty > 1 else 0
+            if not any(got):
+                return po, None
+            day = max(src["goods_received"] for src, g in zip(rec["lines"], got) if g and src["goods_received"])
+            gr = GoodsReceipt(f"GR-{rec['po'][-7:]}", po.po_number, day,
+                              [{"sku": ln.sku, "qty_received": g} for ln, g in zip(lines, got) if g])
             return po, gr
 
         for i, kind in enumerate(plan):
             doc_id = f"{sup.portal}-{i + 1:02d}"
-            issue = _rand_date(rng, START, END)
-            due = issue + timedelta(days=30)
 
             if kind == "duplicate":
                 orig = rng.choice(issued)
@@ -183,26 +201,31 @@ def generate(seed: int = SEED) -> dict:
                 truth = Truth(doc_id, sup.portal, sup.id, doc.number, "invoice", True, "duplicate", "0.00",
                               f"Same PO {orig.po_number} and same lines/amount as {orig.number}; pay once only.")
             elif kind == "unknown_po":
-                po_seq += 1
-                ghost = f"PO-{po_seq + 9000}"  # never created in the order system
-                items = rng.sample(sup.catalog, k=1)
+                ghost = f"PO-49{rng.randrange(10**8):08d}"  # SAP POs here start 45...: this one was never created
+                src = rng.choice(goods_first)["lines"][0]
+                qty, unit = _split(rng, str(src["value_eur"]))
+                issue = date.fromisoformat(src["invoiced"]) + timedelta(days=rng.randint(1, 20))
                 doc = Document(doc_id, sup.id, sup.portal, "invoice", next_number(), issue.isoformat(),
-                               due.isoformat(), ghost, "open", [Line(items[0][0], items[0][1], 12, items[0][2])])
+                               (issue + timedelta(days=30)).isoformat(), ghost, "open",
+                               [Line("ITEM-00010", f"{src['spend_area']}, PO item 00010", qty, unit)])
                 truth = Truth(doc_id, sup.portal, sup.id, doc.number, "invoice", True, "unknown_po", None,
                               f"{ghost} does not exist in the order system; a human must find out who ordered this.")
             elif kind == "credit_note":
                 orig = rng.choice(issued)
                 issue = date.fromisoformat(orig.issue_date) + timedelta(days=rng.randint(5, 15))
-                orig_po_number, base = orig.po_number, orig.lines[0]
+                base = orig.lines[0]
                 doc = Document(doc_id, sup.id, sup.portal, "credit_note", next_number(), issue.isoformat(),
-                               issue.isoformat(), orig_po_number, "open",
-                               [Line(base.sku, f"Credit: {base.description} (damaged in transit)", 2, base.unit_price)])
+                               issue.isoformat(), orig.po_number, "open",
+                               [Line(base.sku, f"Credit: {base.description} (damaged in transit)", 1, base.unit_price)])
                 truth = Truth(doc_id, sup.portal, sup.id, doc.number, "credit_note", True, "credit_note", None,
                               "Credit note, not an invoice: nothing to pay; apply against the supplier balance.")
             else:
-                order_day = issue - timedelta(days=rng.randint(10, 25))
-                po, gr = new_po(order_day)
+                real_short = kind == "qty_above_received" and invoice_first
+                rec = invoice_first.pop() if real_short else goods_first.pop()
+                po, gr = real_po(rec, short=kind == "qty_above_received" and not real_short)
+                issue = date.fromisoformat(rec["lines"][0]["invoiced"])
                 inv_lines = [Line(**asdict(ln)) for ln in po.lines]
+                received = {g["sku"]: g["qty_received"] for g in (gr.lines if gr else [])}
                 if kind == "price_above_po":
                     j = rng.randrange(len(inv_lines))
                     bump = Decimal(rng.choice(["1.05", "1.08", "1.12", "1.15"]))
@@ -211,19 +234,20 @@ def generate(seed: int = SEED) -> dict:
                     why = (f"{inv_lines[j].sku} billed at {inv_lines[j].unit_price} vs PO price "
                            f"{po.lines[j].unit_price}; pay at PO price.")
                 elif kind == "qty_above_received":
-                    j = rng.randrange(len(po.lines))
-                    short = max(1, po.lines[j].qty // rng.choice([5, 10, 4]))
-                    gr.lines[j]["qty_received"] = po.lines[j].qty - short
-                    expected = sum((money(Decimal(ln.unit_price) * gl["qty_received"])
-                                    for ln, gl in zip(po.lines, gr.lines)), Decimal(0))
-                    why = (f"{po.lines[j].sku}: billed {po.lines[j].qty}, received {gr.lines[j]['qty_received']} "
-                           f"({gr.gr_number}); pay for received quantity.")
+                    expected = sum((money(Decimal(ln.unit_price) * received.get(ln.sku, 0)) for ln in po.lines),
+                                   Decimal(0))
+                    short = [f"{ln.sku} billed {ln.qty}, received {received.get(ln.sku, 0)}" for ln in po.lines
+                             if received.get(ln.sku, 0) < ln.qty]
+                    why = ("; ".join(short) + ("; invoiced before the goods arrived (real SAP sequence)"
+                                               if real_short else "") + "; pay for received quantity.")
                 else:
                     expected = sum((ln.total for ln in po.lines), Decimal(0))
                     why = "Invoice matches PO prices and received quantities."
-                pos.append(po), grs.append(gr)
+                pos.append(po)
+                if gr:
+                    grs.append(gr)
                 doc = Document(doc_id, sup.id, sup.portal, "invoice", next_number(), issue.isoformat(),
-                               due.isoformat(), po.po_number, "open", inv_lines)
+                               (issue + timedelta(days=30)).isoformat(), po.po_number, "open", inv_lines)
                 truth = Truth(doc_id, sup.portal, sup.id, doc.number, "invoice", True, kind, str(money(expected)), why)
 
             truth.fields = {"number": doc.number, "po_number": doc.po_number, "issue_date": doc.issue_date,
@@ -232,12 +256,14 @@ def generate(seed: int = SEED) -> dict:
             if kind in ("match", "price_above_po", "qty_above_received"):
                 issued.append(doc)
 
-        # Historical paid invoices: shown on the portal, out of scope.
-        for k in range(PAID_PER_SUPPLIER):
+        # Historical paid invoices: shown on the portal, out of scope. Real POs that SAP shows as paid.
+        for k, rec in enumerate(paid_pool):
             doc_id = f"{sup.portal}-p{k + 1}"
-            issue = _rand_date(rng, date(2026, 5, 4), date(2026, 7, 24))
-            po, gr = new_po(issue - timedelta(days=14))
-            pos.append(po), grs.append(gr)
+            po, gr = real_po(rec)
+            pos.append(po)
+            if gr:
+                grs.append(gr)
+            issue = date.fromisoformat(rec["lines"][0]["invoiced"])
             doc = Document(doc_id, sup.id, sup.portal, "invoice", next_number(), issue.isoformat(),
                            (issue + timedelta(days=30)).isoformat(), po.po_number, "paid",
                            [Line(**asdict(ln)) for ln in po.lines])
