@@ -26,6 +26,7 @@ jobs:
       - run: uv run playwright install --with-deps chromium
       - run: uv run ruff check src tests
       - run: uv run python -m legacy_portal.process.warehouse  # real SAP log -> DuckDB (6 s), so the golden keys run
+      - run: uv run python -m legacy_portal.process.predict --worklist  # score open invoices with the committed model
       - run: uv run pytest -q
 
   image:
