@@ -445,3 +445,13 @@ were fixed on the July calibration month. Unit = invoice (lines recorded togethe
 - **Re-run:** the failing condition 3 times: **3/3, 20/20 each, pass^3 = 1.00**; a normal day on A and B: 2/2 (no
   false refusals). Honest limit: the check didn't need to fire in these runs (the agent didn't skip a page again);
   the refusal path itself is covered by unit tests, not yet by a live run.
+- **Full suite again with the check in (2026-11-11, 11:49): 19/20.** The new miss: a credit note in the
+  handwritten-corrections condition (rendered as an image, no text layer) was "not readable". Root cause **in the test
+  data, not the agent**: since D17 the descriptions are longer ("Credit: MRO (components), PO item 00010 (damaged in
+  transit)"), and the PDF renderer cut them by character count, which overflows the column in that font: the
+  description ran into the Qty column ("000101 (dam"), so no item line could be read and the extractor correctly
+  refused to guess (safe: sent to a person, but the wrong verdict). Fix in the renderer: cut text to the column's
+  printed width. Nothing in the agent, its prompts or its checks changed.
+- **Final: one full run on the final code (13:00): 20/20, 0 unsafe in all 20**, every document right in every
+  completed run, CAPTCHA handed to a person on both portals, 6/6 handwritten corrections caught with 0 false alarms.
+  This is the number reported; the 19/20 runs and what they found stay in this log.
