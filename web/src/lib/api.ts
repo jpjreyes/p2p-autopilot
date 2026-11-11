@@ -204,7 +204,9 @@ export type Risk = {
   summary: { open_scored: number; flagged: number; eur_flagged: number };
   items: RiskItem[];
   model: { question: string; test_window: string; test_rows: number; base_rate: number; model: Scores;
-    rule_invoice_before_gr: Scores; vendor_rate: Scores; at_po_creation: Scores } | null;
+    rule_invoice_before_gr: Scores; vendor_rate: Scores; at_po_creation: Scores;
+    business?: { daily_top10_right: number; daily_top20_right: number; invoices_per_day: number;
+      eur_model_strict: number; eur_rule: number; eur_model_wide: number; eur_blocked_total: number } } | null;
 };
 
 export type BriefSection = { title: string; sql: string; columns: string[]; rows: unknown[][] };

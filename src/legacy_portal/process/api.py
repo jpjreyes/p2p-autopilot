@@ -59,7 +59,7 @@ def risk(limit: int = 50):
                          "round(sum(value_eur) FILTER (WHERE flagged)) AS eur_flagged FROM m_block_risk")[0],
         "items": _rows("SELECT case_id, vendor, round(value_eur, 2) AS eur, invoice_recorded::VARCHAR AS "
                        "invoice_recorded, p_block, reasons FROM m_block_risk WHERE flagged "
-                       "ORDER BY value_eur DESC LIMIT ?", [min(max(limit, 1), 500)]),
+                       "ORDER BY p_block DESC, value_eur DESC LIMIT ?", [min(max(limit, 1), 500)]),
         "model": json.loads(card_path.read_text()) if card_path.exists() else None,
     }
 

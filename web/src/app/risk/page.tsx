@@ -26,15 +26,15 @@ export default function RiskPage() {
         <Stat label="Flagged now" value={d.summary.flagged.toLocaleString()} tone="warn"
           note={`of ${d.summary.open_scored.toLocaleString()} open invoices scored`} />
         <Stat label="Value flagged" value={eur(d.summary.eur_flagged)} />
-        {m && <Stat label="Blocks caught at 60% precision" value={pct(m.model["at_precision_0.6"].recall)} tone="ok"
-          note={`the best rule ("a line on the invoice has no goods yet") catches ${pct(m.rule_invoice_before_gr["at_precision_0.6"].recall)}`} />}
-        {m && <Stat label="Ranking quality (avg precision)" value={m.model.avg_precision.toFixed(2)}
-          note={`rule ${m.rule_invoice_before_gr.avg_precision.toFixed(2)} · vendor history ${m.vendor_rate.avg_precision.toFixed(2)} · base rate ${m.base_rate.toFixed(2)}`} />}
+        {m?.business && <Stat label="Daily top 10 that really get blocked" value={pct(m.business.daily_top10_right)} tone="ok"
+          note={`of ~${Math.round(m.business.invoices_per_day)} new invoices a day; top 20: ${pct(m.business.daily_top20_right)}`} />}
+        {m?.business && <Stat label="Blocked money found, vs the best rule" value={`${(m.business.eur_model_strict / m.business.eur_rule).toFixed(1)}×`}
+          note={`${eur(m.business.eur_model_strict, true)} vs ${eur(m.business.eur_rule, true)} at the rule's precision; ${eur(m.business.eur_model_wide, true)} of ${eur(m.business.eur_blocked_total, true)} at a wider setting`} />}
       </div>
 
       <section>
         <h2 className="text-lg font-semibold tracking-tight">Worklist</h2>
-        <p className="mb-4 mt-1 text-sm text-muted">Largest flagged invoices first. Reasons are the three facts that pushed each score up most.</p>
+        <p className="mb-4 mt-1 text-sm text-muted">Highest risk first (ties by value), the way a clerk would work the list. Reasons are the three facts that pushed each score up most.</p>
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

@@ -156,5 +156,14 @@
   "days_po_to_cut",
   "inv_lines"
  ],
- "decision": "D18"
+ "decision": "D18",
+ "business": {
+  "daily_top10_right": 0.92,
+  "daily_top20_right": 0.827,
+  "invoices_per_day": 356.5,
+  "eur_model_strict": 14702651,
+  "eur_rule": 9603625,
+  "eur_model_wide": 30243519,
+  "eur_blocked_total": 45668866
+ }
 }
