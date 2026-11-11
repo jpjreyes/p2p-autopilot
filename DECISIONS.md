@@ -276,3 +276,55 @@ Format: constraint → options → evidence → choice → would change if. Cons
   remove a block); second model on the same features = **slow payment** (beyond the vendor's own p90). "Paid before
   goods receipt" (655 of 183,374 paid 3-way lines, 0.36%) is caught exactly by a rule at payment time, so it's shown
   as rule vs ML rather than modeled; next-activity prediction dropped (weakest business case).
+
+## D17. The portal invoices come from real SAP purchase orders
+- **What:** each mock portal is now the face of one real BPI 2019 vendor (a: vendorID_0660, b: vendorID_0011,
+  c: vendorID_0122, d: vendorID_0666 held out; MRO components and lab supplies, the spend areas closest to the portals'
+  trades). Its invoices bill that vendor's real purchase orders: PO numbers, line items, line amounts in EUR, order,
+  goods-receipt and invoice dates (`data/bpi/portal_sample.json`, extracted by `process.portal_sample`, committed so
+  the generator stays deterministic and the cloud image doesn't need the warehouse).
+- **What's still synthetic, and why:** supplier names and portals; invoice numbers; the split of each line amount into
+  quantity x unit price (the log records amounts, not quantities); and the problems the real data doesn't contain
+  (price above PO, duplicates, unknown POs, credit notes). "Billed for more than received" is **real** wherever the
+  vendor invoiced before the goods arrived: AP processes each invoice on the day SAP recorded it, so the order system
+  has no receipt yet for those lines (the same pattern behind Process Copilot's EUR 1.75M paid before goods receipt).
+- **Small fixes on the way:** amounts shown in EUR on every portal (they are SAP's EUR values); vendor 0282 (process
+  automation) was the first pick for portal b but has no payments at all in the log, so 0011 replaced it.
+- **Check:** 97 tests pass, including the matcher on every invoice given perfect extraction and a test that every
+  billed PO is a real PO of that portal's vendor. The agent's failure suite and pass^3 are re-run on the new invoices
+  (results below when complete).
+
+## D18. Predicting payment blocks (classic ML on the real log)
+- **Question (chosen in D16):** when an invoice is recorded for a PO line, will someone have to remove a payment
+  block within 60 days? SAP sets the block silently at posting; the removal is logged (55,839 lines). A blocked invoice
+  waits a median of ~6 days for a person, so knowing at receipt lets the buyer fix the cause first.
+- **Leak-free design:** features only from events before the decision point; vendor history only from months whose
+  60-day outcomes were complete (lagged 3 months from the decision point's month; a first version lagged from the
+  invoice month, which leaks at the PO checkpoint: found because the model lost to its own feature, fixed); temporal
+  split by invoice date: train < Jul 2018, July = early stopping and isotonic calibration, August = development set,
+  test = Sep 1 - Nov 19 2018 (last day with a complete 60-day outcome). LightGBM, 23 features.
+- **Honesty note:** the test months were looked at twice during the first iteration (two feature sets, no gain from
+  the second) before the August development set was split out; every later choice used August only, and the final
+  scoring ran once.
+
+| Test (Sep - Nov 2018, 45,439 invoiced lines, 24.5% blocked) | avg precision | ROC AUC | blocks caught at 60% precision | at 80% precision |
+|---|---|---|---|---|
+| rule: invoice arrived before any goods receipt | 0.378 | - | 27% | 24% |
+| vendor's past block rate alone | 0.383 | 0.679 | - | - |
+| **model at invoice receipt** | **0.523** | **0.719** | **38%** | **26%** |
+| model at PO creation (earliest warning) | 0.335 | 0.631 | 2% | 0% |
+
+- **Reading it:** at invoice receipt the model ranks clearly better than the rule or the vendor's history (AP 0.52
+  vs 0.38) and catches 38% of blocks at 60% precision vs 27% for the rule; at a strict 80% it's only slightly ahead.
+  **At PO creation it doesn't beat the vendor's history** (AUC 0.63 vs 0.64): there is no usable early signal beyond
+  "this vendor gets blocked often", so the useful warning point is invoice receipt. Top features: invoice before goods
+  receipt, the vendor's recent block share, order size, goods receipts so far, time since the order.
+- **Product:** `predict --worklist` scores every invoice still open at the end of the data (17,553), flags 560
+  (EUR 2.84M) at the threshold that was 80% precise in calibration, and stores the three features that pushed each
+  score up most (tree SHAP values) as plain-language reasons ("invoice arrived before any goods receipt", "this
+  vendor's invoices were often blocked before (41%)"). Table `m_block_risk`, read by the console and the agent's
+  `predict_risk` tool.
+- **Not modeled, on purpose:** paid before goods receipt (655 of 183,374 paid 3-way lines) is caught exactly by a
+  control at payment time ("no goods receipt yet = hold"), so a prediction would only be shown losing to a rule. The
+  second candidate model (slow payment vs the vendor's own p90) is **deferred**: its vendor-specific deadline can only
+  be observed well before the data ends, leaving a ~3-week test window, and it would repeat this model's story.
