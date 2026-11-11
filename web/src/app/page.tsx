@@ -41,13 +41,14 @@ export default function Overview() {
     <div className="space-y-20">
       <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
         <div>
-          <Badge tone="brand">Accounts payable · computer use</Badge>
+          <Badge tone="brand">Accounts payable · see, predict, act</Badge>
           <h1 className="mt-4 text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
-            Supplier invoices, collected and checked from portals with no&nbsp;API.
+            Purchase-to-pay that sees the risk, predicts it, and does the&nbsp;work.
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
-            An agent that works supplier portals the way your AP clerk does, reads every invoice, runs the 3-way match
-            and hands your team only the exceptions. It proposes; people approve.
+            Process mining on the real SAP log shows where money leaks, a model flags the invoices that will be blocked,
+            a weekly brief says what to do, and an agent works supplier portals with no API the way your AP clerk does.
+            It proposes; people approve.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href={featured ? `/runs/${featured}` : "/runs"}
@@ -61,6 +62,24 @@ export default function Overview() {
           </div>
         </div>
         <ExampleQueue />
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        {[
+          { href: "/process", tag: "See", title: "EUR 1.75M paid before any goods receipt",
+            body: "Found by SQL on 251,734 real SAP purchase-order lines, with the match type that should have stopped it." },
+          { href: "/risk", tag: "Predict", title: "Payment blocks, flagged when the invoice arrives",
+            body: "A model trained on the log catches 38% of blocks at 60% precision, vs 27% for the best rule, and says why." },
+          { href: "/brief", tag: "Brief", title: "A weekly page nobody had to ask for",
+            body: "Code computes every number, the model writes the words, and a check rejects numbers no query produced." },
+        ].map((c) => (
+          <Link key={c.href} href={c.href} className="group rounded-xl border border-line bg-surface p-5 shadow-card hover:bg-surface-2">
+            <Badge tone="brand">{c.tag}</Badge>
+            <p className="mt-3 font-semibold tracking-tight">{c.title}</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">{c.body}</p>
+            <span className="mt-3 inline-flex items-center gap-1 text-sm text-brand">Open <ArrowRight className="size-3.5 transition group-hover:translate-x-0.5" /></span>
+          </Link>
+        ))}
       </section>
 
       <section className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
@@ -140,17 +159,17 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
 
 function ExampleQueue() {
   const rows = [
-    { no: "INV-1067", issue: "Price above PO", tone: "bad" as const, billed: "$966.00", pay: "$840.00", why: "TR-M12-1M billed $4.83, PO says $4.20" },
-    { no: "INV-1052", issue: "Billed more than received", tone: "bad" as const, billed: "$307.50", pay: "$299.10", why: "TR-M12-1M billed 25, warehouse received 23" },
-    { no: "INV-1044", issue: "Duplicate invoice", tone: "bad" as const, billed: "$62.00", pay: "$0.00", why: "Same PO, lines and total as INV-1042" },
-    { no: "INV-1042", issue: "Matches", tone: "ok" as const, billed: "$62.00", pay: "$62.00", why: "PO and goods receipt tie out" },
+    { no: "INV-1059", issue: "Price above PO", tone: "bad" as const, billed: "€2,014.75", pay: "€1,904.00", why: "Item 00010 billed €59.83, PO says €55.40" },
+    { no: "INV-1076", issue: "Billed more than received", tone: "bad" as const, billed: "€1,514.00", pay: "€0.00", why: "Invoiced before the goods arrived (real SAP sequence)" },
+    { no: "INV-1085", issue: "Duplicate invoice", tone: "bad" as const, billed: "€3,246.00", pay: "€0.00", why: "Same PO, lines and total as INV-1075" },
+    { no: "INV-1043", issue: "Matches", tone: "ok" as const, billed: "€3,402.00", pay: "€3,402.00", why: "Real SAP PO and goods receipt tie out" },
   ];
   return (
     <Card className="overflow-hidden shadow-pop">
       <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
         <div>
           <p className="text-sm font-medium">Acme Fasteners · this morning’s run</p>
-          <p className="text-xs text-faint">20 invoices collected in 74 s · 7 need a person</p>
+          <p className="text-xs text-faint">20 invoices collected · 7 need a person</p>
         </div>
         <Badge tone="ok" dot>Completed</Badge>
       </div>
@@ -170,7 +189,7 @@ function ExampleQueue() {
         ))}
       </ul>
       <div className="border-t border-line bg-surface-2 px-5 py-3 text-xs text-muted">
-        Example from a real test run on generated data.
+        Real SAP purchase orders and goods receipts (BPI 2019); invoice numbers and planted problems are generated.
       </div>
     </Card>
   );
