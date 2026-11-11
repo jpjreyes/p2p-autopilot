@@ -328,3 +328,18 @@ Format: constraint → options → evidence → choice → would change if. Cons
   control at payment time ("no goods receipt yet = hold"), so a prediction would only be shown losing to a rule. The
   second candidate model (slow payment vs the vendor's own p90) is **deferred**: its vendor-specific deadline can only
   be observed well before the data ends, leaving a ~3-week test window, and it would repeat this model's story.
+
+## D19. The analyst becomes proactive: a weekly risk brief
+- **Why:** Process Copilot waited for questions. An AP lead doesn't want a chat window; they want to be told on Monday what needs
+  attention. "Ask your data" stays possible but is Contract Radar's headline, not this project's.
+- **How:** every week (Cloud Scheduler in production, `--as-of` locally) a fixed set of analyses runs on the real log
+  for the week that ended: activity, payments made before any goods receipt (Process Copilot's rule), invoices open longer than
+  the vendor usually takes, and, for the latest week, the payment-block model's flags with their reasons (D18). **Code
+  computes every number** and keeps the SQL next to each section; the model only writes the page (headline + bullets,
+  each tagged with the section whose query backs it). Process Copilot's grounding check runs on the text: a number no analysis
+  produced triggers one retry naming it, and anything still ungrounded is listed as unverified.
+- **Result (week ending 2019-01-18, the last in the data):** EUR 2.84M on 560 invoices flagged as likely blocked;
+  EUR 1,015,808 on 828 lines open longer than the vendor usually takes (the same number as Process Copilot's headline, computed
+  as of that week); EUR 33,776 on 4 lines paid before any goods receipt; 0 unverified numbers. Tests: the latest brief
+  reproduces Process Copilot's headline exactly, older weeks have no model section, and an invented number is caught and named in
+  the retry.
