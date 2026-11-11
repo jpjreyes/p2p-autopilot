@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import time
 from dataclasses import asdict, dataclass, field
@@ -79,6 +80,30 @@ ONE_ACTION = {
 }
 MAX_BATCH = 5
 MAX_LOOKS_IN_A_ROW = 5
+MAX_DONE_REJECTIONS = 2  # "done" refused this many times for listed-but-missing documents, then a person is told
+
+# Completeness check in code (found on real-PO invoices: the agent skipped page 1, downloaded page 2 and declared all
+# 20 covered). Every table row seen listed as open/unpaid on any page is remembered; "done" is accepted only when each
+# such row's document was downloaded. General: no portal-specific totals, so it works on unseen portals.
+_ROW = re.compile(r'^\s*- row "(?P<text>[^"]+)"', re.MULTILINE)
+_OPEN = re.compile(r"\b(?:open|offen|outstanding|unpaid|due|pending)\b", re.IGNORECASE)
+_PAID = re.compile(r"\b(?:paid|bezahlt|settled|cleared)\b", re.IGNORECASE)
+
+
+def _key(text: str) -> str:
+    return re.sub(r"[^0-9a-z]", "", text.lower())
+
+
+def open_rows(observation: str) -> set[str]:
+    """Table rows the page lists as open (not paid)."""
+    return {m["text"].strip() for m in _ROW.finditer(observation)
+            if _OPEN.search(m["text"]) and not _PAID.search(m["text"])}
+
+
+def missing_downloads(seen_open: set[str], downloads: list[str]) -> list[str]:
+    """Open rows whose document number isn't in any downloaded file name."""
+    keys = [_key(Path(d).stem) for d in downloads]
+    return sorted(r for r in seen_open if not any(k and k in _key(r) for k in keys))
 ACTION_SCHEMA = {
     "type": "object",
     "properties": {
@@ -154,6 +179,8 @@ def _run(portal: str, base_url: str, backend: Backend, model: str, max_steps: in
     history: list[str] = []
     pending_look: tuple[bytes, str] | None = None
     looks_in_a_row = 0  # loop guard: looking again and again without acting means the agent is stuck
+    seen_open: set[str] = set()  # completeness check: rows seen listed as open, on any page
+    done_rejections = 0
     t0 = time.monotonic()
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless)
@@ -169,6 +196,7 @@ def _run(portal: str, base_url: str, backend: Backend, model: str, max_steps: in
 
         for n in range(1, max_steps + 1):
             observation = tools.observe()
+            seen_open |= open_rows(observation)
             prompt = (f"Step {n}/{max_steps}.\n"
                       f"Downloaded so far ({len(tools.downloads)}): {[Path(d).name for d in tools.downloads]}\n"
                       f"Recent actions:\n" + ("\n".join(history[-15:]) or "(none)") +
@@ -187,6 +215,22 @@ def _run(portal: str, base_url: str, backend: Backend, model: str, max_steps: in
                 break
             batch, reason = llm.data["actions"][:max_batch], llm.data.get("reason", "")
             terminal = next((a for a in batch if a["action"] in ("done", "handoff")), None)
+            if terminal and terminal["action"] == "done":
+                missing = missing_downloads(seen_open, tools.downloads)
+                if missing and done_rejections < MAX_DONE_REJECTIONS:
+                    done_rejections += 1
+                    history.append(f"{n} DONE REJECTED by a code check: {len(missing)} row(s) you saw listed as open "
+                                   f"were never downloaded: {[m[:60] for m in missing[:8]]}. Go back to the page that "
+                                   "lists them (earlier pages too) and download them, then finish.")
+                    record(Step(n, {**terminal, "reason": reason}, False,
+                                f"done rejected: {len(missing)} listed open documents not downloaded", "",
+                                llm.input_tokens, llm.output_tokens, llm.latency_s))
+                    print(f"[{portal} {n:02d}] done REJECTED: {len(missing)} listed open documents missing", flush=True)
+                    continue
+                if missing:  # still missing after the retries: never end silently, a person is told (C2)
+                    terminal = {**terminal, "action": "handoff"}
+                    reason = (f"forced: {len(missing)} documents listed as open were not downloaded after "
+                              f"{done_rejections} reminders: {[m[:40] for m in missing[:5]]}")
             if terminal:
                 shot = tools.screenshot(f"{n:03d}-{terminal['action']}")
                 record(Step(n, {**terminal, "reason": reason}, True, terminal["action"], shot,
