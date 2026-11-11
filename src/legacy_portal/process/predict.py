@@ -42,7 +42,7 @@ RUNS = ROOT / "runs"
 MODELS = ROOT / "data" / "models"
 HORIZON_DAYS = 60
 TRAIN_END, CALIB_END, VALID_END, TEST_END = "2018-07-01", "2018-08-01", "2018-09-01", "2018-11-19"
-CATEGORICAL = ["item_category", "item_type", "document_type", "spend_area", "sub_spend_area", "company"]
+CATEGORICAL = ["item_category", "item_type", "document_type", "spend_area", "sub_spend_area", "company", "ir_user"]
 # events whose count before the decision point is a feature
 PRIOR = {"Change Price": "n_change_price", "Change Quantity": "n_change_qty", "Record Goods Receipt": "n_gr",
          "Receive Order Confirmation": "n_order_conf", "Cancel Goods Receipt": "n_cancel_gr",
@@ -64,13 +64,23 @@ REASONS = {  # feature -> how a person reads it (for the worklist's "why")
     "days_since_gr": "time since the goods arrived",
     "vendor_rpb_30d": "this vendor's invoices were blocked in the last 30 days",
     "vendor_ir_30d": "this vendor's recent invoice volume",
-    "vendor_recent_block_ratio": "share of this vendor's recent invoices that were blocked",
+    "vendor_recent_block_ratio": "this vendor's recent block removals per invoice",
+    "inv_lines": "lines on the same invoice",
+    "inv_any_no_gr": "another line on this invoice has no goods receipt yet",
+    "inv_share_no_gr": "share of this invoice's lines without goods receipt",
+    "inv_log_value": "invoice total",
+    "inv_any_price_change": "a line on this invoice had a price change",
+    "inv_any_qty_change": "a line on this invoice had a quantity change",
+    "ir_user": "recorded by", "ir_dow": "weekday recorded", "ir_day": "day of month recorded",
     "item_category": "match type", "item_type": "item type", "document_type": "document type",
     "spend_area": "spend area", "sub_spend_area": "sub spend area", "company": "company",
 }
 
 
-def build_frame(con: duckdb.DuckDBPyConnection, checkpoint: str, until: str = TEST_END) -> dict[str, np.ndarray]:
+def build_frame(con: duckdb.DuckDBPyConnection, checkpoint: str, until: str = TEST_END,
+                target: str = "block") -> dict[str, np.ndarray]:
+    """target: "block" = any payment block removed within 60 days; "human" = removed by a person (not a batch job:
+    29% of removals are SAP releasing the block automatically within a day of the goods arriving, D18)."""
     """One row per PO line that received an invoice; features as of the checkpoint ('po' or 'invoice')."""
     cut = "po_ts" if checkpoint == "po" else "ir_ts"
     prior = ",\n".join(f"count(*) FILTER (WHERE e.activity = '{a}') AS {c}" for a, c in PRIOR.items())
@@ -79,12 +89,15 @@ def build_frame(con: duckdb.DuckDBPyConnection, checkpoint: str, until: str = TE
         WITH f AS (
             SELECT case_id,
                    min(ts) FILTER (WHERE activity = 'Create Purchase Order Item') AS po_ts,
-                   min(ts) FILTER (WHERE activity = 'Record Invoice Receipt')     AS ir_ts
+                   min(ts) FILTER (WHERE activity = 'Record Invoice Receipt')     AS ir_ts,
+                   arg_min(user_id, ts) FILTER (WHERE activity = 'Record Invoice Receipt') AS ir_user
             FROM events WHERE is_canonical AND ts_status IN ('ok', 'repaired') GROUP BY 1)
-        SELECT c.*, f.po_ts, f.ir_ts,
+        SELECT c.*, f.po_ts, f.ir_ts, f.ir_user,
                EXISTS (SELECT 1 FROM events e WHERE e.case_id = c.case_id AND e.is_canonical
                        AND e.activity = 'Remove Payment Block' AND e.ts > f.ir_ts
-                       AND e.ts <= f.ir_ts + INTERVAL {HORIZON_DAYS} DAY)   AS label,
+                       AND e.ts <= f.ir_ts + INTERVAL {HORIZON_DAYS} DAY
+                       {"AND NOT starts_with(coalesce(e.user_id, ''), 'batch')" if target == "human" else ""})
+                                                                             AS label,
                date_trunc('month', f.ir_ts)                                  AS ir_month,
                date_trunc('month', f.{cut})                                  AS cut_month
         FROM cases c JOIN f USING (case_id)
@@ -101,6 +114,19 @@ def build_frame(con: duckdb.DuckDBPyConnection, checkpoint: str, until: str = TE
         GROUP BY 1, 2
     """)
     global_rate = con.execute("SELECT avg(label::INT) FROM lines WHERE ir_ts < ?", [TRAIN_END]).fetchone()[0]
+    # SAP blocks whole invoice documents: lines recorded together (same vendor, same second) share their fate (97.9%
+    # of multi-line invoices agree in training), so each line sees its invoice's other lines, as known on arrival.
+    if checkpoint == "invoice":
+        inv = """count(*) OVER inv AS inv_lines, max(ev.no_gr_yet::INT) OVER inv AS inv_any_no_gr,
+                 avg(ev.no_gr_yet::INT) OVER inv AS inv_share_no_gr,
+                 ln(1 + sum(greatest(l.value_eur, 0)) OVER inv) AS inv_log_value,
+                 max((ev.n_change_price > 0)::INT) OVER inv AS inv_any_price_change,
+                 max((ev.n_change_qty > 0)::INT) OVER inv AS inv_any_qty_change,
+                 coalesce(l.ir_user, 'NA') AS ir_user, dayofweek(l.ir_ts) AS ir_dow, day(l.ir_ts) AS ir_day"""
+    else:  # at PO creation none of this exists yet
+        inv = """NULL::INT AS inv_lines, NULL::INT AS inv_any_no_gr, NULL::DOUBLE AS inv_share_no_gr,
+                 NULL::DOUBLE AS inv_log_value, NULL::INT AS inv_any_price_change, NULL::INT AS inv_any_qty_change,
+                 'NA' AS ir_user, NULL::INT AS ir_dow, NULL::INT AS ir_day"""
     rows = con.execute(f"""
         WITH ev AS (
             SELECT l.case_id, {prior},
@@ -136,6 +162,7 @@ def build_frame(con: duckdb.DuckDBPyConnection, checkpoint: str, until: str = TE
                {", ".join(f"ev.{c}" for c in PRIOR.values())},
                po.po_lines, coalesce(pp.po_blocked_before, 0) AS po_blocked_before,
                ev.value_now / nullif(l.value_eur, 0) AS value_ratio,
+               {inv},
                date_diff('hour', ev.last_gr, l.{cut}) / 24.0 AS days_since_gr,
                coalesce(r.vendor_rpb_30d, 0) AS vendor_rpb_30d, coalesce(r.vendor_ir_30d, 0) AS vendor_ir_30d,
                coalesce(r.vendor_rpb_30d, 0) / (coalesce(r.vendor_ir_30d, 0) + 5.0) AS vendor_recent_block_ratio,
@@ -144,6 +171,7 @@ def build_frame(con: duckdb.DuckDBPyConnection, checkpoint: str, until: str = TE
         FROM lines l JOIN ev USING (case_id) JOIN po ON po.po = l.po
         LEFT JOIN po_prev pp USING (case_id) LEFT JOIN recent r USING (case_id)
         JOIN vendor_hist vh ON vh.vendor = l.vendor AND vh.at_month = l.cut_month
+        WINDOW inv AS (PARTITION BY l.vendor, l.ir_ts)
         ORDER BY l.ir_ts, l.case_id
     """)
     cols = [d[0] for d in rows.description]
@@ -153,7 +181,8 @@ def build_frame(con: duckdb.DuckDBPyConnection, checkpoint: str, until: str = TE
 
 FEATURES_NUM = ["gr_based_inv_verif", "log_value", "days_po_to_cut", "invoice_before_gr", *PRIOR.values(),
                 "po_lines", "po_blocked_before", "vendor_lines", "vendor_block_rate", "value_ratio", "days_since_gr",
-                "vendor_rpb_30d", "vendor_ir_30d", "vendor_recent_block_ratio"]
+                "vendor_rpb_30d", "vendor_ir_30d", "vendor_recent_block_ratio", "inv_lines", "inv_any_no_gr",
+                "inv_share_no_gr", "inv_log_value", "inv_any_price_change", "inv_any_qty_change", "ir_dow", "ir_day"]
 
 
 def matrix(frame: dict, codes: dict[str, dict] | None = None) -> tuple[np.ndarray, list[str], dict]:
@@ -189,10 +218,10 @@ def scores(y: np.ndarray, p: np.ndarray) -> dict:
             "at_precision_0.7": at_precision(y, p, 0.7), "at_precision_0.6": at_precision(y, p, 0.6)}
 
 
-def run(checkpoint: str, final: bool = False, db: Path = DEFAULT_DB) -> dict:
+def run(checkpoint: str, final: bool = False, target: str = "block", db: Path = DEFAULT_DB) -> dict:
     t0 = time.monotonic()
     con = duckdb.connect(str(db), read_only=True)
-    frame = build_frame(con, checkpoint)
+    frame = build_frame(con, checkpoint, target=target)
     when = np.array([str(t)[:10] for t in frame["ir_ts"]])
     split = np.where(when < TRAIN_END, "train", np.where(when < CALIB_END, "valid",
                      np.where(when < VALID_END, "dev", "test")))
@@ -206,7 +235,7 @@ def run(checkpoint: str, final: bool = False, db: Path = DEFAULT_DB) -> dict:
     X_va, _, _ = matrix(take(frame, va), codes)
     X_te, _, _ = matrix(take(frame, te), codes)
     model = lgb.train(
-        {"objective": "binary", "learning_rate": 0.05, "num_leaves": 63, "min_data_in_leaf": 100,
+        {"objective": "binary", "learning_rate": 0.03, "num_leaves": 15, "min_data_in_leaf": 1000, "lambda_l2": 20,
          "feature_fraction": 0.8, "bagging_fraction": 0.8, "bagging_freq": 1, "verbose": -1, "seed": 7},
         lgb.Dataset(X_tr, y[tr], feature_name=names, categorical_feature=CATEGORICAL),
         num_boost_round=2000, valid_sets=[lgb.Dataset(X_va, y[va], reference=None)],
@@ -217,33 +246,42 @@ def run(checkpoint: str, final: bool = False, db: Path = DEFAULT_DB) -> dict:
 
     rule = np.array([1.0 if v == 1 else 0.0 for v in frame["invoice_before_gr"][te]]) if checkpoint == "invoice" \
         else None
+    # the same rule at invoice level (any line on the invoice without a goods receipt), the fairer baseline once the
+    # model sees the invoice's other lines
+    rule_inv = np.array([1.0 if v == 1 else 0.0 for v in frame["inv_any_no_gr"][te]]) if checkpoint == "invoice" \
+        else None
     vendor_only = frame["vendor_block_rate"][te].astype(float)
     report = {
-        "checkpoint": checkpoint, "scored_on": "test" if final else "dev (Aug 2018)", "horizon_days": HORIZON_DAYS,
+        "checkpoint": checkpoint, "target": target, "scored_on": "test" if final else "dev (Aug 2018)", "horizon_days": HORIZON_DAYS,
         "trees": model.best_iteration,
         "rows": {"train": int(tr.sum()), "calibration": int(va.sum()), "scored": int(te.sum())},
         "base_rate_test": round(float(y[te].mean()), 3),
         "model": scores(y[te], p_te),
         "baseline_vendor_rate": scores(y[te], vendor_only),
         "baseline_rule_invoice_before_gr": scores(y[te], rule) if rule is not None else None,
+        "baseline_rule_any_line_before_gr": scores(y[te], rule_inv) if rule_inv is not None else None,
         "seconds": round(time.monotonic() - t0),
     }
     gain = model.feature_importance("gain")
     report["top_features"] = [n for _, n in sorted(zip(-gain, names))][:8]
     MODELS.mkdir(parents=True, exist_ok=True)
-    model.save_model(str(MODELS / f"block-{checkpoint}.txt"), num_iteration=model.best_iteration)
-    (MODELS / f"block-{checkpoint}.json").write_text(json.dumps({
+    tag = f"{target}-{checkpoint}" if target != "block" else checkpoint
+    model.save_model(str(MODELS / f"block-{tag}.txt"), num_iteration=model.best_iteration)
+    (MODELS / f"block-{tag}.json").write_text(json.dumps({
         "codes": codes, "features": names, "iso_x": iso.X_thresholds_.tolist(), "iso_y": iso.y_thresholds_.tolist(),
         "threshold_at_precision_0.8": at_precision(y[va], iso.predict(raw_va))["threshold"]}))
     RUNS.mkdir(exist_ok=True)
-    out = RUNS / f"predict-block-{checkpoint}-{'test' if final else 'dev'}-{datetime.now():%Y%m%d-%H%M%S}.json"
+    out = RUNS / f"predict-{target}-{checkpoint}-{'test' if final else 'dev'}-{datetime.now():%Y%m%d-%H%M%S}.json"
     out.write_text(json.dumps(report, indent=1))
     m, v, r = report["model"], report["baseline_vendor_rate"], report["baseline_rule_invoice_before_gr"]
-    print(f"[{checkpoint}] {'TEST' if final else 'dev'}: model AUC {m['roc_auc']} AP {m['avg_precision']} brier {m['brier']} | "
+    ri = report["baseline_rule_any_line_before_gr"]
+    print(f"[{checkpoint}/{target}] {'TEST' if final else 'dev'}: model AUC {m['roc_auc']} AP {m['avg_precision']} brier {m['brier']} | "
           f"recall at 80% precision {m['at_precision_0.8']['recall']} (flags {m['at_precision_0.8']['flagged_share']:.1%}"
           f" of invoices), at 60% {m['at_precision_0.6']['recall']} | vendor-rate AUC {v['roc_auc']} AP {v['avg_precision']}"
           + (f" | rule AP {r['avg_precision']} recall@0.8 {r['at_precision_0.8']['recall']} @0.6 "
              f"{r['at_precision_0.6']['recall']}" if r else "")
+          + (f" | invoice-rule AP {ri['avg_precision']} @0.8 {ri['at_precision_0.8']['recall']} @0.6 "
+             f"{ri['at_precision_0.6']['recall']}" if ri else "")
           + f" -> {out.name}", flush=True)
     return report
 
@@ -257,8 +295,10 @@ def reason(name: str, value) -> str:
         return "no goods received yet" if missing else f"goods arrived {float(value):.0f} days before the invoice"
     if name == "n_gr":
         return f"{int(value)} goods receipt(s) recorded so far"
-    if name in ("vendor_block_rate", "vendor_recent_block_ratio"):
+    if name == "vendor_block_rate":
         return f"{REASONS[name]} ({float(value):.0%})"
+    if name == "vendor_recent_block_ratio":  # removals / invoices in 30 days: can exceed 1, so not a percentage
+        return f"this vendor had {float(value):.1f} block removals per invoice in the last 30 days"
     if name == "vendor_rpb_30d":
         return f"{int(value)} of this vendor's invoices were unblocked in the last 30 days"
     if name == "days_po_to_cut":
@@ -267,6 +307,23 @@ def reason(name: str, value) -> str:
         return f"invoiced amount is {float(value):.0%} of the order"
     if name == "po_lines":
         return f"order has {int(value)} lines"
+    if name == "inv_any_no_gr":
+        return ("a line on this invoice has no goods receipt yet" if value == 1
+                else "every line on this invoice has its goods receipt")
+    if name == "inv_share_no_gr" and not missing:
+        return f"{float(value):.0%} of this invoice's lines have no goods receipt yet"
+    if name == "inv_lines":
+        return f"invoice has {int(value)} line(s)"
+    if name == "inv_log_value":
+        return f"invoice total EUR {np.expm1(float(value)):,.0f}"
+    if name in ("inv_any_price_change", "inv_any_qty_change"):
+        return REASONS[name] if value == 1 else REASONS[name].replace("had", "had no")
+    if name == "ir_user":
+        return f"recorded by {value}"
+    if name == "ir_dow":
+        return f"recorded on a {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][int(value)]}"
+    if name == "ir_day":
+        return f"recorded on day {int(value)} of the month"
     if name == "log_value":
         return f"line value EUR {np.expm1(float(value)):,.0f}"
     counts = {"n_vendor_invoice": "vendor invoice(s) on this line", "n_change_price": "price change(s) on the order",
@@ -307,8 +364,10 @@ def worklist(db: Path = DEFAULT_DB) -> dict:
     rows = []
     for i in range(len(p)):
         order = [names[j] for j in np.argsort(-contrib[i]) if contrib[i][j] > 0]
-        if "invoice_before_gr" in order[:3] and f["invoice_before_gr"][i] == 1:  # the same fact three ways
-            order = [n for n in order if n not in ("n_gr", "days_since_gr")]
+        if f["invoice_before_gr"][i] == 1 or f["inv_any_no_gr"][i] == 1:  # "no goods yet" said once, not three ways
+            keep = next((n for n in order if n in ("inv_share_no_gr", "inv_any_no_gr", "invoice_before_gr")), None)
+            order = [n for n in order if n not in ("n_gr", "days_since_gr", "inv_share_no_gr", "inv_any_no_gr",
+                                                   "invoice_before_gr") or n == keep]
         top = order[:3]
         rows.append((f["case_id"][i], f["vendor"][i], float(f["value_eur"][i]), str(f["ir_ts"][i])[:10],
                      round(float(p[i]), 3), bool(p[i] >= thr), [reason(n, f[n][i]) for n in top]))
@@ -327,13 +386,14 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--checkpoint", choices=["po", "invoice", "both"], default="both")
     ap.add_argument("--final", action="store_true", help="score the test months (once, at the end)")
+    ap.add_argument("--target", choices=["block", "human"], default="block")
     ap.add_argument("--worklist", action="store_true", help="score the invoices open at the end of the data")
     a = ap.parse_args()
     if a.worklist:
         worklist()
         return
     for cp in (["po", "invoice"] if a.checkpoint == "both" else [a.checkpoint]):
-        run(cp, a.final)
+        run(cp, a.final, a.target)
 
 
 if __name__ == "__main__":

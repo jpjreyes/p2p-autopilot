@@ -20,7 +20,7 @@ anywhere in the agent; a human approves every payment in the review console.
 |---|---|---|
 | **See** | Paid before any goods receipt (3-way match) | **EUR 1,753,787** on 655 lines, found by SQL on the real log |
 | | Open longer than the vendor usually takes | **EUR 1,015,808** on 828 invoices (no due dates exist, so measured against each vendor's own paid invoices) |
-| **Predict** | Payment blocks, flagged when the invoice arrives (test months never used for training) | average precision **0.52** vs 0.38 for the best rule; **38%** of blocks caught at 60% precision vs 27% for the rule. At PO creation: no signal beyond the vendor's history (reported, not hidden) |
+| **Predict** | Payment blocks, flagged when the invoice arrives (test months never used for training) | with 6 of 10 flags right, catches **50%** of blocks vs **31%** for the best rule (1.6x); average precision 0.56 vs 0.41. Found by looking at the data: SAP blocks whole invoices, not lines ([D18b](DECISIONS.md)). Limits reported: no early signal at PO creation; blocks a person must clear are no more predictable than the vendor's history |
 | | Weekly risk brief, written without being asked | every number from SQL; the summary is checked so it can't state a number no query produced: **0 unverified** |
 | **Act** | Reliability (pass^3: the whole job right in 3 of 3 runs) | **1.00** on all three development portals |
 | | Safety (payments proposed that would have been wrong) | **0** across every run, including redesigns, expired sessions, prompt injection, scans and handwriting |
@@ -40,9 +40,10 @@ Development numbers, Claude Haiku. How each number was produced, and what change
 
 - **See:** the log is cleaned once into a DuckDB warehouse (analytics) next to the Postgres the agent writes to
   (operations): an OLAP / OLTP split, and a 78 MB columnar file ships with the app at no cost ([D16](DECISIONS.md)).
-- **Predict:** LightGBM on prefixes of each PO line, with features only from events before the decision point,
-  vendor history only from months whose outcomes were known, a temporal split, isotonic calibration, and the three
-  features that pushed each score up most as plain-language reasons ([D18](DECISIONS.md)).
+- **Predict:** LightGBM on each PO line and the other lines of its invoice (SAP blocks whole invoices: 98% of
+  multi-line invoices share one outcome), with features only from events before the decision point, vendor history
+  only from months whose outcomes were known, a temporal split, isotonic calibration, and the three features that
+  pushed each score up most as plain-language reasons ([D18](DECISIONS.md), [D18b](DECISIONS.md)).
 - **Brief:** every Monday the analyst runs a fixed set of analyses for the week and writes one page; code computes the
   numbers, the model writes the words, and a grounding check rejects any number no query produced ([D19](DECISIONS.md)).
 - **Act:** the portal agent, below.

@@ -22,6 +22,8 @@ def test_reasons_read_like_a_person_would_say_them():
     assert reason("vendor_block_rate", 0.41) == "this vendor's invoices were often blocked before (41%)"
     assert reason("log_value", float(np.log1p(78490))) == "line value EUR 78,490"
     assert reason("sub_spend_area", "NA") == "sub spend area: not recorded"
+    assert reason("inv_share_no_gr", 0.5) == "50% of this invoice's lines have no goods receipt yet"
+    assert "1.9 block removals per invoice" in reason("vendor_recent_block_ratio", 1.91)  # a ratio, not a share
 
 
 @pytest.mark.skipif(not DEFAULT_DB.exists(), reason="warehouse not built")

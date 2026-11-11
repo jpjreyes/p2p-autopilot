@@ -375,3 +375,36 @@ Format: constraint → options → evidence → choice → would change if. Cons
   runs table, so they hold across API instances and job executions (they were a lock and a list in one process).
 - **Not done yet:** a GCP project and billing account, then `scripts/gcp_deploy.sh` (builds the image
   with Cloud Build, applies Terraform, lists the secrets to fill: Anthropic key, Neon URL, portal tokens).
+
+## D18b. Improving the payment-block model, 2026-11-11
+Every idea was compared on the August development month only; the test months were scored once more at the end
+(so they have now been scored for v1 and v2: both are reported, v2 was chosen without them).
+- **Look at what causes a block before adding features.** Three findings in the training months:
+  1. **Blocks are per invoice, not per line.** Lines recorded together (same vendor, same second) share their outcome
+     in 97.9% of multi-line invoices, and 66,769 of 93,445 training lines are on such invoices. A line with its goods
+     received gets blocked because *another* line on the same invoice has none. The model now sees the invoice's other
+     lines (any / share without goods receipt, invoice total, any price or quantity change), all known on arrival.
+     **This was the gain** (dev AP 0.472 -> 0.524; blocks caught at 60% precision 31% -> 40%).
+  2. **29% of blocks are released by SAP itself** (a batch user, 91.5% within a day of the goods arriving, median
+     2.8 days); 71% are cleared by a person (median 6.2 days, only 19% about missing goods). The costly ones are the
+     second kind, so they were tried as the target too: **no better than the vendor's history** (test AP 0.312 vs
+     0.310). Reported as a limit: the model's edge is in blocks caused by goods not yet received, which partly clear
+     themselves; price and quantity disputes are about who the vendor is.
+  3. Who recorded the invoice matters a little (block rate 21-30% by clerk): kept as a feature.
+- **A fairer rule.** Once the model sees the whole invoice, the rule it must beat is the invoice-level one ("any line on
+  this invoice has no goods receipt yet"), stronger than the line rule (test AP 0.412 vs 0.378). That's the baseline
+  reported from now on.
+- **Tried and dropped:** vendor-block recency and vendor-to-recording lag (no gain on dev); averaging scores across an
+  invoice's lines (gains at 60%, loses at 80%: a wash). **Kept:** a more conservative model (15 leaves, 1,000 rows
+  per leaf, L2 20): dev AP 0.524 -> 0.545, blocks caught at 60% precision 40% -> 48%.
+
+| Test (Sep - Nov 2018, 45,439 lines, 23.1% blocked) | avg precision | ROC AUC | caught at 60% precision | at 80% |
+|---|---|---|---|---|
+| rule: a line on the invoice has no goods receipt yet | 0.412 | - | 31% | 29% |
+| model v1 (D18) | 0.523 | 0.719 | 38% | 26% |
+| **model v2 (this)** | **0.562** | **0.746** | **50%** | **34%** |
+| blocks a person must clear: model v2 vs vendor history | 0.312 vs 0.310 | 0.685 vs 0.683 | - | - |
+
+- **In plain words:** with 6 of 10 flags right, the model finds half of next quarter's blocks when the invoice
+  arrives, against 31% for the best rule (1.6x); with 8 of 10 right, 34% vs 29%. Worklist now: 849 open invoices
+  flagged (EUR 6.1M).

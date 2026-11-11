@@ -69,7 +69,7 @@ export default function Overview() {
           { href: "/process", tag: "See", title: "EUR 1.75M paid before any goods receipt",
             body: "Found by SQL on 251,734 real SAP purchase-order lines, with the match type that should have stopped it." },
           { href: "/risk", tag: "Predict", title: "Payment blocks, flagged when the invoice arrives",
-            body: "A model trained on the log catches 38% of blocks at 60% precision, vs 27% for the best rule, and says why." },
+            body: "With 6 of 10 flags right, a model trained on the log catches half of the blocks, vs 31% for the best rule, and says why." },
           { href: "/brief", tag: "Brief", title: "A weekly page nobody had to ask for",
             body: "Code computes every number, the model writes the words, and a check rejects numbers no query produced." },
         ].map((c) => (

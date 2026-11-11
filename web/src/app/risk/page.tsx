@@ -27,7 +27,7 @@ export default function RiskPage() {
           note={`of ${d.summary.open_scored.toLocaleString()} open invoices scored`} />
         <Stat label="Value flagged" value={eur(d.summary.eur_flagged)} />
         {m && <Stat label="Blocks caught at 60% precision" value={pct(m.model["at_precision_0.6"].recall)} tone="ok"
-          note={`a simple rule ("invoice before goods") catches ${pct(m.rule_invoice_before_gr["at_precision_0.6"].recall)}`} />}
+          note={`the best rule ("a line on the invoice has no goods yet") catches ${pct(m.rule_invoice_before_gr["at_precision_0.6"].recall)}`} />}
         {m && <Stat label="Ranking quality (avg precision)" value={m.model.avg_precision.toFixed(2)}
           note={`rule ${m.rule_invoice_before_gr.avg_precision.toFixed(2)} · vendor history ${m.vendor_rate.avg_precision.toFixed(2)} · base rate ${m.base_rate.toFixed(2)}`} />}
       </div>
@@ -85,7 +85,7 @@ export default function RiskPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {([["Rule: invoice arrived before any goods receipt", m.rule_invoice_before_gr],
+                {([["Rule: a line on the invoice has no goods receipt yet", m.rule_invoice_before_gr],
                   ["Model at invoice receipt", m.model],
                   ["Model at PO creation (earliest warning)", m.at_po_creation]] as const).map(([label, s]) => (
                   <tr key={label}>
@@ -100,7 +100,8 @@ export default function RiskPage() {
           </Card>
           <p className="mt-3 text-sm text-muted">
             At PO creation there is no usable signal beyond the vendor&apos;s history: the useful warning point is when
-            the invoice arrives.
+            the invoice arrives. And blocks that a person (not SAP itself) has to clear are no more predictable than
+            the vendor&apos;s history; the model&apos;s edge is in blocks caused by goods not yet received.
           </p>
         </section>
       )}

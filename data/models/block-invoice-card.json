@@ -4,26 +4,46 @@
  "test_rows": 45439,
  "base_rate": 0.231,
  "model": {
-  "roc_auc": 0.719,
-  "avg_precision": 0.523,
-  "brier": 0.145,
+  "roc_auc": 0.746,
+  "avg_precision": 0.562,
+  "brier": 0.1368,
   "at_precision_0.8": {
-   "recall": 0.256,
-   "threshold": 0.495,
-   "flagged_share": 0.074
+   "recall": 0.342,
+   "threshold": 0.65,
+   "flagged_share": 0.099
   },
   "at_precision_0.7": {
-   "recall": 0.29,
-   "threshold": 0.495,
-   "flagged_share": 0.096
+   "recall": 0.399,
+   "threshold": 0.348,
+   "flagged_share": 0.131
   },
   "at_precision_0.6": {
-   "recall": 0.382,
-   "threshold": 0.311,
-   "flagged_share": 0.147
+   "recall": 0.498,
+   "threshold": 0.231,
+   "flagged_share": 0.192
   }
  },
  "rule_invoice_before_gr": {
+  "roc_auc": 0.637,
+  "avg_precision": 0.412,
+  "brier": 0.1753,
+  "at_precision_0.8": {
+   "recall": 0.29,
+   "threshold": 0.0,
+   "flagged_share": 0.084
+  },
+  "at_precision_0.7": {
+   "recall": 0.293,
+   "threshold": 0.0,
+   "flagged_share": 0.096
+  },
+  "at_precision_0.6": {
+   "recall": 0.31,
+   "threshold": 0.0,
+   "flagged_share": 0.119
+  }
+ },
+ "rule_line_before_gr": {
   "roc_auc": 0.609,
   "avg_precision": 0.378,
   "brier": 0.1859,
@@ -64,34 +84,77 @@
   }
  },
  "at_po_creation": {
-  "roc_auc": 0.631,
-  "avg_precision": 0.335,
-  "brier": 0.1715,
+  "roc_auc": 0.633,
+  "avg_precision": 0.334,
+  "brier": 0.1713,
   "at_precision_0.8": {
-   "recall": 0.0,
-   "threshold": null,
-   "flagged_share": 0.0
+   "recall": 0.009,
+   "threshold": 0.562,
+   "flagged_share": 0.003
   },
   "at_precision_0.7": {
-   "recall": 0.002,
-   "threshold": 0.775,
-   "flagged_share": 0.0
+   "recall": 0.01,
+   "threshold": 0.562,
+   "flagged_share": 0.003
   },
   "at_precision_0.6": {
-   "recall": 0.019,
-   "threshold": 0.501,
-   "flagged_share": 0.007
+   "recall": 0.035,
+   "threshold": 0.429,
+   "flagged_share": 0.013
   }
  },
+ "human_cleared": {
+  "model": {
+   "roc_auc": 0.685,
+   "avg_precision": 0.312,
+   "brier": 0.1262,
+   "at_precision_0.8": {
+    "recall": 0.0,
+    "threshold": null,
+    "flagged_share": 0.0
+   },
+   "at_precision_0.7": {
+    "recall": 0.0,
+    "threshold": null,
+    "flagged_share": 0.0
+   },
+   "at_precision_0.6": {
+    "recall": 0.0,
+    "threshold": null,
+    "flagged_share": 0.0
+   }
+  },
+  "vendor_rate": {
+   "roc_auc": 0.683,
+   "avg_precision": 0.31,
+   "brier": 0.127,
+   "at_precision_0.8": {
+    "recall": 0.0,
+    "threshold": null,
+    "flagged_share": 0.0
+   },
+   "at_precision_0.7": {
+    "recall": 0.0,
+    "threshold": null,
+    "flagged_share": 0.0
+   },
+   "at_precision_0.6": {
+    "recall": 0.0,
+    "threshold": null,
+    "flagged_share": 0.0
+   }
+  },
+  "base_rate": 0.161
+ },
  "top_features": [
-  "invoice_before_gr",
-  "vendor_recent_block_ratio",
-  "po_lines",
-  "n_gr",
-  "days_po_to_cut",
-  "days_since_gr",
+  "inv_share_no_gr",
+  "inv_any_no_gr",
   "sub_spend_area",
-  "vendor_ir_30d"
+  "inv_log_value",
+  "days_since_gr",
+  "vendor_recent_block_ratio",
+  "days_po_to_cut",
+  "inv_lines"
  ],
  "decision": "D18"
 }
