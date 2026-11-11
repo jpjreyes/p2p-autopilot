@@ -133,7 +133,7 @@ export type Tone = "ok" | "warn" | "bad" | "neutral" | "brand" | "accent";
 export function money(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === "") return "—";
   const n = typeof value === "number" ? value : Number(value);
-  return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+  return n.toLocaleString("en-US", { style: "currency", currency: "EUR" });  // SAP amounts (D17)
 }
 
 export function hasHandwritingChange(i: ReviewItem): boolean {
@@ -187,4 +187,32 @@ export function moneySummary(items: ReviewItem[]) {
     approved: sum(items.filter((i) => i.status === "approved_for_payment").map((i) => i.payable)),
     caught,
   };
+}
+
+export type ProcessOverview = {
+  data_end: string;
+  totals: { lines: number; eur: number; vendors: number; first_day: string };
+  summary: { metric: string; value: number; eur: number | null; note: string }[];
+  by_match_type: { match_type: string; lines: number; eur: number; paid_before_gr: number; eur_paid_before_gr: number }[];
+  bottlenecks: { from_activity: string; to_activity: string; n_waits: number; median_days: number; p90_days: number;
+    pct_of_all_waiting: number }[];
+};
+
+type Scores = { roc_auc: number; avg_precision: number; "at_precision_0.6": { recall: number }; "at_precision_0.8": { recall: number } };
+export type RiskItem = { case_id: string; vendor: string; eur: number; invoice_recorded: string; p_block: number; reasons: string[] };
+export type Risk = {
+  summary: { open_scored: number; flagged: number; eur_flagged: number };
+  items: RiskItem[];
+  model: { question: string; test_window: string; test_rows: number; base_rate: number; model: Scores;
+    rule_invoice_before_gr: Scores; vendor_rate: Scores; at_po_creation: Scores } | null;
+};
+
+export type BriefSection = { title: string; sql: string; columns: string[]; rows: unknown[][] };
+export type Brief = { week: [string, string]; sections: Record<string, BriefSection>;
+  summary?: { headline: string; bullets: string[] }; unverified_numbers?: string[] };
+
+export function eur(n: number | null | undefined, compact = false): string {
+  if (n === null || n === undefined) return "—";
+  return n.toLocaleString("en-US", { style: "currency", currency: "EUR", maximumFractionDigits: 0,
+    ...(compact ? { notation: "compact" } : {}) });
 }

@@ -29,19 +29,19 @@ def test_grounding_rejects_a_number_no_analysis_produced():
 
 
 @needs_warehouse
-def test_latest_brief_reproduces_the_p2_headline_numbers():
-    b = brief(use_llm=False)
+def test_latest_brief_reproduces_the_p2_headline_numbers(tmp_path):
+    b = brief(use_llm=False, out_dir=tmp_path)
     open_long = dict(zip(b["sections"]["open_long"]["columns"], b["sections"]["open_long"]["rows"][0]))
     assert (open_long["lines"], open_long["eur"]) == (828, 1015808.0)  # Process Copilot's "open longer than usual"
     assert "block_risk" in b["sections"]  # the model's worklist only appears in the latest week
 
 
 @needs_warehouse
-def test_older_weeks_have_no_model_section_and_the_retry_removes_invented_numbers(monkeypatch):
+def test_older_weeks_have_no_model_section_and_the_retry_removes_invented_numbers(monkeypatch, tmp_path):
     from legacy_portal.process import brief as mod
     fake = Fake(["Paid 99,999 before receipt [paid_early]", "Nothing unusual this week [week]"])
     monkeypatch.setattr("legacy_portal.llm.get_backend", lambda: fake)
-    b = mod.brief(date(2018, 10, 1))
+    b = mod.brief(date(2018, 10, 1), out_dir=tmp_path)
     assert "block_risk" not in b["sections"]
     assert len(fake.calls) == 2 and "99,999" in fake.calls[1]  # the retry names the invented number
     assert b["unverified_numbers"] == []

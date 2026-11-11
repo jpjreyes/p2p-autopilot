@@ -1,0 +1,97 @@
+{
+ "question": "Will someone have to remove a payment block on this invoice within 60 days?",
+ "test_window": "invoices recorded 2018-09-01 .. 2018-11-19 (never used for training or tuning)",
+ "test_rows": 45439,
+ "base_rate": 0.231,
+ "model": {
+  "roc_auc": 0.719,
+  "avg_precision": 0.523,
+  "brier": 0.145,
+  "at_precision_0.8": {
+   "recall": 0.256,
+   "threshold": 0.495,
+   "flagged_share": 0.074
+  },
+  "at_precision_0.7": {
+   "recall": 0.29,
+   "threshold": 0.495,
+   "flagged_share": 0.096
+  },
+  "at_precision_0.6": {
+   "recall": 0.382,
+   "threshold": 0.311,
+   "flagged_share": 0.147
+  }
+ },
+ "rule_invoice_before_gr": {
+  "roc_auc": 0.609,
+  "avg_precision": 0.378,
+  "brier": 0.1859,
+  "at_precision_0.8": {
+   "recall": 0.241,
+   "threshold": 0.0,
+   "flagged_share": 0.07
+  },
+  "at_precision_0.7": {
+   "recall": 0.25,
+   "threshold": 0.0,
+   "flagged_share": 0.081
+  },
+  "at_precision_0.6": {
+   "recall": 0.266,
+   "threshold": 0.0,
+   "flagged_share": 0.102
+  }
+ },
+ "vendor_rate": {
+  "roc_auc": 0.679,
+  "avg_precision": 0.383,
+  "brier": 0.1659,
+  "at_precision_0.8": {
+   "recall": 0.0,
+   "threshold": null,
+   "flagged_share": 0.0
+  },
+  "at_precision_0.7": {
+   "recall": 0.0,
+   "threshold": null,
+   "flagged_share": 0.0
+  },
+  "at_precision_0.6": {
+   "recall": 0.0,
+   "threshold": null,
+   "flagged_share": 0.0
+  }
+ },
+ "at_po_creation": {
+  "roc_auc": 0.631,
+  "avg_precision": 0.335,
+  "brier": 0.1715,
+  "at_precision_0.8": {
+   "recall": 0.0,
+   "threshold": null,
+   "flagged_share": 0.0
+  },
+  "at_precision_0.7": {
+   "recall": 0.002,
+   "threshold": 0.775,
+   "flagged_share": 0.0
+  },
+  "at_precision_0.6": {
+   "recall": 0.019,
+   "threshold": 0.501,
+   "flagged_share": 0.007
+  }
+ },
+ "top_features": [
+  "invoice_before_gr",
+  "vendor_recent_block_ratio",
+  "po_lines",
+  "n_gr",
+  "days_po_to_cut",
+  "days_since_gr",
+  "sub_spend_area",
+  "vendor_ir_30d"
+ ],
+ "decision": "D18"
+}

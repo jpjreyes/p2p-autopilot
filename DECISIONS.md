@@ -307,7 +307,7 @@ Format: constraint → options → evidence → choice → would change if. Cons
   the second) before the August development set was split out; every later choice used August only, and the final
   scoring ran once.
 
-| Test (Sep - Nov 2018, 45,439 invoiced lines, 24.5% blocked) | avg precision | ROC AUC | blocks caught at 60% precision | at 80% precision |
+| Test (Sep - Nov 2018, 45,439 invoiced lines, 23.1% blocked) | avg precision | ROC AUC | blocks caught at 60% precision | at 80% precision |
 |---|---|---|---|---|
 | rule: invoice arrived before any goods receipt | 0.378 | - | 27% | 24% |
 | vendor's past block rate alone | 0.383 | 0.679 | - | - |

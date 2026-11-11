@@ -111,7 +111,7 @@ def write_summary(sections: dict, backend, as_of: date) -> tuple[dict, list[str]
     return res.data, bad
 
 
-def brief(as_of: date | None = None, use_llm: bool = True, db: Path = DEFAULT_DB) -> dict:
+def brief(as_of: date | None = None, use_llm: bool = True, db: Path = DEFAULT_DB, out_dir: Path = BRIEFS) -> dict:
     con = duckdb.connect(str(db), read_only=True)
     data_end = con.execute("SELECT data_end FROM m_data_end").fetchone()[0]
     as_of = as_of or data_end + timedelta(days=1)  # the brief for the week that ends with the data
@@ -122,8 +122,8 @@ def brief(as_of: date | None = None, use_llm: bool = True, db: Path = DEFAULT_DB
         from legacy_portal.llm import get_backend
         summary, unverified = write_summary(sections, get_backend(), as_of)
         out.update(summary=summary, unverified_numbers=unverified)
-    BRIEFS.mkdir(parents=True, exist_ok=True)
-    path = BRIEFS / f"brief-{as_of}.json"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / f"brief-{as_of}.json"
     path.write_text(json.dumps(out, indent=1, default=str))
     out["path"] = str(path)
     return out

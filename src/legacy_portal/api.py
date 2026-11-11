@@ -8,6 +8,7 @@
   GET  /api/review/{item_id}         one item with what the agent read and the PO + goods receipt it was matched to
   GET  /api/review/{item_id}/page.png  the invoice's first page, as the reviewer sees it
   POST /api/review/{item_id}         a human decision {decision: approve|reject, note}
+  GET  /api/process/...              the process warehouse: overview, payment-block worklist, weekly brief
 
 Guardrails for a public demo: one run at a time, a per-hour run limit, only the dev portals (never the
 held-out one), and no endpoint that pays anything.
@@ -39,6 +40,7 @@ from legacy_portal.agent import RUNS_DIR, run
 from legacy_portal.llm import get_backend
 from legacy_portal.orders.store import PostgresOrderSystem
 from legacy_portal.pipeline import process
+from legacy_portal.process.api import router as process_router
 from legacy_portal.runstore import RunStore, ensure_schema, jsonable
 
 load_dotenv()
@@ -212,6 +214,9 @@ def decide(item_id: int, body: Decision):
     if not row:
         raise HTTPException(409, "item not found or already decided")
     return row
+
+
+app.include_router(process_router)  # see -> predict: the process warehouse (D16-D19)
 
 
 @app.get("/healthz")

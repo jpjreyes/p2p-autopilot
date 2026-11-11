@@ -8,7 +8,10 @@ import { Logo } from "./ui";
 
 const LINKS = [
   { href: "/", label: "Overview", short: "Home" },
-  { href: "/runs", label: "Runs", short: "Runs" },
+  { href: "/process", label: "Process", short: "See" },
+  { href: "/risk", label: "Risk", short: "Risk" },
+  { href: "/brief", label: "Weekly brief", short: "Brief" },
+  { href: "/runs", label: "Agent runs", short: "Runs" },
   { href: "/review", label: "Review queue", short: "Review" },
   { href: "/evals", label: "Evals", short: "Evals" },
 ];
@@ -21,7 +24,7 @@ export function Nav() {
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
           <Logo />
-          <span className="hidden sm:inline">Portal Agent</span>
+          <span className="hidden sm:inline">P2P Autopilot</span>
         </Link>
         <nav className="flex items-center gap-1 overflow-x-auto text-sm">
           {LINKS.map((l) => (
