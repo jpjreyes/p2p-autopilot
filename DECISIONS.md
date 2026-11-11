@@ -408,3 +408,26 @@ Every idea was compared on the August development month only; the test months we
 - **In plain words:** with 6 of 10 flags right, the model finds half of next quarter's blocks when the invoice
   arrives, against 31% for the best rule (1.6x); with 8 of 10 right, 34% vs 29%. Worklist now: 849 open invoices
   flagged (EUR 6.1M).
+
+## D18c. The model in AP's units, and wired into the review queue (2026-11-11)
+The question: is a flag that's right 6 times in 10 worth anything? Measured the saved v2 model on the test months
+(Sep 1 - Nov 19 2018) in the units AP works in. Facts only: no assumption that a flag prevents the block. Thresholds
+were fixed on the July calibration month. Unit = invoice (lines recorded together); `predict --business`.
+
+| Test months: 18,241 invoices, 4,256 blocked (EUR 45.7M, 85,076 invoice-days of delay) | invoices flagged | right | EUR on blocked flagged lines | invoice-days of delay | share of blocked EUR |
+|---|---|---|---|---|---|
+| rule: a line on the invoice has no goods receipt yet | 1,251 | 89% | 9.6M | 7,032 | 21% |
+| model, strict threshold (80% on calibration) | 1,436 | 87% | 14.7M | 8,668 | 32% |
+| model, wide threshold (60% on calibration) | 2,708 | 61% | **30.2M** | **14,954** | **66%** |
+
+- **The daily list AP would actually work:** ~357 new invoices a day, ~65 of them will be blocked (23%). Ranked by the
+  model, **the top 10 each day are right 92% of the time on average (median 100%), the top 20 83% (median 90%)**
+  over 54 test days. The rule has no ranking: 89% right, but it only ever finds the missing-goods kind.
+- **Reading it:** at the same ~87-89% precision the model finds EUR 14.7M of blocked invoices vs 9.6M for the rule
+  (1.5x); widening to 6-in-10 right covers two thirds of the blocked money. Which threshold is a business choice (cost
+  of a clerk checking a flag vs a block that holds payment for days); both are shown.
+- **Act side:** the agent's portal invoices bill real SAP POs, so every review item now carries the model's score for
+  that PO as evidence ("payment-block risk 0.91 (high) when SAP recorded this PO's invoice: a line on this invoice has
+  no goods receipt yet ..."). Evidence only: tested that verdict, status and payable are identical with and without
+  it. On the portals, every real "invoiced before the goods arrived" case reads high and >= 80% of clean matches read
+  low. Scores for all 211,379 invoiced lines are written by `predict --worklist` (`m_line_block_score`).

@@ -22,6 +22,7 @@ from legacy_portal.extract import Extraction, extract
 from legacy_portal.llm import Backend, get_backend
 from legacy_portal.matching import Ledger, match
 from legacy_portal.orders.store import OrderSystem, PostgresOrderSystem, connect
+from legacy_portal.process.risk import block_note
 
 DATA = generate()
 SUPPLIER_BY_PORTAL = {s["portal"]: s["id"] for s in DATA["suppliers"]}
@@ -83,6 +84,9 @@ def _process(run_dir: str | Path, backend: Backend, orders: OrderSystem) -> list
             v = match(ex.doc, orders, ledger)
             sp.set_attribute("lpa.verdict", v.verdict)
             sp.set_attribute("lpa.payable", "" if v.payable is None else str(v.payable))
+        note = block_note(ex.doc.po_number)  # predict -> act (D18c): evidence for the reviewer, never a verdict
+        if note and v.verdict not in ("unknown_po", "already_paid", "credit_note"):
+            v.evidence.append(note)
         if ex.portal_check == "disagree":
             items.append(ReviewItem(ex.doc.number, ex.pdf, "needs_human", "portal_mismatch", None,
                                     ex.portal_notes + v.evidence, ex.portal_check, ex.attempts, ex.raw))

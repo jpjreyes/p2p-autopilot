@@ -382,15 +382,159 @@ def worklist(db: Path = DEFAULT_DB) -> dict:
     return {"open": summary[0], "flagged": summary[1], "eur_flagged": summary[2], "threshold": thr}
 
 
+def _scored(con: duckdb.DuckDBPyConnection, frame: dict) -> np.ndarray:
+    """Calibrated block probability for every row of a frame, with the saved invoice-time model."""
+    model = lgb.Booster(model_file=str(MODELS / "block-invoice.txt"))
+    meta = json.loads((MODELS / "block-invoice.json").read_text())
+    X, _, _ = matrix(frame, meta["codes"])
+    return np.interp(model.predict(X), meta["iso_x"], meta["iso_y"])
+
+
+def business_report(db: Path = DEFAULT_DB) -> dict:
+    """The saved model in the units AP works in (D18c), on the test months, facts only (no assumption that a flag
+    prevents anything): invoices and lines flagged, how many really got blocked, the EUR on them, and the days of
+    payment delay those blocks caused (invoice recorded -> block removed). Both thresholds are fixed on the July
+    calibration month. Also the daily worklist view: rank each day's new invoices and check the top 10 / 20."""
+    con = duckdb.connect(str(db), read_only=True)
+    frame = build_frame(con, "invoice")
+    when = np.array([str(t)[:10] for t in frame["ir_ts"]])
+    p = _scored(con, frame)
+    y = frame["label"].astype(int)
+    calib = (when >= TRAIN_END) & (when < CALIB_END)
+    te = (when >= VALID_END) & (when < TEST_END)
+    meta = json.loads((MODELS / "block-invoice.json").read_text())
+    thresholds = {"model at 80% precision": meta["threshold_at_precision_0.8"],
+                  "model at 60% precision": at_precision(y[calib], p[calib], 0.6)["threshold"]}
+    delay = dict(con.execute(f"""
+        WITH f AS (SELECT case_id, min(ts) FILTER (WHERE activity = 'Record Invoice Receipt') AS ir
+                   FROM events WHERE is_canonical AND ts_status IN ('ok', 'repaired') GROUP BY 1)
+        SELECT f.case_id, date_diff('hour', f.ir, min(e.ts)) / 24.0 FROM f
+        JOIN events e ON e.case_id = f.case_id AND e.is_canonical AND e.activity = 'Remove Payment Block'
+             AND e.ts > f.ir AND e.ts <= f.ir + INTERVAL {HORIZON_DAYS} DAY
+        GROUP BY f.case_id, f.ir""").fetchall())
+    t = take(frame, te)
+    yt, pt = y[te], p[te]
+    inv = np.array([f"{v}|{ts}" for v, ts in zip(t["vendor"], t["ir_ts"])])
+    eur = np.array([max(float(v), 0.0) for v in t["value_eur"]])
+    days = np.array([delay.get(c, 0.0) for c in t["case_id"]])
+    rule = np.array([v == 1 for v in t["inv_any_no_gr"]])
+
+    def policy(flag: np.ndarray) -> dict:
+        hit = flag & (yt == 1)
+        inv_flagged = set(inv[flag])
+        inv_blocked = {k for k, b in zip(inv, yt) if b}
+        inv_days: dict[str, float] = {}
+        for k, d in zip(inv[hit], days[hit]):
+            inv_days[k] = max(inv_days.get(k, 0.0), d)
+        return {"lines_flagged": int(flag.sum()), "lines_blocked_among_flagged": int(hit.sum()),
+                "precision_lines": round(float(hit.sum() / max(1, flag.sum())), 3),
+                "invoices_flagged": len(inv_flagged), "invoices_blocked_among_flagged": len(inv_flagged & inv_blocked),
+                "precision_invoices": round(len(inv_flagged & inv_blocked) / max(1, len(inv_flagged)), 3),
+                "eur_on_blocked_flagged_lines": round(float(eur[hit].sum())),
+                "share_of_blocked_eur": round(float(eur[hit].sum() / max(1.0, eur[yt == 1].sum())), 3),
+                "invoice_days_of_delay_flagged": round(sum(inv_days.values())),
+                "share_of_blocked_lines": round(float(hit.sum() / max(1, (yt == 1).sum())), 3)}
+
+    all_inv_days: dict[str, float] = {}
+    for k, d, b in zip(inv, days, yt):
+        if b:
+            all_inv_days[k] = max(all_inv_days.get(k, 0.0), d)
+    report = {
+        "test_window": f"{VALID_END} .. {TEST_END}", "thresholds_from": "July 2018 calibration month",
+        "totals": {"lines": len(yt), "invoices": len(set(inv)), "blocked_lines": int(yt.sum()),
+                   "blocked_invoices": len({k for k, b in zip(inv, yt) if b}),
+                   "eur_on_blocked_lines": round(float(eur[yt == 1].sum())),
+                   "invoice_days_of_delay": round(sum(all_inv_days.values()))},
+        "policies": {name: policy(pt >= thr) for name, thr in thresholds.items()},
+        "thresholds": {k: round(float(v), 3) for k, v in thresholds.items()},
+    }
+    report["policies"]["rule: a line on the invoice has no goods receipt yet"] = policy(rule)
+
+    # the daily worklist: an invoice's score = its riskiest line; label = any of its lines got blocked
+    day_of = {k: d for k, d in zip(inv, when[te])}
+    inv_p: dict[str, float] = {}
+    inv_y: dict[str, int] = {}
+    for k, s, b in zip(inv, pt, yt):
+        inv_p[k] = max(inv_p.get(k, 0.0), float(s))
+        inv_y[k] = max(inv_y.get(k, 0), int(b))
+    by_day: dict[str, list[str]] = {}
+    for k in inv_p:
+        by_day.setdefault(day_of[k], []).append(k)
+    daily = {10: [], 20: []}
+    blocked_per_day, invoices_per_day = [], []
+    for ks in by_day.values():
+        blocked_per_day.append(sum(inv_y[k] for k in ks))
+        invoices_per_day.append(len(ks))
+        ranked = sorted(ks, key=lambda k: -inv_p[k])
+        for n, hits in daily.items():
+            if len(ks) >= 2 * n:  # only days with a real choice to make
+                hits.append(sum(inv_y[k] for k in ranked[:n]) / n)
+    rule_inv = {k for k, r in zip(inv, rule) if r}
+    report["daily_worklist"] = {
+        "days": len(by_day), "median_invoices_per_day": float(np.median(invoices_per_day)),
+        "median_blocked_invoices_per_day": float(np.median(blocked_per_day)),
+        "base_rate_invoices": round(sum(inv_y.values()) / max(1, len(inv_y)), 3),
+        **{f"top{n}_precision_median": round(float(np.median(v)), 3) for n, v in daily.items() if v},
+        **{f"top{n}_precision_mean": round(float(np.mean(v)), 3) for n, v in daily.items() if v},
+        **{f"top{n}_days_measured": len(v) for n, v in daily.items()},
+        "rule_precision_invoices": round(sum(inv_y[k] for k in rule_inv) / max(1, len(rule_inv)), 3),
+    }
+    RUNS.mkdir(exist_ok=True)
+    out = RUNS / f"predict-business-{datetime.now():%Y%m%d-%H%M%S}.json"
+    out.write_text(json.dumps(report, indent=1))
+    tot = report["totals"]
+    print(f"test {report['test_window']}: {tot['invoices']:,} invoices ({tot['lines']:,} lines); "
+          f"{tot['blocked_invoices']:,} invoices blocked, EUR {tot['eur_on_blocked_lines']:,}, "
+          f"{tot['invoice_days_of_delay']:,} invoice-days of delay")
+    print(f"{'policy':52} {'inv flagged':>11} {'right':>6} {'EUR on blocked':>15} {'delay days':>10} {'share EUR':>9}")
+    for name, s in report["policies"].items():
+        print(f"{name:52} {s['invoices_flagged']:>11,} {s['precision_invoices']:>6.0%} "
+              f"{s['eur_on_blocked_flagged_lines']:>15,} {s['invoice_days_of_delay_flagged']:>10,} "
+              f"{s['share_of_blocked_eur']:>9.0%}")
+    print("daily worklist:", report["daily_worklist"])
+    print(f"-> {out.name}")
+    return report
+
+
+def score_all_lines(db: Path = DEFAULT_DB) -> int:
+    """The invoice-time score of every invoiced PO line (what the model said the moment SAP recorded the invoice),
+    with its top reasons: the act side looks up the POs the agent bills (m_line_block_score, D18c)."""
+    model = lgb.Booster(model_file=str(MODELS / "block-invoice.txt"))
+    meta = json.loads((MODELS / "block-invoice.json").read_text())
+    con = duckdb.connect(str(db))
+    f = build_frame(con, "invoice", until="2100-01-01")
+    X, names, _ = matrix(f, meta["codes"])
+    p = np.interp(model.predict(X), meta["iso_x"], meta["iso_y"])
+    contrib = model.predict(X, pred_contrib=True)[:, :-1]
+    po = {c: c.rsplit("_", 1)[0] for c in f["case_id"]}
+    rows = []
+    for i in range(len(p)):
+        order = [names[j] for j in np.argsort(-contrib[i])[:6] if contrib[i][j] > 0]
+        if f["inv_any_no_gr"][i] == 1:
+            order = [n for n in order if n not in ("n_gr", "days_since_gr", "invoice_before_gr", "inv_share_no_gr")]
+        rows.append((f["case_id"][i], po[f["case_id"][i]], round(float(p[i]), 3),
+                     [reason(n, f[n][i]) for n in order[:2]]))
+    con.execute("CREATE OR REPLACE TABLE m_line_block_score (case_id VARCHAR, po VARCHAR, p_block DOUBLE, "
+                "reasons VARCHAR[])")
+    con.executemany("INSERT INTO m_line_block_score VALUES (?, ?, ?, ?)", rows)
+    con.close()
+    return len(rows)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--checkpoint", choices=["po", "invoice", "both"], default="both")
     ap.add_argument("--final", action="store_true", help="score the test months (once, at the end)")
     ap.add_argument("--target", choices=["block", "human"], default="block")
     ap.add_argument("--worklist", action="store_true", help="score the invoices open at the end of the data")
+    ap.add_argument("--business", action="store_true", help="the saved model in AP's units, on the test months")
     a = ap.parse_args()
+    if a.business:
+        business_report()
+        return
     if a.worklist:
         worklist()
+        print(f"line scores for the act side: {score_all_lines():,} invoiced lines")
         return
     for cp in (["po", "invoice"] if a.checkpoint == "both" else [a.checkpoint]):
         run(cp, a.final, a.target)
