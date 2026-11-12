@@ -54,8 +54,8 @@ def test_bad_decision_rejected(client):
     assert client.post(f"/api/review/{i['item_id']}", json={"decision": "pay"}).status_code == 400
 
 
-def test_held_out_portal_and_unknown_chaos_are_refused(client):
-    assert client.post("/api/runs", json={"portal": "d"}).status_code == 400
+def test_unknown_portal_and_unknown_chaos_are_refused(client):
+    assert client.post("/api/runs", json={"portal": "z"}).status_code == 400
     assert client.post("/api/runs", json={"portal": "a", "chaos": "meteor"}).status_code == 400
 
 
