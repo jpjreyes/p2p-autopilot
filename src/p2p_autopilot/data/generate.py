@@ -51,8 +51,8 @@ SUPPLIERS = (
     Supplier("SUP-ACME", "Acme Fasteners Inc.", "a", False, "INV-", "vendorID_0660"),
     Supplier("SUP-VALVEX", "Valvex Industrial GmbH", "b", False, "VX/2026/", "vendorID_0011"),
     Supplier("SUP-SAFEG", "SafeGuard Supply Co.", "c", False, "SG-26-", "vendorID_0122"),
-    # Portal D: the fresh held-out (D10). Nobody runs the agent on it before the final eval.
-    Supplier("SUP-KEYST", "Keystone Electrical Supply", "d", True, "KES/26/", "vendorID_0666"),
+    # Portal D: the held-out portal of the final eval (D23-D25); runnable like the others since then.
+    Supplier("SUP-KEYST", "Keystone Electrical Supply", "d", False, "KES/26/", "vendorID_0666"),
 )
 
 # Planted issues per supplier (the rest are clean matches). Order matters for reproducibility.

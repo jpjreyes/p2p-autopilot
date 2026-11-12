@@ -65,9 +65,9 @@ def test_planted_issue_types_are_detectable():
             assert d["status"] == "paid"
 
 
-def test_held_out_portal_is_d_only():
+def test_no_portal_is_held_out_after_the_final_eval():
     held = [s["portal"] for s in D["suppliers"] if s["held_out"]]
-    assert held == ["d"]  # C was used to find fixes (D10), so D is the fresh held-out
+    assert held == []  # D was the held-out until its final eval (D23-D25); a new one would be a new portal
 
 
 def test_purchase_orders_are_real_sap_orders():

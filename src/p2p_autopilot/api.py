@@ -44,7 +44,7 @@ from p2p_autopilot.worker import execute
 load_dotenv()
 PORTAL_BASE = os.environ.get("PORTAL_BASE_URL", "http://127.0.0.1:8061")
 RUNS_PER_HOUR = int(os.environ.get("LPA_RUNS_PER_HOUR", "6"))
-ALLOWED_PORTALS = {"a", "b", "c"}  # D is held out (D10): never runnable from the console
+ALLOWED_PORTALS = {"a", "b", "c", "d"}  # D was the held-out portal until its final eval (D23-D25)
 CHAOS_MODES = {"", "layout_variant", "renamed_fields", "session_expiry", "slow", "captcha", "icon_links",
                "opaque_icons", "injection", "scanned", "handwritten"}
 
@@ -110,7 +110,7 @@ def _launch_job(run_id: str, portal: str, chaos: str) -> None:
 @app.post("/api/runs")
 def start_run(body: StartRun):
     if body.portal not in ALLOWED_PORTALS:
-        raise HTTPException(400, "only portals a, b and c can be run from the console (d is held out)")
+        raise HTTPException(400, "unknown portal")
     if body.chaos not in CHAOS_MODES:
         raise HTTPException(400, f"unknown chaos mode {body.chaos!r}")
     with store() as rs:  # limits live in Postgres, so they hold across API instances (D21)

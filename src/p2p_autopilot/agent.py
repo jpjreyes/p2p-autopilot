@@ -298,8 +298,6 @@ def main():
     ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--headed", action="store_true")
     args = ap.parse_args()
-    if args.portal == "d" and not os.environ.get("LPA_ALLOW_HELD_OUT"):
-        raise SystemExit("Portal D is held out (D10). Set LPA_ALLOW_HELD_OUT=1 only for the final eval.")
     base = os.environ.get("PORTAL_BASE_URL", "http://127.0.0.1:8061")
     r = run(args.portal, base, get_backend(), args.model, args.max_steps, headless=not args.headed)
     print(f"\n{r.outcome}: {r.reason}\n{len(r.downloads)} PDFs, {len(r.steps)} steps, {r.seconds}s -> {r.run_dir}")
