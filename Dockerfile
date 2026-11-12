@@ -16,11 +16,11 @@ COPY data/models ./data/models
 COPY evals ./evals
 RUN uv sync --frozen --no-dev \
  && uv run playwright install --with-deps chromium \
- && uv run python -m legacy_portal.process.warehouse \
- && uv run python -m legacy_portal.process.predict --worklist \
- && uv run python -m legacy_portal.data.generate
+ && uv run python -m p2p_autopilot.process.warehouse \
+ && uv run python -m p2p_autopilot.process.predict --worklist \
+ && uv run python -m p2p_autopilot.data.generate
 
 ENV PATH="/app/.venv/bin:$PATH" PORT=8080
 EXPOSE 8080
 # default: the API; the portals service and the jobs override the command (infra/gcp)
-CMD ["sh", "-c", "uvicorn legacy_portal.api:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "-c", "uvicorn p2p_autopilot.api:app --host 0.0.0.0 --port ${PORT}"]

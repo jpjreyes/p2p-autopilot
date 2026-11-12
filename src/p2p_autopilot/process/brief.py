@@ -12,7 +12,7 @@ Sections:
   block_risk    open invoices the payment-block model flags (D18), with the model's reasons (latest week only)
   vendors       the vendors with the most money in the two risks above
 
-Run:  uv run python -m legacy_portal.process.brief [--as-of 2019-01-19] [--no-llm]
+Run:  uv run python -m p2p_autopilot.process.brief [--as-of 2019-01-19] [--no-llm]
 """
 
 from __future__ import annotations
@@ -25,8 +25,8 @@ from pathlib import Path
 
 import duckdb
 
-from legacy_portal.process import grounding
-from legacy_portal.process.warehouse import DEFAULT_DB, ROOT
+from p2p_autopilot.process import grounding
+from p2p_autopilot.process.warehouse import DEFAULT_DB, ROOT
 
 BRIEFS = ROOT / "runs" / "briefs"
 
@@ -112,7 +112,7 @@ def write_summary(sections: dict, backend, as_of: date) -> tuple[dict, list[str]
 
 
 def brief(as_of: date | None = None, use_llm: bool = True, db: Path = DEFAULT_DB, out_dir: Path = BRIEFS) -> dict:
-    from legacy_portal import tracing
+    from p2p_autopilot import tracing
     with tracing.span("weekly_brief", "CHAIN", **{"lpa.as_of": str(as_of) if as_of else "latest"}) as s:
         out = _brief(as_of, use_llm, db, out_dir)
         s.set_attribute("lpa.sections", len(out["sections"]))
@@ -128,10 +128,10 @@ def _brief(as_of: date | None, use_llm: bool, db: Path, out_dir: Path) -> dict:
     sections = run_sections(con, start, as_of, latest=as_of > data_end)
     out = {"week": [str(start), str(as_of - timedelta(days=1))], "sections": sections}
     if use_llm:
-        from legacy_portal.llm import get_backend
+        from p2p_autopilot.llm import get_backend
         summary, unverified = write_summary(sections, get_backend(), as_of)
         out.update(summary=summary, unverified_numbers=unverified)
-    from legacy_portal import storage  # local runs/briefs, or the private bucket in the cloud (D21)
+    from p2p_autopilot import storage  # local runs/briefs, or the private bucket in the cloud (D21)
     text = json.dumps(out, indent=1, default=str)
     out["path"] = (storage.put_text(f"briefs/brief-{as_of}.json", text, out_dir) if out_dir == BRIEFS
                    else _write_local(out_dir / f"brief-{as_of}.json", text))

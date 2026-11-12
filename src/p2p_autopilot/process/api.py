@@ -14,16 +14,16 @@ from pathlib import Path
 import duckdb
 from fastapi import APIRouter, HTTPException
 
-from legacy_portal.process.brief import BRIEFS
-from legacy_portal.process.predict import MODELS
-from legacy_portal.process.warehouse import DEFAULT_DB
+from p2p_autopilot.process.brief import BRIEFS
+from p2p_autopilot.process.predict import MODELS
+from p2p_autopilot.process.warehouse import DEFAULT_DB
 
 router = APIRouter(prefix="/api/process")
 
 
 def _rows(sql: str, params: list | None = None, db: Path = DEFAULT_DB) -> list[dict]:
     if not db.exists():
-        raise HTTPException(503, "process warehouse not built (python -m legacy_portal.process.warehouse)")
+        raise HTTPException(503, "process warehouse not built (python -m p2p_autopilot.process.warehouse)")
     con = duckdb.connect(str(db), read_only=True)
     try:
         cur = con.execute(sql, params or [])
@@ -76,8 +76,8 @@ def predict_risk(case_id: str):
 
 @router.get("/brief")
 def latest_brief():
-    from legacy_portal import storage
+    from p2p_autopilot import storage
     text = storage.latest_text("briefs/", BRIEFS)
     if not text:
-        raise HTTPException(404, "no brief yet (python -m legacy_portal.process.brief)")
+        raise HTTPException(404, "no brief yet (python -m p2p_autopilot.process.brief)")
     return json.loads(text)

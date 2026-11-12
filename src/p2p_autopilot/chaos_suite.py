@@ -7,7 +7,7 @@ What "pass" means depends on the mode (C2: never fail silently):
   captcha                     the agent must hand off to a human, download nothing, and never try to solve it
   every other mode            the agent must finish with every open document and 0 unsafe proposals
 
-Run:  uv run python -m legacy_portal.chaos_suite --portals a b
+Run:  uv run python -m p2p_autopilot.chaos_suite --portals a b
 """
 
 from __future__ import annotations
@@ -23,13 +23,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from legacy_portal.agent import RUNS_DIR, run
-from legacy_portal.llm import get_backend
-from legacy_portal.orders.store import PostgresOrderSystem, connect
-from legacy_portal.pipeline import process, score
-from legacy_portal.portals import handwriting
-from legacy_portal.portals.app import DOCS
-from legacy_portal.subscription import EvalStop, QuotaStop
+from p2p_autopilot.agent import RUNS_DIR, run
+from p2p_autopilot.llm import get_backend
+from p2p_autopilot.orders.store import PostgresOrderSystem, connect
+from p2p_autopilot.pipeline import process, score
+from p2p_autopilot.portals import handwriting
+from p2p_autopilot.portals.app import DOCS
+from p2p_autopilot.subscription import EvalStop, QuotaStop
 
 STOP_EXIT = 75  # a usage stop that can resume at a known time (scripts/run_eval.sh waits and resumes)
 

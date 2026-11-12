@@ -140,7 +140,7 @@ class PostgresOrderSystem:
 if __name__ == "__main__":
     from dotenv import load_dotenv
 
-    from legacy_portal.data.generate import generate
+    from p2p_autopilot.data.generate import generate
 
     load_dotenv()
     with connect() as c:

@@ -4,7 +4,7 @@ import pytest
 from playwright.sync_api import Error as PWError
 from playwright.sync_api import sync_playwright
 
-from legacy_portal.browser import BrowserTools
+from p2p_autopilot.browser import BrowserTools
 
 
 @pytest.fixture

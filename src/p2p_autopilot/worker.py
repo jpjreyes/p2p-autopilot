@@ -3,7 +3,7 @@
 Run on the portal, record every step (and its screenshot) in Postgres as it happens, then read, check and match the
 downloaded invoices and store the review items. A failed run is recorded as an error, never left "running".
 
-Cloud Run Job:  python -m legacy_portal.worker   (RUN_ID, PORTAL, CHAOS from the execution's env overrides)
+Cloud Run Job:  python -m p2p_autopilot.worker   (RUN_ID, PORTAL, CHAOS from the execution's env overrides)
 """
 
 from __future__ import annotations
@@ -15,12 +15,12 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from legacy_portal import storage
-from legacy_portal.agent import run
-from legacy_portal.llm import get_backend
-from legacy_portal.orders.store import PostgresOrderSystem, connect
-from legacy_portal.pipeline import process
-from legacy_portal.runstore import RunStore
+from p2p_autopilot import storage
+from p2p_autopilot.agent import run
+from p2p_autopilot.llm import get_backend
+from p2p_autopilot.orders.store import PostgresOrderSystem, connect
+from p2p_autopilot.pipeline import process
+from p2p_autopilot.runstore import RunStore
 
 load_dotenv()
 PORTAL_BASE = os.environ.get("PORTAL_BASE_URL", "http://127.0.0.1:8061")

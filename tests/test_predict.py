@@ -3,8 +3,8 @@
 import numpy as np
 import pytest
 
-from legacy_portal.process.predict import at_precision, reason
-from legacy_portal.process.warehouse import DEFAULT_DB
+from p2p_autopilot.process.predict import at_precision, reason
+from p2p_autopilot.process.warehouse import DEFAULT_DB
 
 
 def test_at_precision_picks_the_best_recall_that_keeps_precision():
@@ -30,7 +30,7 @@ def test_reasons_read_like_a_person_would_say_them():
 def test_invoice_features_only_use_events_before_the_invoice():
     import duckdb
 
-    from legacy_portal.process.predict import build_frame
+    from p2p_autopilot.process.predict import build_frame
     con = duckdb.connect(str(DEFAULT_DB), read_only=True)
     f = build_frame(con, "invoice")
     rng = np.random.default_rng(1)

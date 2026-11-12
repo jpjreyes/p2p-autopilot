@@ -7,12 +7,12 @@ from collections import Counter
 
 from pypdf import PdfReader
 
-from legacy_portal.extract import pdf_text
-from legacy_portal.llm import LLMResult
-from legacy_portal.pipeline import process, score
-from legacy_portal.portals import handwriting as hw
-from legacy_portal.portals.app import DOCS, SUPPLIERS
-from legacy_portal.portals.pdf import fmt_money, render, scanned
+from p2p_autopilot.extract import pdf_text
+from p2p_autopilot.llm import LLMResult
+from p2p_autopilot.pipeline import process, score
+from p2p_autopilot.portals import handwriting as hw
+from p2p_autopilot.portals.app import DOCS, SUPPLIERS
+from p2p_autopilot.portals.pdf import fmt_money, render, scanned
 from test_matching import DATA, MemoryOrderSystem
 
 

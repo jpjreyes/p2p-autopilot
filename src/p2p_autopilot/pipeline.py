@@ -3,7 +3,7 @@
 Nothing here approves or pays. Each review item says what the agent proposes (pay X, or why a human must look),
 with the evidence. The same function scores the run against the ground truth, so evals reuse it.
 
-Run:  uv run python -m legacy_portal.pipeline runs/<run-dir>
+Run:  uv run python -m p2p_autopilot.pipeline runs/<run-dir>
 """
 
 from __future__ import annotations
@@ -16,13 +16,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from legacy_portal import tracing
-from legacy_portal.data.generate import generate
-from legacy_portal.extract import Extraction, extract
-from legacy_portal.llm import Backend, get_backend
-from legacy_portal.matching import Ledger, match
-from legacy_portal.orders.store import OrderSystem, PostgresOrderSystem, connect
-from legacy_portal.process.risk import block_note
+from p2p_autopilot import tracing
+from p2p_autopilot.data.generate import generate
+from p2p_autopilot.extract import Extraction, extract
+from p2p_autopilot.llm import Backend, get_backend
+from p2p_autopilot.matching import Ledger, match
+from p2p_autopilot.orders.store import OrderSystem, PostgresOrderSystem, connect
+from p2p_autopilot.process.risk import block_note
 
 DATA = generate()
 SUPPLIER_BY_PORTAL = {s["portal"]: s["id"] for s in DATA["suppliers"]}

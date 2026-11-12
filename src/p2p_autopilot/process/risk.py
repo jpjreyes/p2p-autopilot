@@ -13,7 +13,7 @@ from pathlib import Path
 
 import duckdb
 
-from legacy_portal.process.warehouse import DEFAULT_DB
+from p2p_autopilot.process.warehouse import DEFAULT_DB
 
 
 @lru_cache(maxsize=512)

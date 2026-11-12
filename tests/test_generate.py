@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from legacy_portal.data.generate import INVOICES_PER_SUPPLIER, PAID_PER_SUPPLIER, PLAN, generate
+from p2p_autopilot.data.generate import INVOICES_PER_SUPPLIER, PAID_PER_SUPPLIER, PLAN, generate
 
 D = generate()
 POS = {p["po_number"]: p for p in D["order_system"]["purchase_orders"]}
@@ -74,7 +74,7 @@ def test_purchase_orders_are_real_sap_orders():
     """D17: every PO billed on a portal is a real BPI 2019 purchase order of that supplier's SAP vendor."""
     import json
 
-    from legacy_portal.data.generate import SAMPLE
+    from p2p_autopilot.data.generate import SAMPLE
     real = json.loads(SAMPLE.read_text())["vendors"]
     vendor_pos = {p: {f"PO-{r['po']}" for g in ("goods_first", "invoice_first") for r in v[g]} for p, v in real.items()}
     for t in TRUTH.values():

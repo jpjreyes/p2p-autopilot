@@ -2,6 +2,17 @@
 
 Format: constraint → options → evidence → choice → would change if. Constraints C1–C6 are in CLIENT_BRIEF.md.
 
+Entries are in the order they were made. Where to start:
+
+| Topic | Entries |
+|---|---|
+| Final results and how they were measured | [D23](#d23-final-evals-on-the-claude-plan-and-the-held-out-portal-d-protocol-written-before-the-run-2026-11-11), [D24](#d24-final-evals-failure-suite-6060-held-out-portal-d-first-contact-03-handed-off-safely-2026-11-12), [D25](#d25-portal-d-after-one-general-fix-33-re-measured-2026-11-12-reported-separately-from-first-contact) |
+| Safety: wrong payments made impossible or harmless in code | D10, D11, D13, D15 |
+| How the agent sees and acts; why tools matter more than prompts | D2, D7, D9, D13 |
+| Predicting payment blocks on the real SAP log | D16, D17, D18, D18b, D18c |
+| Reliability and generalization (pass^k, held-out portals) | D10, D12, D22, D24, D25 |
+| Deploy and operations | D5, D20, D21 |
+
 ## D1. Test environment: our own mock portals, with one held out, plus a public benchmark
 - **Constraint:** C2/C3 need reproducible numbers with known right answers; C4 rules out automating real
   third-party portals (terms of service, account lockouts).
@@ -268,7 +279,7 @@ Format: constraint → options → evidence → choice → would change if. Cons
   what the agent changes (POs, invoices, runs, review queue). The deployed Postgres is Neon's free tier (0.5 GB): the
   log would not fit, and a columnar file baked into the image costs $0. Classic OLAP / OLTP split.
 - **No regression:** Process Copilot's build (cleaning rules D1–D7 there), its metrics and its 37-question golden set were ported
-  unchanged (`legacy_portal/process/`, `evals/process_golden_set.toml`); all 30 stored keys reproduce on the new
+  unchanged (`p2p_autopilot/process/`, `evals/process_golden_set.toml`); all 30 stored keys reproduce on the new
   warehouse, including **€1,753,787 paid before any goods receipt** (655 lines) and **€1,015,808 open longer than
   the vendor usually takes** (828 lines). The events CSV (14.6 MB, CC BY 4.0) is committed so CI and the cloud build
   can rebuild the warehouse.

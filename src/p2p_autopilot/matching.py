@@ -22,7 +22,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 
-from legacy_portal.orders.store import OrderSystem
+from p2p_autopilot.orders.store import OrderSystem
 
 CENT = Decimal("0.01")
 

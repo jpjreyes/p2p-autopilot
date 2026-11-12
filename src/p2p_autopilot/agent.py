@@ -4,7 +4,7 @@ Same instructions for every portal: no portal-specific hints, so the held-out po
 The model never sees passwords (placeholders), cannot leave the portal (allowed origin), and has no approve/pay
 action at all (C1). It stops on `done`, on `handoff` (CAPTCHA, stuck, anything risky), or at the step budget.
 
-Run:  uv run python -m legacy_portal.agent --portal a
+Run:  uv run python -m p2p_autopilot.agent --portal a
 """
 
 from __future__ import annotations
@@ -22,10 +22,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
 
-from legacy_portal import tracing
-from legacy_portal.browser import BrowserTools
-from legacy_portal.llm import DEFAULT_MODEL, Backend, get_backend
-from legacy_portal.portals.app import CREDENTIALS
+from p2p_autopilot import tracing
+from p2p_autopilot.browser import BrowserTools
+from p2p_autopilot.llm import DEFAULT_MODEL, Backend, get_backend
+from p2p_autopilot.portals.app import CREDENTIALS
 
 RUNS_DIR = Path(__file__).resolve().parents[2] / "runs"
 

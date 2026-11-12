@@ -4,7 +4,7 @@
   /b  Valvex B2B Portal       cookie wall, search form required, details in a modal, European dates and amounts
   /c  SafeGuard Vendor Center (HELD OUT: never used while tuning the agent) tabs, month accordions, "show older"
 
-Run:  uv run uvicorn legacy_portal.portals.app:app --port 8061
+Run:  uv run uvicorn p2p_autopilot.portals.app:app --port 8061
 Dev credentials are in CREDENTIALS below (test environment only).
 """
 
@@ -25,9 +25,9 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
-from legacy_portal.data.generate import generate
-from legacy_portal.portals import chaos, handwriting
-from legacy_portal.portals.pdf import fmt_date, fmt_money, render, scanned
+from p2p_autopilot.data.generate import generate
+from p2p_autopilot.portals import chaos, handwriting
+from p2p_autopilot.portals.pdf import fmt_date, fmt_money, render, scanned
 
 CREDENTIALS = {
     "a": ("acme_ap", "acme-pass-2026"),

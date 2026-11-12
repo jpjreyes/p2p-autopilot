@@ -7,9 +7,9 @@ from decimal import Decimal
 
 import pytest
 
-from legacy_portal.data.generate import generate
-from legacy_portal.matching import DocLine, ExtractedDoc, Ledger, match
-from legacy_portal.orders.store import POLine, PurchaseOrder
+from p2p_autopilot.data.generate import generate
+from p2p_autopilot.matching import DocLine, ExtractedDoc, Ledger, match
+from p2p_autopilot.orders.store import POLine, PurchaseOrder
 
 DATA = generate()
 

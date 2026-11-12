@@ -13,7 +13,7 @@ viewers (Arize Phoenix locally) lay them out; any OTLP backend works, and LPA_TR
 Off unless one of the two is configured. Spans carry ids, counts, verdicts, tokens, cost and timing, never invoice text or credentials.
 
 Local viewer:  uvx --python 3.12 --from "arize-phoenix==21.0.0" phoenix serve   (UI on http://localhost:6006)
-Then:          LPA_TRACE_ENDPOINT=http://localhost:6006/v1/traces uv run python -m legacy_portal.agent --portal a
+Then:          LPA_TRACE_ENDPOINT=http://localhost:6006/v1/traces uv run python -m p2p_autopilot.agent --portal a
 """
 
 from __future__ import annotations

@@ -82,6 +82,7 @@ export const PORTALS: Record<string, { name: string; supplier: string }> = {
   a: { name: "Acme SupplierNet", supplier: "Acme Fasteners Inc." },
   b: { name: "Valvex B2B Portal", supplier: "Valvex Industrial GmbH" },
   c: { name: "SafeGuard Vendor Center", supplier: "SafeGuard Supply Co." },
+  d: { name: "Keystone Customer Access", supplier: "Keystone Electrical Supply" },
 };
 
 export const CHAOS: Record<string, { label: string; hint: string }> = {

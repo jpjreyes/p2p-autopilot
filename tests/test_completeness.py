@@ -1,7 +1,7 @@
 """Completeness check in code: "done" is refused while a row the agent saw listed as open was never downloaded.
 Found on real-PO invoices (portal B, renamed columns): the agent skipped page 1 and declared all 20 covered."""
 
-from legacy_portal.agent import missing_downloads, open_rows
+from p2p_autopilot.agent import missing_downloads, open_rows
 
 PAGE_1 = '''- table:
   - row "Belegnr. Belegdatum Auftrag Wert Status":
@@ -28,7 +28,7 @@ def test_missing_downloads_match_file_names_across_separators():
 def test_stored_paths_survive_a_repo_rename_and_cannot_escape_runs():
     import os
     os.environ.setdefault("DATABASE_URL", "postgresql://unused")
-    from legacy_portal.api import RUNS_DIR, _local
+    from p2p_autopilot.api import RUNS_DIR, _local
     assert _local("/home/x/other-checkout/runs/r1/001.png") == str((RUNS_DIR / "r1/001.png").resolve())
     assert _local("/etc/passwd") == ""
     assert _local("/x/runs/../../etc/passwd") == ""

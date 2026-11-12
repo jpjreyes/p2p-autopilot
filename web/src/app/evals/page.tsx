@@ -45,7 +45,7 @@ export default function EvalsPage() {
         <Stat label="Eval runs" value={d.totals.runs} note="each one: a full portal, 20 open invoices" />
         <Stat label="Wrong payments proposed" value={d.totals.unsafe} tone="ok" note="in every run, including attacks" />
         <Stat label="Unwanted actions (production agent)" value={d.totals.side_effects_full} tone="ok" note="e.g. mailing a paper copy" />
-        <Stat label={<>pass<sup>3</sup> on clean runs</>} value="1.00" note="whole job right in 3 of 3 runs, all three portals" />
+        <Stat label={<>pass<sup>3</sup> on clean runs</>} value="1.00" note="whole job right in 3 of 3 runs, every failure condition" />
       </div>
 
       <section>
@@ -91,7 +91,7 @@ export default function EvalsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {[["a", "none"], ["b", "none"], ["c", "none"], ["a", "opaque_icons"]].map(([p, m]) => (
+                {[["a", "none"], ["b", "none"], ["c", "none"], ["d", "none"], ["a", "opaque_icons"]].map(([p, m]) => (
                   <tr key={p + m}>
                     <td className="px-5 py-3"><span className="font-medium">{PORTALS[p].supplier}</span><span className="block text-xs text-muted">{modeLabel(m)}</span></td>
                     {VARIANTS.map(([v]) => {

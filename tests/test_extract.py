@@ -2,8 +2,8 @@
 
 from decimal import Decimal
 
-from legacy_portal.extract import _amounts, _dates, cross_check, extract, pdf_text, portal_context, validate
-from legacy_portal.matching import DocLine, ExtractedDoc
+from p2p_autopilot.extract import _amounts, _dates, cross_check, extract, pdf_text, portal_context, validate
+from p2p_autopilot.matching import DocLine, ExtractedDoc
 
 GOOD = {"doc_type": "invoice", "number": "INV-1067", "po_number": "PO-5530", "issue_date": "2026-10-03",
         "due_date": "2026-11-02", "total": "966.00", "lines": [{"sku": "TR-M12-1M", "qty": 200, "unit_price": "4.83"}]}
@@ -70,15 +70,15 @@ class FakeBackend:
         self.data, self.calls = data, []
 
     def complete(self, system, prompt, schema, model="haiku", images=None):
-        from legacy_portal.llm import LLMResult
+        from p2p_autopilot.llm import LLMResult
         self.calls.append(images)
         return LLMResult(self.data, 100, 10, 0.1, model)
 
 
 def test_scan_without_text_layer_is_read_from_images(tmp_path, monkeypatch):
     """D14: a scanned PDF has no text layer, so extraction sends page images; the same checks still run."""
-    from legacy_portal.portals.app import DOCS, SUPPLIERS
-    from legacy_portal.portals.pdf import render, scanned
+    from p2p_autopilot.portals.app import DOCS, SUPPLIERS
+    from p2p_autopilot.portals.pdf import render, scanned
     monkeypatch.setenv("LPA_NO_EXTRACT_CACHE", "1")
     d = next(x for x in DOCS["a"] if x["status"] == "open" and x["doc_type"] == "invoice")
     pdf = tmp_path / "scan.pdf"
@@ -93,8 +93,8 @@ def test_scan_without_text_layer_is_read_from_images(tmp_path, monkeypatch):
 
 
 def test_text_pdf_does_not_send_images(tmp_path, monkeypatch):
-    from legacy_portal.portals.app import DOCS, SUPPLIERS
-    from legacy_portal.portals.pdf import render
+    from p2p_autopilot.portals.app import DOCS, SUPPLIERS
+    from p2p_autopilot.portals.pdf import render
     monkeypatch.setenv("LPA_NO_EXTRACT_CACHE", "1")
     d = next(x for x in DOCS["a"] if x["status"] == "open")
     pdf = tmp_path / "text.pdf"
@@ -104,5 +104,5 @@ def test_text_pdf_does_not_send_images(tmp_path, monkeypatch):
 
 
 def test_tests_never_write_the_real_cache(tmp_path):
-    from legacy_portal import extract
+    from p2p_autopilot import extract
     assert "runs" not in extract.CACHE_DIR.parts  # conftest points every test at a temporary cache

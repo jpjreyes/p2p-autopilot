@@ -5,8 +5,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from legacy_portal.agent import ACTION_SCHEMA
-from legacy_portal.llm import AnthropicBackend, api_schema
+from p2p_autopilot.agent import ACTION_SCHEMA
+from p2p_autopilot.llm import AnthropicBackend, api_schema
 
 
 class FakeMessages:
@@ -53,6 +53,6 @@ def test_refusal_and_truncation_raise_so_the_agent_stops_safely(stop):
 
 
 def test_cli_backend_never_passes_the_api_key(monkeypatch):
-    from legacy_portal.llm import _cli_env
+    from p2p_autopilot.llm import _cli_env
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
     assert "ANTHROPIC_API_KEY" not in _cli_env()

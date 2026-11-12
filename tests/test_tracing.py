@@ -6,7 +6,7 @@ from decimal import Decimal
 
 import pytest
 
-from legacy_portal.llm import LLMResult
+from p2p_autopilot.llm import LLMResult
 
 
 @pytest.fixture(scope="module")
@@ -28,7 +28,7 @@ class FakeModel:
 
 
 def test_model_call_span_has_tokens_and_cost_but_no_prompt(exporter):
-    from legacy_portal.tracing import TracedBackend
+    from p2p_autopilot.tracing import TracedBackend
     exporter.clear()
     secret = "Invoice INV-1059 for EUR 2,014.75, password hunter2"
     TracedBackend(FakeModel(), "fake").complete("system", secret, {})
@@ -41,8 +41,8 @@ def test_model_call_span_has_tokens_and_cost_but_no_prompt(exporter):
 
 
 def test_match_span_carries_the_verdict(exporter):
-    from legacy_portal import tracing
-    from legacy_portal.matching import DocLine, ExtractedDoc, Ledger, match
+    from p2p_autopilot import tracing
+    from p2p_autopilot.matching import DocLine, ExtractedDoc, Ledger, match
 
     class Orders:
         def get_po(self, n):

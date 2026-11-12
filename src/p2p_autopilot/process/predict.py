@@ -19,7 +19,7 @@ Baselines: the base rate; a rule ("the invoice arrived before any goods receipt"
 Reported: ROC AUC, average precision, Brier score after calibration, and the operating point AP would use: how many of
 the blocks are caught when 80% of the flags are right.
 
-Run:  uv run python -m legacy_portal.process.predict          (after the warehouse; ~1-2 min)
+Run:  uv run python -m p2p_autopilot.process.predict          (after the warehouse; ~1-2 min)
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ import numpy as np
 from sklearn.isotonic import IsotonicRegression
 from sklearn.metrics import average_precision_score, brier_score_loss, roc_auc_score
 
-from legacy_portal.process.warehouse import DEFAULT_DB, ROOT
+from p2p_autopilot.process.warehouse import DEFAULT_DB, ROOT
 
 RUNS = ROOT / "runs"
 MODELS = ROOT / "data" / "models"

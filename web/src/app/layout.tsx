@@ -7,7 +7,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: { default: "Portal Agent", template: "%s · Portal Agent" },
+  title: { default: "P2P Autopilot", template: "%s · P2P Autopilot" },
   description:
     "A computer-use agent that collects invoices from supplier portals with no API, reads them, runs the 3-way match in code and sends every payment to a person for approval.",
 };

@@ -166,7 +166,7 @@ resource "google_cloud_run_v2_service" "portals" {
     }
     containers {
       image   = var.image
-      command = ["sh", "-c", "uvicorn legacy_portal.portals.app:app --host 0.0.0.0 --port $PORT"]
+      command = ["sh", "-c", "uvicorn p2p_autopilot.portals.app:app --host 0.0.0.0 --port $PORT"]
       env {
         name = "PORTAL_STATE_URL"
         value_source {
@@ -223,7 +223,7 @@ resource "google_cloud_run_v2_job" "agent" {
       max_retries     = 0       # a failed run is recorded as an error, not silently repeated
       containers {
         image   = var.image
-        command = ["python", "-m", "legacy_portal.worker"]
+        command = ["python", "-m", "p2p_autopilot.worker"]
         env {
           name  = "PORTAL_BASE_URL"
           value = google_cloud_run_v2_service.portals.uri
@@ -351,7 +351,7 @@ resource "google_cloud_run_v2_job" "brief" {
       max_retries     = 1
       containers {
         image   = var.image
-        command = ["python", "-m", "legacy_portal.process.brief"]
+        command = ["python", "-m", "p2p_autopilot.process.brief"]
         env {
           name  = "LPA_BACKEND"
           value = "anthropic"

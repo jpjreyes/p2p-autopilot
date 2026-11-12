@@ -5,8 +5,8 @@ from decimal import Decimal
 
 import pytest
 
-from legacy_portal.data.generate import generate
-from legacy_portal.orders.store import PostgresOrderSystem, connect, load
+from p2p_autopilot.data.generate import generate
+from p2p_autopilot.orders.store import PostgresOrderSystem, connect, load
 
 pytestmark = pytest.mark.skipif(not os.environ.get("DATABASE_URL"), reason="needs DATABASE_URL (scripts/dev_db.sh up)")
 DATA = generate()

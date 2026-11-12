@@ -13,7 +13,7 @@
 Guardrails for a public demo: one run at a time, a per-hour run limit, only the dev portals (never the
 held-out one), and no endpoint that pays anything.
 
-Run:  uv run uvicorn legacy_portal.api:app --port 8062
+Run:  uv run uvicorn p2p_autopilot.api:app --port 8062
 """
 
 from __future__ import annotations
@@ -34,12 +34,12 @@ from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 from pydantic import BaseModel
 
-from legacy_portal import storage
-from legacy_portal.agent import RUNS_DIR
-from legacy_portal.orders.store import PostgresOrderSystem
-from legacy_portal.process.api import router as process_router
-from legacy_portal.runstore import RunStore, ensure_schema, jsonable
-from legacy_portal.worker import execute
+from p2p_autopilot import storage
+from p2p_autopilot.agent import RUNS_DIR
+from p2p_autopilot.orders.store import PostgresOrderSystem
+from p2p_autopilot.process.api import router as process_router
+from p2p_autopilot.runstore import RunStore, ensure_schema, jsonable
+from p2p_autopilot.worker import execute
 
 load_dotenv()
 PORTAL_BASE = os.environ.get("PORTAL_BASE_URL", "http://127.0.0.1:8061")
@@ -61,7 +61,7 @@ async def lifespan(_app):
     POOL.close()
 
 
-app = FastAPI(title="Legacy Portal Agent API", lifespan=lifespan)
+app = FastAPI(title="P2P Autopilot API", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=os.environ.get("CONSOLE_ORIGINS", "http://localhost:3061").split(","),
                    allow_methods=["GET", "POST"], allow_headers=["*"])
 

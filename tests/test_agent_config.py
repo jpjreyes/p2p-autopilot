@@ -1,6 +1,6 @@
 """Ablation variants (D13) must change only what they claim to, and the defaults must be the production agent."""
 
-from legacy_portal.agent import ACTION_SCHEMA, MAX_BATCH, SYSTEM, configure
+from p2p_autopilot.agent import ACTION_SCHEMA, MAX_BATCH, SYSTEM, configure
 
 
 def actions(schema):

@@ -31,7 +31,7 @@ ensure_services() {
   fi
   if ! curl -sf "$BASE/healthz" >/dev/null; then
     log "portal server down: starting it"
-    nohup uv run uvicorn legacy_portal.portals.app:app --port 8061 >>"${OUT%.json}.portal.log" 2>&1 &
+    nohup uv run uvicorn p2p_autopilot.portals.app:app --port 8061 >>"${OUT%.json}.portal.log" 2>&1 &
     for _ in $(seq 30); do curl -sf "$BASE/healthz" >/dev/null && break; sleep 1; done
   fi
 }
@@ -41,7 +41,7 @@ while true; do
   ensure_services
   before=$(saved)
   log "start/resume: $before runs saved in $OUT"
-  uv run python -m legacy_portal.chaos_suite --out "$OUT" "$@" 2>&1 | tee -a "$LOG"
+  uv run python -m p2p_autopilot.chaos_suite --out "$OUT" "$@" 2>&1 | tee -a "$LOG"
   code=${PIPESTATUS[0]}
   after=$(saved)
   if [ "$code" -eq 0 ]; then

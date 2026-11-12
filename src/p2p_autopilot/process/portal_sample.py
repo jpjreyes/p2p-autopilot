@@ -9,7 +9,7 @@ Picked per vendor: POs with 1-3 lines, 3-way match, an invoice recorded, every l
   goods_first     every line's goods receipt was recorded before the invoice (normal, should match)
   invoice_first   at least one line was invoiced before its goods arrived (the AP risk behind Process Copilot's EUR 1.75M)
 
-Run (after the warehouse):  uv run python -m legacy_portal.process.portal_sample   -> data/bpi/portal_sample.json
+Run (after the warehouse):  uv run python -m p2p_autopilot.process.portal_sample   -> data/bpi/portal_sample.json
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from pathlib import Path
 
 import duckdb
 
-from legacy_portal.process.warehouse import DEFAULT_DB, ROOT
+from p2p_autopilot.process.warehouse import DEFAULT_DB, ROOT
 
 OUT = ROOT / "data" / "bpi" / "portal_sample.json"
 # portal -> real vendor, chosen so the vendor's spend area fits the portal's trade (process.warehouse spend areas)
@@ -47,7 +47,7 @@ def sample(db: Path = DEFAULT_DB) -> dict:
         FROM cases c JOIN f USING (case_id)
         WHERE c.item_category LIKE '3-way%' AND c.value_eur > 0 AND f.ir_ts IS NOT NULL AND f.po_ts IS NOT NULL
     """)
-    out: dict = {"source": "BPI Challenge 2019 (4TU, CC BY 4.0), via legacy_portal.process.warehouse", "vendors": {}}
+    out: dict = {"source": "BPI Challenge 2019 (4TU, CC BY 4.0), via p2p_autopilot.process.warehouse", "vendors": {}}
     for portal, (vendor, area) in VENDORS.items():
         rows = con.execute("""
             WITH po AS (

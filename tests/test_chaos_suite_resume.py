@@ -1,6 +1,6 @@
 import json
 
-from legacy_portal import chaos_suite
+from p2p_autopilot import chaos_suite
 
 
 def test_save_is_atomic_and_leaves_no_temp_file(tmp_path):

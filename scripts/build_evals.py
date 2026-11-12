@@ -18,7 +18,9 @@ OUT = ROOT / "web" / "public" / "evals.json"
 
 def main() -> None:
     rows = []
-    for f in sorted((ROOT / "runs").glob("chaos-*.json")):
+    # development runs by timestamp, then the final evals (runs/final, D23-D25) in the order they ran
+    final = sorted((ROOT / "runs" / "final").glob("*.json"), key=lambda f: f.stat().st_mtime)
+    for f in sorted((ROOT / "runs").glob("chaos-*.json")) + final:
         for r in json.loads(f.read_text()):
             r.setdefault("variant", "full")
             r["file"] = f.name
@@ -33,14 +35,14 @@ def main() -> None:
         return {
             "latest_pass": bool(last["pass"]),
             "latest_side_effects": last.get("side_effects", 0),
-            "latest_docs_right": f"{last['verdict_correct']}/20" if "verdict_correct" in last else None,
+            "latest_docs_right": f"{last['verdict_correct']}/{last.get('documents', 20)}" if "verdict_correct" in last else None,
             "runs": len(group),
             "passed": sum(bool(r["pass"]) for r in group),
             "unsafe": sum(r.get("unsafe", 0) for r in group),
             "side_effects": sum(r.get("side_effects", 0) for r in group),
             "calls_median": sorted(r["calls"] for r in group)[len(group) // 2],
             "seconds_median": sorted(float(r["seconds"]) for r in group)[len(group) // 2],
-            "docs_right": f"{min((r['verdict_correct'] for r in scored), default=0)}/20" if scored else None,
+            "docs_right": f"{min((r['verdict_correct'] for r in scored), default=0)}/{scored[0].get('documents', 20)}" if scored else None,
             "nav_usd": round(sum(r.get("nav_usd", 0) for r in group) / len(group), 4) if any(
                 "nav_usd" in r for r in group) else None,
             "hw_caught": (f"{sum(r['hw_caught'] for r in group)}/{sum(r['hw_corrections'] for r in group)}"

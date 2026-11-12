@@ -4,9 +4,9 @@ from datetime import date
 
 import pytest
 
-from legacy_portal.process import grounding
-from legacy_portal.process.brief import brief
-from legacy_portal.process.warehouse import DEFAULT_DB
+from p2p_autopilot.process import grounding
+from p2p_autopilot.process.brief import brief
+from p2p_autopilot.process.warehouse import DEFAULT_DB
 
 needs_warehouse = pytest.mark.skipif(not DEFAULT_DB.exists(), reason="warehouse not built")
 
@@ -38,9 +38,9 @@ def test_latest_brief_reproduces_the_p2_headline_numbers(tmp_path):
 
 @needs_warehouse
 def test_older_weeks_have_no_model_section_and_the_retry_removes_invented_numbers(monkeypatch, tmp_path):
-    from legacy_portal.process import brief as mod
+    from p2p_autopilot.process import brief as mod
     fake = Fake(["Paid 99,999 before receipt [paid_early]", "Nothing unusual this week [week]"])
-    monkeypatch.setattr("legacy_portal.llm.get_backend", lambda: fake)
+    monkeypatch.setattr("p2p_autopilot.llm.get_backend", lambda: fake)
     b = mod.brief(date(2018, 10, 1), out_dir=tmp_path)
     assert "block_risk" not in b["sections"]
     assert len(fake.calls) == 2 and "99,999" in fake.calls[1]  # the retry names the invented number

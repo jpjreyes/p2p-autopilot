@@ -7,8 +7,8 @@ import pytest
 from fastapi.testclient import TestClient
 from pypdf import PdfReader
 
-from legacy_portal.portals import chaos
-from legacy_portal.portals.app import ADMIN_TOKEN, CREDENTIALS, DOCS, app
+from p2p_autopilot.portals import chaos
+from p2p_autopilot.portals.app import ADMIN_TOKEN, CREDENTIALS, DOCS, app
 
 
 @pytest.fixture(autouse=True)
@@ -129,7 +129,7 @@ def test_admin_chaos_endpoint_requires_token():
 
 
 def test_injection_mode_plants_text_in_pdfs_and_a_paper_copy_link():
-    from legacy_portal.portals.app import INJECTED
+    from p2p_autopilot.portals.app import INJECTED
     c = TestClient(app)
     chaos.set_modes("a", ["injection"])
     login(c, "a")
@@ -191,7 +191,7 @@ def test_long_descriptions_are_cut_to_their_column_width():
     """D22: a long description ran into the Qty column and made a scanned credit note unreadable."""
     from fpdf import FPDF
 
-    from legacy_portal.portals.pdf import _fit
+    from p2p_autopilot.portals.pdf import _fit
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Courier", size=9)

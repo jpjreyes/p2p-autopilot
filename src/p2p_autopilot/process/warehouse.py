@@ -22,7 +22,7 @@ Decisions applied (see DECISIONS.md):
   D6  timestamps parsed as UTC datetimes
   D7  identical rows are kept; one canonical copy per group is used for sequences
 
-Usage: python -m legacy_portal.process.warehouse [--csv PATH] [--db PATH]
+Usage: python -m p2p_autopilot.process.warehouse [--csv PATH] [--db PATH]
 """
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ from pathlib import Path
 
 import duckdb
 
-from legacy_portal.process.metrics import build_metrics
+from p2p_autopilot.process.metrics import build_metrics
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_CSV = ROOT / "data" / "bpi" / "bpi2019_events.csv.gz"

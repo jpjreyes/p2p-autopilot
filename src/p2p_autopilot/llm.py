@@ -13,12 +13,11 @@ from __future__ import annotations
 import base64
 import json
 import os
-import subprocess
 import time
 from dataclasses import dataclass
 from typing import Protocol
 
-from legacy_portal import subscription
+from p2p_autopilot import subscription
 
 DEFAULT_MODEL = os.environ.get("LPA_MODEL", "haiku")
 
@@ -155,8 +154,8 @@ class AnthropicBackend:
 
 
 def get_backend(name: str | None = None) -> Backend:
-    """The model backend, wrapped so every call is an LLM span when tracing is configured (legacy_portal.tracing)."""
-    from legacy_portal import tracing
+    """The model backend, wrapped so every call is an LLM span when tracing is configured (p2p_autopilot.tracing)."""
+    from p2p_autopilot import tracing
     name = name or os.environ.get("LPA_BACKEND", "claude-cli")
     if name == "claude-cli":
         inner = ClaudeCLIBackend()

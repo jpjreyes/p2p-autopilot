@@ -24,8 +24,8 @@ from pathlib import Path
 import pypdfium2 as pdfium
 from pypdf import PdfReader
 
-from legacy_portal.llm import DEFAULT_MODEL, Backend
-from legacy_portal.matching import DocLine, ExtractedDoc
+from p2p_autopilot.llm import DEFAULT_MODEL, Backend
+from p2p_autopilot.matching import DocLine, ExtractedDoc
 
 CENT = Decimal("0.01")
 CACHE_DIR = Path(__file__).resolve().parents[2] / "runs" / ".extract_cache"

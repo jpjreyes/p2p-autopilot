@@ -25,8 +25,8 @@ jobs:
       - run: uv sync --frozen
       - run: uv run playwright install --with-deps chromium
       - run: uv run ruff check src tests
-      - run: uv run python -m legacy_portal.process.warehouse  # real SAP log -> DuckDB (6 s), so the golden keys run
-      - run: uv run python -m legacy_portal.process.predict --worklist  # score open invoices with the committed model
+      - run: uv run python -m p2p_autopilot.process.warehouse  # real SAP log -> DuckDB (6 s), so the golden keys run
+      - run: uv run python -m p2p_autopilot.process.predict --worklist  # score open invoices with the committed model
       - run: uv run pytest -q
 
   image:
@@ -39,7 +39,7 @@ jobs:
         run: |
           docker run --rm p2p-autopilot:ci python -c "
           from fastapi.testclient import TestClient
-          from legacy_portal.process.api import router
+          from p2p_autopilot.process.api import router
           from fastapi import FastAPI
           app = FastAPI(); app.include_router(router)
           c = TestClient(app)

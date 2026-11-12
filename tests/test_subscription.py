@@ -5,7 +5,7 @@ import subprocess
 
 import pytest
 
-from legacy_portal import llm, subscription
+from p2p_autopilot import llm, subscription
 
 
 def fake_cli(monkeypatch, events, returncode=0, seen=None):
@@ -99,7 +99,7 @@ def test_stop_is_not_swallowed_by_broad_handlers(monkeypatch):
     with pytest.raises(subscription.EvalStop):
         try:
             llm.ClaudeCLIBackend().complete("s", "p", {})
-        except Exception:  # what a task-level retry loop would do
+        except Exception:  # noqa: BLE001 -- what a task-level retry loop would do
             pytest.fail("EvalStop must not be an Exception")
 
 

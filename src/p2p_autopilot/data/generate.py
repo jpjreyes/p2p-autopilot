@@ -2,7 +2,7 @@
 
 Since the merge with Process Copilot (D17), every supplier is the face of one real SAP vendor from the BPI 2019 log, and its
 invoices are built from that vendor's real purchase orders (PO numbers, line items, line amounts in EUR, order, goods
-receipt and invoice dates: `data/bpi/portal_sample.json`, from legacy_portal.process.portal_sample). Synthetic on top:
+receipt and invoice dates: `data/bpi/portal_sample.json`, from p2p_autopilot.process.portal_sample). Synthetic on top:
 supplier names and portals, invoice numbers, the quantity x unit-price split of each line amount, and the planted
 problems the real data doesn't contain (price above PO, duplicates, unknown POs, credit notes). "Billed for more than
 received" is real wherever the vendor invoiced before the goods arrived.
@@ -15,7 +15,7 @@ Every invoice gets a ground-truth verdict computed here, before any agent exists
   match, price_above_po, qty_above_received, duplicate, unknown_po, credit_note.
 Money is Decimal end to end and serialized as strings.
 
-Usage:  uv run python -m legacy_portal.data.generate   (writes data/generated/)
+Usage:  uv run python -m p2p_autopilot.data.generate   (writes data/generated/)
 """
 
 from __future__ import annotations

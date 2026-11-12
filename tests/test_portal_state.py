@@ -5,7 +5,7 @@ import os
 
 import pytest
 
-from legacy_portal.portals.chaos import PostgresState
+from p2p_autopilot.portals.chaos import PostgresState
 
 pytestmark = pytest.mark.skipif(not os.environ.get("DATABASE_URL"), reason="needs DATABASE_URL")
 

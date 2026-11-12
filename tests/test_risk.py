@@ -4,12 +4,12 @@ import json
 
 import pytest
 
-from legacy_portal import pipeline
-from legacy_portal.pipeline import process
-from legacy_portal.portals.app import DOCS, SUPPLIERS
-from legacy_portal.portals.pdf import render
-from legacy_portal.process.risk import block_note
-from legacy_portal.process.warehouse import DEFAULT_DB
+from p2p_autopilot import pipeline
+from p2p_autopilot.pipeline import process
+from p2p_autopilot.portals.app import DOCS, SUPPLIERS
+from p2p_autopilot.portals.pdf import render
+from p2p_autopilot.process.risk import block_note
+from p2p_autopilot.process.warehouse import DEFAULT_DB
 from test_handwriting import Fake
 from test_matching import DATA, MemoryOrderSystem
 
