@@ -1,8 +1,9 @@
 """Model backends behind one interface (decision D4).
 
-  claude-cli  development: runs `claude -p` on a Claude plan. No tools, no hooks, no MCP, no session
-              files, a custom system prompt and JSON-schema-validated output. Not for the live demo.
-  anthropic   the API (final evals and live demo); used when ANTHROPIC_API_KEY is set.
+  claude-cli  local development and evals: Claude through the Claude Code CLI with a Claude login, in a clean
+              configuration with a usage guard (subscription.py). Custom system prompt, no tools,
+              JSON-schema-validated output, screenshots supported. Not used by the deployed app.
+  anthropic   the API: the deployed app, and a parity check against the CLI backend.
 
 Every call returns the parsed JSON plus usage, so evals can report tokens and latency per step.
 """
@@ -17,6 +18,8 @@ import time
 from dataclasses import dataclass
 from typing import Protocol
 
+from legacy_portal import subscription
+
 DEFAULT_MODEL = os.environ.get("LPA_MODEL", "haiku")
 
 
@@ -27,6 +30,7 @@ class LLMResult:
     output_tokens: int
     latency_s: float
     model: str
+    cost_usd: float = 0.0  # API-equivalent cost reported by the CLI (0 when unknown)
 
 
 class Backend(Protocol):
@@ -35,71 +39,58 @@ class Backend(Protocol):
 
 
 class ClaudeCLIBackend:
-    def __init__(self, timeout_s: int = 120):
+    """`claude -p` through `subscription.run` (clean configuration, never an API key, usage guard). Model id, effort
+    and output cap are pinned to what the API backend uses, so both paths send the same request apart from
+    authentication."""
+
+    def __init__(self, timeout_s: int = 120, effort: str | None = None):
         self.timeout_s = timeout_s
+        self.effort = effort or os.environ.get("LPA_EFFORT")
 
     def complete(self, system: str, prompt: str, schema: dict, model: str = DEFAULT_MODEL,
                  images: list[bytes] | None = None) -> LLMResult:
-        base = ["claude", "-p", "--model", model, "--system-prompt", system, "--tools", "", "--setting-sources", "",
+        model_id = MODEL_IDS.get(model, model)
+        effort = self.effort or API_DEFAULT_EFFORT.get(model_id)
+        args = ["-p", "--model", model_id, "--system-prompt", system, "--tools", "", "--setting-sources", "",
                 "--strict-mcp-config", "--disable-slash-commands", "--no-session-persistence",
-                "--json-schema", json.dumps(schema)]
-        if images:
-            return self._with_images(base, prompt, images, model)
-        cmd = [*base[:2], prompt, *base[2:], "--output-format", "json"]
-        t0 = time.monotonic()
-        for attempt in (1, 2):  # the CLI occasionally returns an empty answer; one retry, then a clear error
-            out = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=self.timeout_s,
-                                 cwd="/tmp", env=_cli_env())
-            if out.returncode != 0:
-                err = f"claude CLI failed ({out.returncode}): {out.stderr[-300:] or out.stdout[-300:]}"
-            else:
-                payload = json.loads(out.stdout)
-                data = payload.get("structured_output")
-                if data is None and payload.get("result", "").strip().startswith("{"):
-                    data = json.loads(payload["result"])
-                if not payload.get("is_error") and isinstance(data, dict):
-                    break
-                err = f"claude CLI gave no structured answer: {str(payload.get('result'))[:200]!r}"
-            if attempt == 2:
-                raise RuntimeError(err)
-        latency = time.monotonic() - t0
-        u = payload.get("usage", {})
-        tokens_in = u.get("input_tokens", 0) + u.get("cache_creation_input_tokens", 0) + u.get(
-            "cache_read_input_tokens", 0)
-        return LLMResult(data, tokens_in, u.get("output_tokens", 0), latency, model)
-
-
-    def _with_images(self, base: list[str], prompt: str, images: list[bytes], model: str) -> LLMResult:
-        """Images need the stream-json input format (one user message with image blocks)."""
+                "--json-schema", json.dumps(schema), "--input-format", "stream-json"]
+        if effort:
+            args += ["--effort", effort]
         content = [{"type": "image", "source": {"type": "base64", "media_type": "image/png",
-                                                "data": base64.b64encode(img).decode()}} for img in images]
+                                                "data": base64.b64encode(img).decode()}} for img in images or []]
         content.append({"type": "text", "text": prompt})
         msg = json.dumps({"type": "user", "message": {"role": "user", "content": content}}) + "\n"
-        cmd = [*base, "--input-format", "stream-json", "--output-format", "stream-json", "--verbose"]
         t0 = time.monotonic()
-        for attempt in (1, 2):
-            out = subprocess.run(cmd, check=False, input=msg, capture_output=True, text=True,
-                                 timeout=self.timeout_s, cwd="/tmp", env=_cli_env())
-            events = [json.loads(ln) for ln in out.stdout.splitlines() if ln.strip().startswith("{")]
+        err = ""
+        for _attempt in (1, 2):  # the CLI occasionally returns an empty answer; one retry, then a clear error
+            out, events = subscription.run(args, msg, self.timeout_s)
             result = next((e for e in reversed(events) if e.get("type") == "result"), {})
             data = result.get("structured_output")
+            if data is None and str(result.get("result", "")).strip().startswith("{"):
+                try:
+                    data = json.loads(result["result"])
+                except json.JSONDecodeError:
+                    data = None
             if out.returncode == 0 and isinstance(data, dict) and not result.get("is_error"):
                 u = result.get("usage", {})
                 tokens_in = (u.get("input_tokens", 0) + u.get("cache_creation_input_tokens", 0)
                              + u.get("cache_read_input_tokens", 0))
-                return LLMResult(data, tokens_in, u.get("output_tokens", 0), time.monotonic() - t0, model)
-            if attempt == 2:
-                raise RuntimeError(f"claude CLI (images) gave no structured answer: {out.stderr[-200:]}")
-        raise AssertionError("unreachable")
+                return LLMResult(data, tokens_in, u.get("output_tokens", 0), time.monotonic() - t0, model,
+                                 float(result.get("total_cost_usd") or 0.0))
+            err = (f"claude CLI gave no structured answer (exit {out.returncode}): "
+                   f"{str(result.get('result'))[:200]!r} {out.stderr[-200:]}")
+        raise RuntimeError(err)
 
 
 def _cli_env() -> dict[str, str]:
-    """The CLI backend must run on the developer's Claude login. If ANTHROPIC_API_KEY were inherited (e.g. from .env),
-    `claude -p` would silently bill the API instead, so it is removed here; only the anthropic backend uses the key."""
-    return {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
+    """Environment for the CLI backend: no API-key variables (the CLI would bill the key instead of the login) and,
+    when the clean setup exists, the isolated config folder and the CLI token. See subscription.py."""
+    return subscription.env()
 
 
 MODEL_IDS = {"haiku": "claude-haiku-5-5", "sonnet": "claude-sonnet-5-5", "opus": "claude-opus-5-5"}
+# the API's default effort per model: the CLI is pinned to the same value when none is configured
+API_DEFAULT_EFFORT = {"claude-haiku-5-5": "medium", "claude-sonnet-5-5": "high", "claude-opus-5-5": "medium"}
 _UNSUPPORTED = {"minimum", "maximum", "multipleOf", "minLength", "maxLength", "minItems", "maxItems"}
 
 
