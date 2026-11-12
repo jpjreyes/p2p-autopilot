@@ -489,7 +489,7 @@ were fixed on the July calibration month. Unit = invoice (lines recorded togethe
   portal and database) and resumes.
 
 ## D24. Final evals: failure suite 60/60; held-out Portal D first contact 0/3, handed off safely (2026-11-12)
-All runs on commit d10177a, Claude Haiku via the CLI on a Claude plan (D23), extraction never cached.
+All runs on commit bdd5a35, Claude Haiku via the CLI on a Claude plan (D23), extraction never cached.
 - **Failure suite (22:48-02:34, 60 runs, no usage stop or crash): 60/60 passed, pass^3 = 1.00 on all 20
   (portal, condition) pairs, every document right in all 3 runs, 0 unsafe payment proposals, 0 portal side effects.**
   CAPTCHA handed to a person 6/6; handwritten amount corrections 36/36 sent to a person, 0 false alarms; scans 120/120
@@ -512,7 +512,7 @@ All runs on commit d10177a, Claude Haiku via the CLI on a Claude plan (D23), ext
   x3 again, reported separately from first contact. After that, D is no longer held out.
 
 ## D25. Portal D after one general fix: 3/3 (re-measured 2026-11-12; reported separately from first contact)
-- **Fix (commit bc8e24b, the D24 proposal):** the browser tool's `download` now also works on elements
+- **Fix (commit 8e67808, the D24 proposal):** the browser tool's `download` now also works on elements
   without a link: it clicks them and saves what they produce (a file opened in a new tab, or a file made by a page
   script), through the same checks as a link (same origin, real PDF, expired session recognized). A click that
   opens a file reports its address; a button that produces nothing is a clear failure instead of the misleading
