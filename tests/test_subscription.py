@@ -117,3 +117,10 @@ def test_api_key_in_token_file_is_refused(monkeypatch, tmp_path):
     fake_cli(monkeypatch, [init(), result({"ok": True})])
     with pytest.raises(subscription.NotClean):
         llm.ClaudeCLIBackend().complete("s", "p", {})
+
+
+def test_token_wrapped_across_lines_is_joined(monkeypatch, tmp_path):
+    t = tmp_path / "wrapped"
+    t.write_text("sk-ant-oat01-abc\ndef \n")
+    monkeypatch.setattr(subscription, "TOKEN", t)
+    assert subscription.env()["CLAUDE_CODE_OAUTH_TOKEN"] == "sk-ant-oat01-abcdef"

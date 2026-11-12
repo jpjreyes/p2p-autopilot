@@ -60,12 +60,17 @@ def clean() -> bool:
     return TOKEN.exists() and CONFIG.is_dir()
 
 
+def read_token() -> str:
+    """The token has no whitespace; copying it from a terminal can wrap it across lines, so all whitespace is removed."""
+    return "".join(TOKEN.read_text().split())
+
+
 def env() -> dict[str, str]:
     e = {k: v for k, v in os.environ.items() if k not in _REMOVE}
     e["CLAUDE_CODE_MAX_OUTPUT_TOKENS"] = MAX_OUTPUT_TOKENS
     if clean():
         e["CLAUDE_CONFIG_DIR"] = str(CONFIG)
-        e["CLAUDE_CODE_OAUTH_TOKEN"] = TOKEN.read_text().strip()
+        e["CLAUDE_CODE_OAUTH_TOKEN"] = read_token()
     return e
 
 
@@ -77,7 +82,7 @@ def check_ready() -> None:
     global _warned
     if _utilization(last_limits) >= STOP_AT:
         raise QuotaStop(f"usage at {_utilization(last_limits):.0%} (stop at {STOP_AT:.0%}): {last_limits}")
-    if TOKEN.exists() and TOKEN.read_text().strip().startswith("sk-ant-api"):
+    if TOKEN.exists() and read_token().startswith("sk-ant-api"):
         raise NotClean(f"{TOKEN} holds an API key, not a CLI login token from `claude setup-token`")
     if not clean():
         if not allow_dirty():
