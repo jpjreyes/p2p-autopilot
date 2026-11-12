@@ -144,3 +144,24 @@ def test_known_hook_with_different_output_stops(monkeypatch):
                            result({"ok": True})])
     with pytest.raises(subscription.NotClean):
         llm.ClaudeCLIBackend().complete("s", "p", {})
+
+
+def test_usage_stop_says_when_to_resume(monkeypatch):
+    ev = limits(five=0.85, week=0.30)
+    ev["rate_limit_info"]["unifiedWindows"]["five_hour"]["resetsAt"] = 1_000
+    ev["rate_limit_info"]["unifiedWindows"]["seven_day"]["resetsAt"] = 9_000
+    fake_cli(monkeypatch, [init(), ev, result({"ok": True})])
+    b = llm.ClaudeCLIBackend()
+    b.complete("s", "p", {})
+    with pytest.raises(subscription.QuotaStop) as stop:
+        b.complete("s", "p", {})
+    assert stop.value.retry_at == 1_000  # only the window over the threshold counts
+
+
+def test_extra_usage_never_resumes_automatically(monkeypatch):
+    ev = limits()
+    ev["rate_limit_info"]["isUsingOverage"] = True
+    fake_cli(monkeypatch, [init(), ev, result({"ok": True})])
+    with pytest.raises(subscription.QuotaStop) as stop:
+        llm.ClaudeCLIBackend().complete("s", "p", {})
+    assert stop.value.retry_at is None

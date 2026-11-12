@@ -455,3 +455,24 @@ were fixed on the July calibration month. Unit = invoice (lines recorded togethe
 - **Final: one full run on the final code (13:00): 20/20, 0 unsafe in all 20**, every document right in every
   completed run, CAPTCHA handed to a person on both portals, 6/6 handwritten corrections caught with 0 false alarms.
   This is the number reported; the 19/20 runs and what they found stay in this log.
+
+## D23. Final evals on the Claude plan, and the held-out Portal D protocol (written before the run, 2026-11-11)
+- **Backend (changes D6):** final numbers come from Claude Haiku through the CLI on a Claude plan in an isolated
+  configuration (no user plugins or settings; one sentence added to every prompt by an account-managed hook),
+  not the API. The deployed version is checked against these numbers with a small parity check. Costs are reported as
+  API-equivalent.
+- **Measured before sizing:** one Portal A run with fresh extraction = 32 model calls, 93 s, ~$0.022
+  API-equivalent; two runs moved the 5-hour window by ~1 point and the weekly window by < 1 point.
+- **Final failure suite:** 10 conditions x portals A and B x 3 repeats = 60 runs, extraction never cached, reported as
+  pass^1, pass^3 and per-document pass^3 per condition, plus unsafe proposals over all 60 runs.
+- **Held-out Portal D (first contact), fixed before the run:**
+  - What runs: the committed code, recorded in every result row; normal day (no chaos); 3 runs back to back with
+    nothing changed or read in between (`--held-out-d --repeat 3`). Nothing in D was looked at before.
+  - Pass, per run: the agent finishes (no handoff), every open document downloaded, every verdict correct, 0 unsafe
+    payment proposals, 0 side effects on the portal. Payable amounts and needs-human counts are reported too.
+  - Reported first and kept whatever it is: pass^1, pass^3 and per-document pass^3. Only after that are failures
+    read; fixes must be general (no Portal D-specific rules, as in D10), and the re-measured number is reported
+    separately. After that, D is no longer a held-out portal.
+- **No lost work:** each finished run is saved atomically; a usage stop (80% of the 5-hour or weekly window) or a
+  crash discards only the run it cut off; `scripts/run_eval.sh` waits for the window to reset (or restarts the
+  portal and database) and resumes.

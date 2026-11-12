@@ -15,6 +15,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
+import sys
 import urllib.request
 from datetime import datetime
 from pathlib import Path
@@ -27,6 +29,9 @@ from legacy_portal.orders.store import PostgresOrderSystem, connect
 from legacy_portal.pipeline import process, score
 from legacy_portal.portals import handwriting
 from legacy_portal.portals.app import DOCS
+from legacy_portal.subscription import EvalStop, QuotaStop
+
+STOP_EXIT = 75  # a usage stop that can resume at a known time (scripts/run_eval.sh waits and resumes)
 
 # Claude Haiku 5.5 list price per million tokens (prompts <= 100K tokens), no caching: an upper bound.
 PRICE_IN, PRICE_OUT = 0.10, 0.50
@@ -54,27 +59,68 @@ def set_chaos(base: str, portal: str, modes: list[str]) -> None:
     urllib.request.urlopen(req, timeout=10).read()
 
 
+def portal_up(base: str) -> bool:
+    try:
+        urllib.request.urlopen(f"{base}/healthz", timeout=5).read()
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def side_effects(base: str, portal: str) -> list[str]:
     with urllib.request.urlopen(f"{base}/admin/side_effects?portal={portal}", timeout=10) as r:
         return json.loads(r.read())["side_effects"]
 
 
+def save(path: Path, rows: list[dict]) -> None:
+    """Atomic: a crash or kill mid-write never corrupts the runs already saved."""
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(rows, indent=2))
+    os.replace(tmp, path)
+
+
+def commit() -> str:
+    """The code version a result was produced with (dirty = uncommitted changes in src/)."""
+    root = Path(__file__).resolve().parents[2]
+    sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=root, capture_output=True, text=True, check=False).stdout
+    dirty = subprocess.run(["git", "status", "--porcelain", "src"], cwd=root, capture_output=True, text=True, check=False).stdout
+    return sha.strip() + ("-dirty" if dirty.strip() else "")
+
+
 def main():
+    try:
+        suite()
+    except EvalStop as e:  # finished runs are already saved; the run it cut off is discarded and redone on resume
+        retry_at = e.retry_at if isinstance(e, QuotaStop) else None
+        print(f"\nEVAL STOP ({type(e).__name__}): {e}", flush=True)
+        if retry_at:
+            print(f"EVAL_RETRY_AT={retry_at}", flush=True)
+            sys.exit(STOP_EXIT)
+        sys.exit(2)
+
+
+def suite():
     load_dotenv()
     ap = argparse.ArgumentParser()
     ap.add_argument("--portals", nargs="+", default=["a", "b"], choices=["a", "b", "c"])
     ap.add_argument("--modes", nargs="+", default=MODES, choices=MODES + EXTRA_MODES)
     ap.add_argument("--repeat", type=int, default=1, help="k runs per (portal, mode) for pass^k")
     ap.add_argument("--variant", default="full", choices=list(VARIANTS), help="ablation (D13); full = production")
-    ap.add_argument("--resume", type=Path, help="results file of a stopped suite: keep its runs, do only the missing ones")
+    ap.add_argument("--out", type=Path,
+                    help="results file; if it exists, its runs are kept and only the missing ones run (resume)")
+    ap.add_argument("--held-out-d", action="store_true",
+                    help="the one final run on held-out Portal D (D23): normal day only, never tuned on")
     args = ap.parse_args()
+    if args.held_out_d:
+        args.portals, args.modes = ["d"], ["none"]
     base = os.environ.get("PORTAL_BASE_URL", "http://127.0.0.1:8061")
     backend, rows = get_backend(), []
     stamp = f"{datetime.now():%Y%m%d-%H%M%S}"
-    out = RUNS_DIR / f"chaos-{stamp}.json"
-    if args.resume:  # a usage stop discards the run it cut off; the finished ones are kept
-        out, rows = args.resume, json.loads(args.resume.read_text())
+    out = args.out or RUNS_DIR / f"chaos-{stamp}.json"
+    if out.exists():
+        rows = json.loads(out.read_text())
         print(f"resuming {out}: {len(rows)} runs already done", flush=True)
+    version = commit()
     done = {(r["portal"], r["mode"], r.get("rep", 0)) for r in rows}
     total, started = len(args.portals) * len(args.modes) * args.repeat, datetime.now()
     with connect() as conn:
@@ -95,12 +141,15 @@ def main():
                     try:
                         r = run(portal, base, backend, max_steps=60, **VARIANTS[args.variant])
                         effects = side_effects(base, portal)  # read before the reset below clears them
-                    except Exception as e:  # noqa: BLE001 -- one crashed run is one FAIL row, never a dead suite
+                    except Exception as e:  # one crashed run is one FAIL row, never a dead suite
+                        if not portal_up(base):  # infrastructure, not the agent: no row; resume redoes this run
+                            raise
                         rows.append(
                             {
                                 "portal": portal,
                                 "mode": mode,
                                 "rep": rep,
+                                "commit": version,
                                 "outcome": "crash",
                                 "reason": repr(e)[:300],
                                 "downloads": 0,
@@ -109,7 +158,7 @@ def main():
                                 "pass": False,
                             }
                         )
-                        out.write_text(json.dumps(rows, indent=2))
+                        save(out, rows)
                         continue
                     finally:
                         set_chaos(base, portal, [])
@@ -119,6 +168,7 @@ def main():
                         "mode": mode,
                         "variant": args.variant,
                         "rep": rep,
+                        "commit": version,
                         "outcome": r.outcome,
                         "reason": r.reason,
                         "downloads": len(r.downloads),
@@ -152,7 +202,7 @@ def main():
                         row.update(extract_calls=ex["calls"],
                                    extract_usd=round(usd(ex["tokens_in"], ex["tokens_out"]), 4))
                         row.update(
-                            {k: sc[k] for k in ("verdict_correct", "payable_correct", "needs_human")},
+                            {k: sc[k] for k in ("documents", "verdict_correct", "payable_correct", "needs_human")},
                             unsafe=len(sc["unsafe_proposals"]),
                             docs_wrong=[m.split(":")[0] for m in sc["misses"]],
                         )
@@ -163,7 +213,7 @@ def main():
                             and not effects
                         )
                     rows.append(row)
-                    out.write_text(json.dumps(rows, indent=2))  # saved after every run
+                    save(out, rows)  # saved after every run
                     print(json.dumps({k: v for k, v in row.items() if k != "run_dir"}), flush=True)
     print(
         f"\n{'portal':<7}{'mode':<16}{'outcome':<9}{'docs':>5}{'verdicts':>9}{'unsafe':>7}{'calls':>6}"
@@ -186,7 +236,7 @@ def main():
                 p1 = sum(r["pass"] for r in group) / k
                 wrong_any = set().union(*(set(r.get("docs_wrong", [])) for r in group))
                 not_processed = any(r["outcome"] in ("crash", "error") for r in group)
-                doc_note = "n/a" if mode == "captcha" or not_processed else f"{20 - len(wrong_any)}/20"
+                doc_note = "n/a" if mode == "captcha" or not_processed else f"{group[0].get('documents', 20) - len(wrong_any)}/{group[0].get('documents', 20)}"
                 print(
                     f"  {portal} {mode:<15} pass^1={p1:.2f}  pass^{k}={'1.00' if all(r['pass'] for r in group) else '0.00'}"
                     f"  docs right in all {k} runs: {doc_note}"

@@ -56,7 +56,21 @@ class EvalStop(BaseException):
 
 
 class QuotaStop(EvalStop):
-    """The 5-hour or weekly usage window reached the stop threshold."""
+    """The 5-hour or weekly usage window reached the stop threshold.
+
+    retry_at: epoch seconds when the window(s) at or over the threshold reset, so a driver can wait and resume;
+    None means never resume automatically (paid extra usage, or no reset time reported).
+    """
+
+    def __init__(self, msg: str, retry_at: int | None = None):
+        super().__init__(msg)
+        self.retry_at = retry_at
+
+
+def _retry_at(limits: dict | None) -> int | None:
+    resets = [int(w["resetsAt"]) for w in (limits or {}).values()
+              if (w.get("utilization") or 0.0) >= STOP_AT and w.get("resetsAt")]
+    return max(resets) if resets else None
 
 
 class NotClean(EvalStop):
@@ -92,7 +106,8 @@ def _utilization(limits: dict | None) -> float:
 def check_ready() -> None:
     global _warned
     if _utilization(last_limits) >= STOP_AT:
-        raise QuotaStop(f"usage at {_utilization(last_limits):.0%} (stop at {STOP_AT:.0%}): {last_limits}")
+        raise QuotaStop(f"usage at {_utilization(last_limits):.0%} (stop at {STOP_AT:.0%}): {last_limits}",
+                        retry_at=_retry_at(last_limits))
     if TOKEN.exists() and read_token().startswith("sk-ant-api"):
         raise NotClean(f"{TOKEN} holds an API key, not a CLI login token from `claude setup-token`")
     if not clean():
@@ -141,7 +156,7 @@ def run(args: list[str], stdin: str | None, timeout: float) -> tuple[subprocess.
             info = ev.get("rate_limit_info") or {}
             last_limits = info.get("unifiedWindows") or last_limits
             if info.get("status") == "rejected":
-                raise QuotaStop(f"usage limit reached: {info}")
+                raise QuotaStop(f"usage limit reached: {info}", retry_at=_retry_at(last_limits))
             if info.get("isUsingOverage"):
                 raise QuotaStop(f"the call used paid extra usage: {info}")
     return out, events
