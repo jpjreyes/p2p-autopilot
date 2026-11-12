@@ -5,7 +5,9 @@ The local backend uses a Claude login instead of an API key; the deployed app us
      long-lived CLI token, from an empty working folder;
   2. never bills an API key: API-key variables are removed and the call is rejected unless the CLI reports it is
      using the login (apiKeySource == "none");
-  3. stops if any hook runs (the configuration isn't clean);
+  3. stops if any hook runs, except the known ones listed in KNOWN_HOOKS (hooks forced by the account's
+     account-managed settings, which no client setting can turn off); their exact output is checked, so any
+     other hook or any change in what they inject still stops the run;
   4. has a usage guard: after each call the CLI's 5-hour and weekly usage are read, and at or above
      CLAUDE_EVAL_STOP_AT (default 80%) the next call raises QuotaStop, so a long eval stops and can resume later;
   5. stops at once if the CLI reports pay-as-you-go extra usage (isUsingOverage), and refuses a token file that
@@ -35,6 +37,15 @@ STOP_AT = float(os.environ.get("CLAUDE_EVAL_STOP_AT", "0.80"))
 MAX_OUTPUT_TOKENS = "16000"  # same cap as the API backend
 _REMOVE = {"ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL", "CLAUDE_CODE_USE_BEDROCK",
            "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY", "CLAUDE_CODE_OAUTH_TOKEN", "CLAUDE_CONFIG_DIR"}
+
+# Managed settings on the account enable a plugin whose hooks run in every session. They can't be
+# disabled from the client. Allowed only with exactly this output: SessionStart adds one sentence to the prompt
+# (a pointer to a tool the CLI call doesn't have), UserPromptSubmit adds nothing.
+KNOWN_HOOKS = {
+    "SessionStart": '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"This session may have '
+                    'run before. Call mcp__plugin_context-mode_context-mode__ctx_resume for a summary of what happened."}}',
+    "UserPromptSubmit": "",
+}
 
 last_limits: dict | None = None  # latest unifiedWindows seen, shared by every call in this process
 _warned = False
@@ -95,6 +106,15 @@ def check_ready() -> None:
             _warned = True
 
 
+def _known_hook(ev: dict) -> bool:
+    event = ev.get("hook_event") or str(ev.get("hook_name", "")).split(":")[0]
+    if event not in KNOWN_HOOKS:
+        return False
+    if ev.get("subtype") == "hook_started":
+        return True
+    return str(ev.get("output") or "").strip() == KNOWN_HOOKS[event]
+
+
 def run(args: list[str], stdin: str | None, timeout: float) -> tuple[subprocess.CompletedProcess, list[dict]]:
     """Run `claude <args> --output-format stream-json --verbose`; return the process and its parsed events."""
     global last_limits
@@ -114,8 +134,9 @@ def run(args: list[str], stdin: str | None, timeout: float) -> tuple[subprocess.
         t, sub = ev.get("type"), str(ev.get("subtype", ""))
         if t == "system" and sub == "init" and ev.get("apiKeySource") != "none":
             raise NotClean(f"not using the CLI login: apiKeySource={ev.get('apiKeySource')!r}")
-        if t == "system" and sub.startswith("hook") and not allow_dirty():
-            raise NotClean(f"a hook ran ({ev.get('hook_name') or sub}): the environment is not clean")
+        if t == "system" and sub.startswith("hook") and not allow_dirty() and not _known_hook(ev):
+            raise NotClean(f"unexpected hook ({ev.get('hook_name') or sub}, output {str(ev.get('output'))[:120]!r}): "
+                           "the environment is not clean")
         if t == "rate_limit_event":
             info = ev.get("rate_limit_info") or {}
             last_limits = info.get("unifiedWindows") or last_limits

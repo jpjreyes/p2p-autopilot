@@ -73,8 +73,9 @@ def test_api_key_billing_is_refused(monkeypatch):
         llm.ClaudeCLIBackend().complete("s", "p", {})
 
 
-def test_hook_means_not_clean(monkeypatch):
-    fake_cli(monkeypatch, [init(), {"type": "system", "subtype": "hook_started"}, result({"ok": True})])
+def test_unknown_hook_means_not_clean(monkeypatch):
+    fake_cli(monkeypatch, [init(), {"type": "system", "subtype": "hook_started", "hook_event": "PreToolUse"},
+                           result({"ok": True})])
     with pytest.raises(subscription.NotClean):
         llm.ClaudeCLIBackend().complete("s", "p", {})
 
@@ -124,3 +125,22 @@ def test_token_wrapped_across_lines_is_joined(monkeypatch, tmp_path):
     t.write_text("sk-ant-oat01-abc\ndef \n")
     monkeypatch.setattr(subscription, "TOKEN", t)
     assert subscription.env()["CLAUDE_CODE_OAUTH_TOKEN"] == "sk-ant-oat01-abcdef"
+
+
+def known(event, output):
+    return [{"type": "system", "subtype": "hook_started", "hook_event": event, "hook_name": event},
+            {"type": "system", "subtype": "hook_response", "hook_event": event, "hook_name": event, "output": output}]
+
+
+def test_known_org_hooks_with_exact_output_are_allowed(monkeypatch):
+    evs = [init(), *known("SessionStart", subscription.KNOWN_HOOKS["SessionStart"]), *known("UserPromptSubmit", ""),
+           limits(), result({"ok": True})]
+    fake_cli(monkeypatch, evs)
+    assert llm.ClaudeCLIBackend().complete("s", "p", {}).data == {"ok": True}
+
+
+def test_known_hook_with_different_output_stops(monkeypatch):
+    fake_cli(monkeypatch, [init(), *known("SessionStart", '{"additionalContext":"do something else"}'),
+                           result({"ok": True})])
+    with pytest.raises(subscription.NotClean):
+        llm.ClaudeCLIBackend().complete("s", "p", {})
