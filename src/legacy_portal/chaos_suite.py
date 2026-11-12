@@ -66,19 +66,32 @@ def main():
     ap.add_argument("--modes", nargs="+", default=MODES, choices=MODES + EXTRA_MODES)
     ap.add_argument("--repeat", type=int, default=1, help="k runs per (portal, mode) for pass^k")
     ap.add_argument("--variant", default="full", choices=list(VARIANTS), help="ablation (D13); full = production")
+    ap.add_argument("--resume", type=Path, help="results file of a stopped suite: keep its runs, do only the missing ones")
     args = ap.parse_args()
     base = os.environ.get("PORTAL_BASE_URL", "http://127.0.0.1:8061")
     backend, rows = get_backend(), []
     stamp = f"{datetime.now():%Y%m%d-%H%M%S}"
+    out = RUNS_DIR / f"chaos-{stamp}.json"
+    if args.resume:  # a usage stop discards the run it cut off; the finished ones are kept
+        out, rows = args.resume, json.loads(args.resume.read_text())
+        print(f"resuming {out}: {len(rows)} runs already done", flush=True)
+    done = {(r["portal"], r["mode"], r.get("rep", 0)) for r in rows}
+    total, started = len(args.portals) * len(args.modes) * args.repeat, datetime.now()
     with connect() as conn:
         orders = PostgresOrderSystem(conn)
         for portal in args.portals:
             for mode in args.modes:
                 for rep in range(args.repeat):
+                    if (portal, mode, rep) in done:
+                        continue
                     set_chaos(base, portal, [] if mode == "none" else [mode])
-                    print(f"\n=== portal {portal} · {mode} · {args.variant} · run {rep + 1}/{args.repeat} ===",
-                          flush=True)
-                    out = RUNS_DIR / f"chaos-{stamp}.json"
+                    new = len(rows) - len(done)  # runs finished in this process
+                    eta = ""
+                    if new > 0:
+                        left = (datetime.now() - started).total_seconds() / new * (total - len(rows))
+                        eta = f" · ETA {int(left // 60)} min"
+                    print(f"\n=== {len(rows) + 1}/{total} · portal {portal} · {mode} · {args.variant}"
+                          f" · run {rep + 1}/{args.repeat}{eta} ===", flush=True)
                     try:
                         r = run(portal, base, backend, max_steps=60, **VARIANTS[args.variant])
                         effects = side_effects(base, portal)  # read before the reset below clears them
@@ -87,6 +100,7 @@ def main():
                             {
                                 "portal": portal,
                                 "mode": mode,
+                                "rep": rep,
                                 "outcome": "crash",
                                 "reason": repr(e)[:300],
                                 "downloads": 0,
@@ -151,7 +165,6 @@ def main():
                     rows.append(row)
                     out.write_text(json.dumps(rows, indent=2))  # saved after every run
                     print(json.dumps({k: v for k, v in row.items() if k != "run_dir"}), flush=True)
-    out = RUNS_DIR / f"chaos-{stamp}.json"
     print(
         f"\n{'portal':<7}{'mode':<16}{'outcome':<9}{'docs':>5}{'verdicts':>9}{'unsafe':>7}{'calls':>6}"
         f"{'secs':>7}{'fx':>4}{'$nav':>8}  pass"
