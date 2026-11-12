@@ -499,3 +499,19 @@ All runs on commit d10177a, Claude Haiku via the CLI on a Claude plan (D23), ext
   reports that URL and that the download action works on that button; (3) unit tests on a fixture page with a
   `window.open` button and a scripted download. Then: the 2 normal-day runs on A and B (no regression) and Portal D
   x3 again, reported separately from first contact. After that, D is no longer held out.
+
+## D25. Portal D after one general fix: 3/3 (re-measured 2026-11-12; reported separately from first contact)
+- **Fix (commit bc8e24b, the D24 proposal):** the browser tool's `download` now also works on elements
+  without a link: it clicks them and saves what they produce (a file opened in a new tab, or a file made by a page
+  script), through the same checks as a link (same origin, real PDF, expired session recognized). A click that
+  opens a file reports its address; a button that produces nothing is a clear failure instead of the misleading
+  hint. The `download` tool line in the prompt now says "a link or an export/download button". 4 fixture tests
+  (new-tab export, scripted blob download, expired session, a button that does nothing). Nothing Portal D-specific.
+- **No regression:** normal day on A and B, 1 run each: 2/2, 20/20 verdicts, 0 unsafe.
+- **Portal D x3 after the fix: 3/3 passed, pass^3 = 1.00, every document right in all 3 runs, 0 unsafe, 0 side
+  effects**; 12-15 calls, 72-94 s, ~$0.023 API-equivalent per run.
+- **One thing the safety net caught:** in run 2 the agent also downloaded one settled (already paid) statement; the
+  matcher's `already_paid` rule (D10) set it to pay 0, so it was harmless. Same lesson as D10: the money rule lives in
+  code, not in the model being right.
+- **Reported as:** held-out Portal D first contact 0/3 (safe handoffs, tool gap) -> one general tool fix -> 3/3.
+  D is no longer a held-out portal.
