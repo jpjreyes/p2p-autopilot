@@ -1,0 +1,62 @@
+{
+ "documents": 347,
+ "total": {
+  "right": 341,
+  "scored": 347,
+  "rate": 0.983
+ },
+ "date": {
+  "right": 339,
+  "scored": 347,
+  "rate": 0.977
+ },
+ "total_and_date": {
+  "right": 333,
+  "scored": 347,
+  "rate": 0.96
+ },
+ "company_exact": {
+  "right": 254,
+  "scored": 347,
+  "rate": 0.732
+ },
+ "company_fuzzy_0.9": {
+  "right": 261,
+  "scored": 347,
+  "rate": 0.752
+ },
+ "company_without_registration_no": {
+  "right": 293,
+  "scored": 347,
+  "rate": 0.844
+ },
+ "address_exact": {
+  "right": 315,
+  "scored": 347,
+  "rate": 0.908
+ },
+ "address_fuzzy_0.9": {
+  "right": 338,
+  "scored": 347,
+  "rate": 0.974
+ },
+ "misses": [
+  "X51005442322.jpg",
+  "X51005442343.jpg",
+  "X51005568887.jpg",
+  "X510056849111.jpg",
+  "X51005684949.jpg",
+  "X51005757308.jpg",
+  "X51005806696.jpg",
+  "X51005806719.jpg",
+  "X51005806720.jpg",
+  "X51006387973.jpg",
+  "X51006388089.jpg",
+  "X51006466070.jpg",
+  "X51006619570.jpg",
+  "X51006828199.jpg"
+ ],
+ "tokens_in": 940665,
+ "tokens_out": 216131,
+ "api_equivalent_usd": 0.2491
+}

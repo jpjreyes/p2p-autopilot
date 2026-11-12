@@ -29,12 +29,13 @@ anywhere in the agent; a human approves every payment in the review console.
 | | Generalization (a portal the agent had never seen) | Portal C: first contact 7/20; three general fixes, then 20/20. **Held-out Portal D, first contact: 0/3**, each run handed to a person with the reason, nothing downloaded, nothing unsafe: its Export is a button that opens the PDF in a new tab, which the browser tool could not save from ([D24](DECISIONS.md)). One general fix to the tool (download from export buttons), then **3/3, 0 unsafe** ([D25](DECISIONS.md)) |
 | | Failure suite, on invoices billing real SAP POs (10 conditions x 2 portals x 3 runs) | **60/60**, 0 unsafe, every document right in all 3 runs of every condition; getting there found two problems, both fixed at the root: a silently skipped page (now a completeness check in code) and a PDF column overflow in the test data ([D22](DECISIONS.md), [D24](DECISIONS.md)) |
 | | Scanned invoices · handwritten corrections | 120/120 read from the image · 36/36 sent to a human, 0 false alarms (final suite) |
+| | Real scans (SROIE: 347 real scanned receipts, public benchmark) | total **98.3%**, date **97.7%**; each total miss read by hand: 1 real misread in 347 (the receipt's own arithmetic exposes it), the rest label conventions and one label error ([D26](DECISIONS.md)) |
 | | Cost per invoice (navigation + reading, API-equivalent) | **~$0.0015** (final suite mean; $1.74 for all 60 runs) |
 
 Act numbers: final evals, Claude Haiku via the Claude CLI on a Claude plan in an isolated configuration (one sentence
 added to every prompt by an account-managed hook), extraction never cached, code version recorded per run;
 costs are API-equivalent. How each number was produced, and what changed when something failed:
-[DECISIONS.md](DECISIONS.md) (D16-D19 for see and predict, D23-D25 for the final evals).
+[DECISIONS.md](DECISIONS.md) (D16-D19 for see and predict, D23-D26 for the final evals).
 
 ## See → predict → act
 
@@ -154,6 +155,7 @@ uv run uvicorn p2p_autopilot.portals.app:app --port 8061    # the mock portals
 uv run python -m p2p_autopilot.agent --portal a             # one run
 uv run python -m p2p_autopilot.chaos_suite --portals a b --repeat 3   # failure suite with pass^k
 scripts/run_eval.sh runs/final/suite.json --portals a b --repeat 3     # same, resumable after limits or crashes
+uv run python evals/real_scans.py                                       # real scans (SROIE; download in the script)
 ```
 
 Console: `uv run uvicorn p2p_autopilot.api:app --port 8062`, then `cd web && npm ci && npx next dev -p 3061`.
@@ -164,7 +166,8 @@ Console: `uv run uvicorn p2p_autopilot.api:app --port 8062`, then `cd web && npm
   real POs, but the quantity x price split of each SAP line amount and the planted problems are synthetic (D17).
 - The SAP log is a 2017-2019 snapshot: "this week" in the brief is its last week, and the payment-block model can only
   be retrained on that history.
-- Scans and handwriting are generated (clean fonts, mild noise); stamps, faxes and real handwriting styles are untested.
+- The invoice scans and handwriting are generated. Reading real paper is measured on receipts (SROIE, D26), not on
+  real invoices with line items and PO numbers; real handwriting styles at scale are untested.
 - `already_paid` is only as good as the AP ledger it reads.
 
 ## License

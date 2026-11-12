@@ -6,7 +6,7 @@ Entries are in the order they were made. Where to start:
 
 | Topic | Entries |
 |---|---|
-| Final results and how they were measured | [D23](#d23-final-evals-on-the-claude-plan-and-the-held-out-portal-d-protocol-written-before-the-run-2026-11-11), [D24](#d24-final-evals-failure-suite-6060-held-out-portal-d-first-contact-03-handed-off-safely-2026-11-12), [D25](#d25-portal-d-after-one-general-fix-33-re-measured-2026-11-12-reported-separately-from-first-contact) |
+| Final results and how they were measured | [D23](#d23-final-evals-on-the-claude-plan-and-the-held-out-portal-d-protocol-written-before-the-run-2026-11-11), [D24](#d24-final-evals-failure-suite-6060-held-out-portal-d-first-contact-03-handed-off-safely-2026-11-12), [D25](#d25-portal-d-after-one-general-fix-33-re-measured-2026-11-12-reported-separately-from-first-contact), D26 (real scans) |
 | Safety: wrong payments made impossible or harmless in code | D10, D11, D13, D15 |
 | How the agent sees and acts; why tools matter more than prompts | D2, D7, D9, D13 |
 | Predicting payment blocks on the real SAP log | D16, D17, D18, D18b, D18c |
@@ -526,3 +526,31 @@ All runs on commit bdd5a35, Claude Haiku via the CLI on a Claude plan (D23), ext
   code, not in the model being right.
 - **Reported as:** held-out Portal D first contact 0/3 (safe handoffs, tool gap) -> one general tool fix -> 3/3.
   D is no longer a held-out portal.
+
+## D26. Reading real scans: SROIE, 347 real scanned receipts (2026-11-12)
+- **Why:** the scanned and handwritten invoices in the failure suite are generated (D14, D15), and the README listed
+  real paper as untested. Public real-scan datasets with labeled fields are receipts, not invoices, so this measures
+  the same model, backend and reading conventions on real paper (faded thermal print, skew, folds, stamps, pen marks),
+  scoring the fields receipts and invoices share. Not a pipeline test: no PO, no item schema, no portal row.
+- **Data:** SROIE (ICDAR 2019 task 3) test split, all 347 receipts with their 4 labeled fields (company, address,
+  date, total); downloaded at run time, not redistributed. Script: `evals/real_scans.py`; summary:
+  `evals/real_scans_results.json`.
+- **Setup:** Claude Haiku via the CLI on the Claude plan (D23), image downscaled to 1,568 px on the long side, the
+  extraction's own conventions (printed values only, the document's date convention, money as plain decimals; the
+  total is what the customer pays, after rounding). Nothing tuned on this data; one run.
+- **Result:** **total 98.3% (341/347), date 97.7% (339/347), both 96.0%**; address 90.8% exact (97.4% at 0.9
+  similarity); company 73.2% exact, 84.4% ignoring the registration number printed after the name. $0.25
+  API-equivalent for all 347 (~$0.0007 per receipt), 3 points of the 5-hour window.
+- **Every total miss read by hand:** 4 are a convention difference (the labels take the total before cash rounding,
+  e.g. 7.42; we take what is paid, 7.40); 1 is a label error (labeled 7.20 = the hand-circled subtotal; printed net
+  total 7.65, which the model read); **1 is a real misread** (faded "108.00" read as 103.00), and the receipt's own
+  arithmetic exposes it (subtotal 105.00 + GST 3.00). Real total misreads: **1 in 347**.
+- **Date misses (8, all real):** 3 two-digit years read in the wrong order (e.g. "21-02-16"), 3 faded or cut-off
+  year digits, 2 misread days. In the pipeline a date is checked against the portal's own listing (D8), so a misread
+  date goes to a person; on a bare scan with no second source it would not.
+- **Company misses:** mostly the brand at the top vs the legal entity in small print ("Burger King" vs "Dewina Host
+  Sdn Bhd") and a few label typos where the model is right ("TEO HENG" printed, "TED HENG" labeled). The pipeline
+  never takes the supplier from the paper: it comes from the portal the document was downloaded from.
+- **What it says:** the model reads real paper well, and its errors are the kind the code checks exist for
+  (arithmetic for totals, a second source for dates). Real invoices with line items, PO numbers and handwriting at
+  scale are still untested (DocILE would be the next dataset; it needs a usage agreement).
