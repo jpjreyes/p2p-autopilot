@@ -55,6 +55,7 @@ class BrowserTools:
     login_posts: int = 0
 
     popups: list = field(default_factory=list)
+    dl_events: list = field(default_factory=list)  # file downloads the last action started, on any tab
     marks: dict[int, Locator] = field(default_factory=dict)  # set by look(); valid until the page changes
 
     def __post_init__(self):
@@ -62,19 +63,38 @@ class BrowserTools:
             if req.method == "POST" and "login" in req.url.lower():
                 self.login_posts += 1
         self.page.on("request", count)
+        def on_download(d):
+            self.dl_events.append(d)
+        self.page.on("download", on_download)
         def on_new_tab(new_page):  # links with target=_blank open new tabs (Playwright needs a real function)
             self.popups.append(new_page)
+            new_page.on("download", on_download)  # a tab whose page is a file becomes a download
         self.page.context.on("page", on_new_tab)
 
     def _closed_popups(self) -> list[str]:
         """Close tabs opened by the last action and report where they went; the agent works in one tab."""
         self.page.wait_for_timeout(300)
+        files = [d.url for d in self._take_downloads()]
         urls = []
         for pop in self.popups:
-            urls.append(pop.url if pop.url != "about:blank" else "(a file or download)")
-            pop.close()
+            urls.append(pop.url if pop.url != "about:blank" else (files[0] if files else "(a file or download)"))
+            self._close(pop)
         self.popups.clear()
+        if files and not urls:
+            urls = files
         return urls
+
+    def _take_downloads(self) -> list:
+        """Downloads started by the last action; the browser's own copy is dropped (files are saved by our checks)."""
+        dls, self.dl_events = self.dl_events, []
+        return dls
+
+    @staticmethod
+    def _close(pop) -> None:
+        try:
+            pop.close()
+        except PWError:  # a tab that turned into a download may already be gone
+            pass
 
     @property
     def login_limit_hit(self) -> bool:
@@ -240,8 +260,9 @@ class BrowserTools:
                     name = action["text"]
                 opened = self._closed_popups()
                 if opened:
-                    return ActionResult(True, f"clicked {role} {name!r}: it opened a new tab at {opened[0]} (closed). "
-                                              "To save a document, use the download action on that same link.")
+                    return ActionResult(True, f"clicked {role} {name!r}: it opened a new tab or file at {opened[0]} "
+                                              "(closed). To save a document, use the download action on that same "
+                                              "element.")
                 return ActionResult(True, f"clicked {role} {name!r}")
             if kind == "fill":
                 self._target(action).fill(self._fill_secrets(value), timeout=5000)
@@ -287,8 +308,46 @@ class BrowserTools:
             pass
         href = el.get_attribute("href")
         if not href or href == "#":
-            return ActionResult(False, "that element has no download link (open the document details first?)")
+            return self._download_by_click(el, seen)
         return self._fetch_pdf(urljoin(frame_url, href), seen)
+
+    def _download_by_click(self, el: Locator, seen: str) -> ActionResult:
+        """Export buttons and scripted links: no href, a script opens the file in a new tab or starts a download.
+
+        Click it, catch what it produces (a download on any tab, or the address a new tab opened), and save that
+        through the same checks as a link: same origin, a real PDF, an expired session recognized.
+        """
+        self.dl_events.clear()
+        self.popups.clear()
+        el.click(timeout=5000)
+        for _ in range(30):  # up to ~3 s for the script to act
+            if self.dl_events or any(p.url != "about:blank" for p in self.popups):
+                break
+            self.page.wait_for_timeout(100)
+        self.page.wait_for_timeout(200)
+        dls = self._take_downloads()
+        tabs = [p.url for p in self.popups if p.url != "about:blank"]
+        for pop in self.popups:
+            self._close(pop)
+        self.popups.clear()
+        if dls:
+            if dls[0].url.startswith(("http://", "https://")):
+                return self._fetch_pdf(dls[0].url, seen)
+            return self._save_download(dls[0], seen)  # made by a script (blob: or data:), not fetchable by URL
+        if tabs:
+            return self._fetch_pdf(urljoin(self.page.url, tabs[0]), seen)
+        return ActionResult(False, "that element has no download link, and clicking it opened no file or tab (it "
+                                   "may have changed the page: look before the next step)")
+
+    def _save_download(self, d, seen: str) -> ActionResult:
+        fname = d.suggested_filename or f"doc{len(self.downloads) + 1}.pdf"
+        path = self.out_dir / "pdfs" / fname
+        path.parent.mkdir(parents=True, exist_ok=True)
+        d.save_as(path)
+        if path.read_bytes()[:5] != b"%PDF-":
+            path.unlink()
+            return ActionResult(False, f"the export produced {fname}, which is not a PDF")
+        return self._record(path, seen)
 
     def _fetch_pdf(self, url: str, seen: str) -> ActionResult:
         if urlparse(url).netloc != urlparse(self.allowed_origin).netloc:
@@ -306,6 +365,10 @@ class BrowserTools:
         path = self.out_dir / "pdfs" / fname
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(resp.body())
+        return self._record(path, seen)
+
+    def _record(self, path: Path, seen: str) -> ActionResult:
+        fname = path.name
         if str(path) not in self.downloads:
             self.downloads.append(str(path))
         self.contexts[str(path)] = seen  # the listing row / details pop-up: the second source for extraction

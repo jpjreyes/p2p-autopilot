@@ -41,7 +41,7 @@ Actions:
   fill      type into a textbox. For credentials use the placeholders {{username}} and {{password}};
             you never see the real values
   select    choose an option (value = the option's visible label) in a combobox
-  download  save the PDF behind a link (use it on the link that opens the document's PDF)
+  download  save the PDF behind a link or an export/download button (use it on the element that opens the document's PDF)
   goto      open a URL on this same portal (value = URL or path)
   look      get a screenshot with a numbered box on every interactive element, plus a legend. Use it when the
             accessibility tree is not enough: unlabeled icons, several nameless links, anything you can't tell

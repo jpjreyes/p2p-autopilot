@@ -89,3 +89,72 @@ def test_look_covers_the_whole_page_not_just_the_window(tools):
 
     from PIL import Image
     assert "Last link" in legend and Image.open(io.BytesIO(png)).height > 1000
+
+
+# Export buttons (held-out Portal D, D24): no href; a script opens the file in a new tab or makes a download.
+# _fetch_pdf uses the context's request client, which bypasses page routes, so these use a real local server.
+@pytest.fixture
+def export_site():
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    pdf = b"%PDF-1.4\n%%EOF\n"
+    page = """<button onclick="window.open('/export?no=INV-7', '_blank')">Export</button>
+<button onclick="window.open('/login?next=export', '_blank')">Export expired</button>
+<button onclick="const a=document.createElement('a');
+  a.href=window.URL.createObjectURL(new Blob(['%PDF-1.4\\n%%EOF\\n'],{type:'application/pdf'}));
+  a.download='INV-8.pdf'; document.body.appendChild(a); a.click();">Export blob</button>
+<button onclick="void 0">Export nothing</button>"""
+
+    class H(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path.startswith("/export"):
+                body, ctype = pdf, "application/pdf"
+                extra = {"Content-Disposition": 'attachment; filename="INV-7.pdf"'}
+            elif self.path.startswith("/login"):
+                body, ctype, extra = b'<form><input type="password"></form>', "text/html", {}
+            else:
+                body, ctype, extra = page.encode(), "text/html", {}
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
+            for k, v in extra.items():
+                self.send_header(k, v)
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *a):
+            pass
+
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    yield f"http://127.0.0.1:{srv.server_address[1]}"
+    srv.shutdown()
+
+
+def test_export_button_that_opens_the_pdf_in_a_new_tab_is_saved(tools, export_site):
+    tools.allowed_origin = export_site
+    tools.page.goto(f"{export_site}/list")
+    res = tools.run({"action": "download", "role": "button", "name": "Export"})
+    assert res.ok and res.downloaded.endswith("INV-7.pdf"), res.message
+    assert len(tools.page.context.pages) == 1  # the extra tab is closed
+
+
+def test_scripted_blob_download_is_saved_and_checked_as_pdf(tools, export_site):
+    tools.allowed_origin = export_site
+    tools.page.goto(f"{export_site}/list")
+    res = tools.run({"action": "download", "role": "button", "name": "Export blob"})
+    assert res.ok and res.downloaded.endswith("INV-8.pdf"), res.message
+
+
+def test_export_into_an_expired_session_says_so(tools, export_site):
+    tools.allowed_origin = export_site
+    tools.page.goto(f"{export_site}/list")
+    res = tools.run({"action": "download", "role": "button", "name": "Export expired"})
+    assert not res.ok and "session expired" in res.message
+
+
+def test_button_that_produces_nothing_is_a_clear_failure(tools, export_site):
+    tools.allowed_origin = export_site
+    tools.page.goto(f"{export_site}/list")
+    res = tools.run({"action": "download", "role": "button", "name": "Export nothing"})
+    assert not res.ok and "opened no file" in res.message and not tools.downloads
