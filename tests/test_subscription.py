@@ -100,3 +100,20 @@ def test_stop_is_not_swallowed_by_broad_handlers(monkeypatch):
             llm.ClaudeCLIBackend().complete("s", "p", {})
         except Exception:  # what a task-level retry loop would do
             pytest.fail("EvalStop must not be an Exception")
+
+
+def test_extra_usage_stops_immediately(monkeypatch):
+    ev = limits()
+    ev["rate_limit_info"]["isUsingOverage"] = True
+    fake_cli(monkeypatch, [init(), ev, result({"ok": True})])
+    with pytest.raises(subscription.QuotaStop):
+        llm.ClaudeCLIBackend().complete("s", "p", {})
+
+
+def test_api_key_in_token_file_is_refused(monkeypatch, tmp_path):
+    bad = tmp_path / "bad_token"
+    bad.write_text("sk-ant-api03-xxxx")
+    monkeypatch.setattr(subscription, "TOKEN", bad)
+    fake_cli(monkeypatch, [init(), result({"ok": True})])
+    with pytest.raises(subscription.NotClean):
+        llm.ClaudeCLIBackend().complete("s", "p", {})

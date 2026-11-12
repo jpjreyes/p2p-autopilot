@@ -7,7 +7,9 @@ The local backend uses a Claude login instead of an API key; the deployed app us
      using the login (apiKeySource == "none");
   3. stops if any hook runs (the configuration isn't clean);
   4. has a usage guard: after each call the CLI's 5-hour and weekly usage are read, and at or above
-     CLAUDE_EVAL_STOP_AT (default 80%) the next call raises QuotaStop, so a long eval stops and can resume later.
+     CLAUDE_EVAL_STOP_AT (default 80%) the next call raises QuotaStop, so a long eval stops and can resume later;
+  5. stops at once if the CLI reports pay-as-you-go extra usage (isUsingOverage), and refuses a token file that
+     holds an API key instead of a CLI login token.
 
 Setup:  `claude setup-token`, save the token to ~/.config/claude-eval/oauth_token (chmod 600), and create the empty
 folder ~/.config/claude-eval/config. Quick local runs without that setup: CLAUDE_EVAL_ALLOW_DIRTY=1 (normal CLI
@@ -75,6 +77,8 @@ def check_ready() -> None:
     global _warned
     if _utilization(last_limits) >= STOP_AT:
         raise QuotaStop(f"usage at {_utilization(last_limits):.0%} (stop at {STOP_AT:.0%}): {last_limits}")
+    if TOKEN.exists() and TOKEN.read_text().strip().startswith("sk-ant-api"):
+        raise NotClean(f"{TOKEN} holds an API key, not a CLI login token from `claude setup-token`")
     if not clean():
         if not allow_dirty():
             raise NotClean(f"clean CLI setup missing ({TOKEN} and empty folder {CONFIG}). Run `claude setup-token`, "
@@ -112,4 +116,6 @@ def run(args: list[str], stdin: str | None, timeout: float) -> tuple[subprocess.
             last_limits = info.get("unifiedWindows") or last_limits
             if info.get("status") == "rejected":
                 raise QuotaStop(f"usage limit reached: {info}")
+            if info.get("isUsingOverage"):
+                raise QuotaStop(f"the call used paid extra usage: {info}")
     return out, events
