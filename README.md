@@ -22,15 +22,17 @@ anywhere in the agent; a human approves every payment in the review console.
 | | Open longer than the vendor usually takes | **EUR 1,015,808** on 828 invoices (no due dates exist, so measured against each vendor's own paid invoices) |
 | **Predict** | Payment blocks, flagged when the invoice arrives (test months never used for training) | of the **10 invoices it ranks highest each day, 92% really get blocked**; at the best rule's precision it finds **1.5x the blocked money** (EUR 14.7M vs 9.6M) and covers 66% of it at a wider setting. Found by looking at the data: SAP blocks whole invoices, not lines ([D18b](DECISIONS.md), [D18c](DECISIONS.md)). Limits reported: no early signal at PO creation; price and quantity disputes are no more predictable than the vendor's history, because the public log has no invoice prices or quantities |
 | | Weekly risk brief, written without being asked | every number from SQL; the summary is checked so it can't state a number no query produced: **0 unverified** |
-| **Act** | Reliability (pass^3: the whole job right in 3 of 3 runs) | **1.00** on all three development portals |
-| | Safety (payments proposed that would have been wrong) | **0** across every run, including redesigns, expired sessions, prompt injection, scans and handwriting |
-| | Generalization (a portal the agent had never seen) | first contact 7/20; three general fixes, then 20/20. A fresh held-out portal (D) is kept for the final eval |
-| | Failure suite, on invoices billing real SAP POs (10 conditions x 2 portals) | **20/20**, 0 unsafe; getting there found two problems, both fixed at the root: a silently skipped page (now a completeness check in code) and a PDF column overflow in the test data ([D22](DECISIONS.md)) |
-| | Scanned invoices · handwritten corrections | 60/60 read from the image · 16/16 sent to a human, 0 false alarms |
-| | Cost per invoice (navigation + reading, list price) | **$0.0011-0.0020** |
+| **Act** | Reliability (pass^3: the whole job right in 3 of 3 runs) | **1.00** on every condition, portals A and B (final suite, 60 runs) |
+| | Safety (payments proposed that would have been wrong) | **0** in all 63 final runs and every development run, including redesigns, expired sessions, prompt injection, scans and handwriting |
+| | Generalization (a portal the agent had never seen) | Portal C: first contact 7/20; three general fixes, then 20/20. **Held-out Portal D, first contact: 0/3**, each run handed to a person with the reason, nothing downloaded, nothing unsafe: its Export is a button that opens the PDF in a new tab, which the browser tool could not save from ([D24](DECISIONS.md)). Fix and re-measure: pending |
+| | Failure suite, on invoices billing real SAP POs (10 conditions x 2 portals x 3 runs) | **60/60**, 0 unsafe, every document right in all 3 runs of every condition; getting there found two problems, both fixed at the root: a silently skipped page (now a completeness check in code) and a PDF column overflow in the test data ([D22](DECISIONS.md), [D24](DECISIONS.md)) |
+| | Scanned invoices · handwritten corrections | 120/120 read from the image · 36/36 sent to a human, 0 false alarms (final suite) |
+| | Cost per invoice (navigation + reading, API-equivalent) | **~$0.0015** (final suite mean; $1.74 for all 60 runs) |
 
-Development numbers, Claude Haiku. How each number was produced, and what changed when something failed:
-[DECISIONS.md](DECISIONS.md) (D16-D19 for see and predict).
+Act numbers: final evals, Claude Haiku via the Claude CLI on a Claude plan in an isolated configuration (one sentence
+added to every prompt by an account-managed hook), extraction never cached, code version recorded per run;
+costs are API-equivalent. How each number was produced, and what changed when something failed:
+[DECISIONS.md](DECISIONS.md) (D16-D19 for see and predict, D23-D24 for the final evals).
 
 ## See → predict → act
 

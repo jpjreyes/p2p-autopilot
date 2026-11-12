@@ -476,3 +476,26 @@ were fixed on the July calibration month. Unit = invoice (lines recorded togethe
 - **No lost work:** each finished run is saved atomically; a usage stop (80% of the 5-hour or weekly window) or a
   crash discards only the run it cut off; `scripts/run_eval.sh` waits for the window to reset (or restarts the
   portal and database) and resumes.
+
+## D24. Final evals: failure suite 60/60; held-out Portal D first contact 0/3, handed off safely (2026-11-12)
+All runs on commit d10177a, Claude Haiku via the CLI on a Claude plan (D23), extraction never cached.
+- **Failure suite (22:48-02:34, 60 runs, no usage stop or crash): 60/60 passed, pass^3 = 1.00 on all 20
+  (portal, condition) pairs, every document right in all 3 runs, 0 unsafe payment proposals, 0 portal side effects.**
+  CAPTCHA handed to a person 6/6; handwritten amount corrections 36/36 sent to a person, 0 false alarms; scans 120/120
+  read from the image; payable amounts right in every run. Mean 21.9 model calls (navigation), 144 s per run;
+  API-equivalent $0.030 per run (navigation $0.018 + extraction $0.012), $1.74 for all 60, ~$0.0015 per document.
+- **Held-out Portal D, first contact (02:34-02:37, 3 runs, as fixed in D23): 0/3 passed.** Every run ended in a
+  handoff with a clear reason; nothing downloaded, 0 unsafe proposals, 0 side effects (C2 held: it failed loudly,
+  not silently). The agent logged in, loaded all 23 statements ("Load more") and counted 20 outstanding correctly.
+- **Why (read only after the 3 results were saved):** D's documents have no link. "Export" is a button whose script
+  opens the PDF in a new tab (`window.open`). The browser tool's `download` action only saves elements with an
+  `href`; a click on the button opened a tab that headless Chromium turned into a file download, and the tool closed
+  it and reported "(a file or download)", then told the agent to "use the download action on that same link", which
+  could not work. The gap is in the tool, not in the agent's reasoning. Common in real portals (export buttons,
+  scripted downloads), so the fix is general.
+- **Proposed fix (not applied before the first-contact number was recorded):** (1) `download` on an element without `href` clicks it and captures
+  what it produces: a file download on any tab, or the URL a new tab opens, then saves it through the same checks as
+  today (same origin, real PDF, session-expiry detection); (2) a click that opens a tab which becomes a download
+  reports that URL and that the download action works on that button; (3) unit tests on a fixture page with a
+  `window.open` button and a scripted download. Then: the 2 normal-day runs on A and B (no regression) and Portal D
+  x3 again, reported separately from first contact. After that, D is no longer held out.
