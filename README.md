@@ -2,6 +2,9 @@
 
 [![ci](https://github.com/jpreyesm03/p2p-autopilot/actions/workflows/ci.yml/badge.svg)](https://github.com/jpreyesm03/p2p-autopilot/actions/workflows/ci.yml)
 
+**Live demo: [p2p-autopilot-eight.vercel.app](https://p2p-autopilot-eight.vercel.app)** (console on Vercel, API, portals and agent jobs on
+GCP Cloud Run; start a real agent run and review what it proposes; first load after a quiet period takes a few seconds).
+
 Accounts payable in one system: it **sees** the real purchase-to-pay process (process mining on 1.6M SAP events),
 **predicts** which invoices will be blocked before anyone touches them, and **acts** where there's no API: an agent
 collects invoices from supplier portals the way a person would, reads scans and handwritten corrections, runs the

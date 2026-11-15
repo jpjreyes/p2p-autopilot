@@ -11,7 +11,7 @@ Entries are in the order they were made. Where to start:
 | How the agent sees and acts; why tools matter more than prompts | D2, D7, D9, D13 |
 | Predicting payment blocks on the real SAP log | D16, D17, D18, D18b, D18c |
 | Reliability and generalization (pass^k, held-out portals) | D10, D12, D22, D24, D25 |
-| Deploy and operations | D5, D20, D21 |
+| Deploy and operations | D5, D20, D21, D27 |
 
 ## D1. Test environment: our own mock portals, with one held out, plus a public benchmark
 - **Constraint:** C2/C3 need reproducible numbers with known right answers; C4 rules out automating real
@@ -554,3 +554,25 @@ All runs on commit bdd5a35, Claude Haiku via the CLI on a Claude plan (D23), ext
 - **What it says:** the model reads real paper well, and its errors are the kind the code checks exist for
   (arithmetic for totals, a second source for dates). Real invoices with line items, PO numbers and handwriting at
   scale are still untested (DocILE would be the next dataset; it needs a usage agreement).
+
+## D27. Deployed on GCP, and the parity check on the API path (2026-11-14)
+- **Constraint:** the final numbers (D23-D26) came from the Claude CLI; the deployed demo calls the Anthropic API.
+  Same model and prompts, but a different path, so the live version had to be checked before it is linked anywhere.
+- **Deploy (D21 as planned):** Cloud Run service for the API and the portals, Cloud Run Jobs for the agent and the
+  weekly brief (Cloud Scheduler, Mondays), private bucket for screenshots and PDFs, Secret Manager for the four
+  secrets (values added out of band, never in the repo or Terraform state), Postgres on Neon, console on Vercel,
+  $10/month budget alert, separate Anthropic workspace with a $10 cap. One image built by Cloud Build at commit
+  bae737d; `terraform apply` creates the rest (37 resources).
+- **What the first live run found:** the agent spent its 60-step budget on the login page. On the API, structured
+  outputs fill an action's fields in schema order; `value` came before `nth` and `mark`, so after addressing an
+  unlabeled textbox by position the model could no longer emit `value` and put the credential placeholder in
+  `text` (the CLI checks the schema after the answer, so the evals never saw it). Fix: `value` is the last field;
+  the same login prompt went from 1/3 to 6/6 correct; a test pins the order. Also: Cloud Run reserves paths ending
+  in "z", so `/healthz` never reached the app; `/health` added.
+- **Parity (after the fix):** final-suite conditions on the API path, portals A and B x {normal, prompt injection,
+  scans}, one run each: **5/6 runs, 119/120 documents right, 0 unsafe, $0.16 in total**. The one miss is a scanned
+  invoice whose date was read as 2018-02-11; it disagreed with the portal row, so it went to a person instead of
+  being proposed (the D8 check doing its job). Live: one run started from the deployed API on Portal A, 20 PDFs in
+  85 s, 13 proposed and 7 sent to a person, the same split as the scored run. Results: `runs/parity_api/` (local).
+- **Would change if:** a parity miss were unsafe or the API path drifted from the CLI on more than one document;
+  then the API path would get its own full suite before the demo stays linked.

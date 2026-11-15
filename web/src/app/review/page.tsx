@@ -67,10 +67,10 @@ export default function ReviewPage() {
                 const v = VERDICT[i.verdict] ?? { label: i.verdict, tone: "neutral" as const };
                 return (
                   <tr key={i.item_id} onClick={() => setOpen(i.item_id)} className="cursor-pointer align-top hover:bg-surface-2">
-                    <td className="px-5 py-3.5 font-mono font-medium">{i.number}</td>
+                    <td className="whitespace-nowrap px-5 py-3.5 font-mono font-medium">{i.number}</td>
                     <td className="px-5 py-3.5 text-muted">{i.portal ? PORTALS[i.portal]?.supplier : "—"}</td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex flex-wrap gap-1.5">
+                    <td className="whitespace-nowrap px-5 py-3.5">
+                      <div className="flex gap-1.5">
                         <Badge tone={v.tone}>{v.label}</Badge>
                         {hasHandwritingChange(i) && <Badge tone="warn"><PenLine className="size-3" /> Ink</Badge>}
                       </div>
