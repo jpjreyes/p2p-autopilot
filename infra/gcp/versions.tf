@@ -10,4 +10,7 @@ terraform {
 provider "google" {
   project = var.project_id
   region  = var.region
+  # user credentials (gcloud auth application-default login) need a quota project for the budgets API
+  user_project_override = true
+  billing_project       = var.project_id
 }

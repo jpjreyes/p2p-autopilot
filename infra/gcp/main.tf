@@ -15,7 +15,7 @@
 locals {
   services = ["run.googleapis.com", "artifactregistry.googleapis.com", "secretmanager.googleapis.com",
     "cloudscheduler.googleapis.com", "storage.googleapis.com", "cloudtrace.googleapis.com", "iam.googleapis.com",
-  "billingbudgets.googleapis.com"]
+  "billingbudgets.googleapis.com", "cloudbuild.googleapis.com"]
   name = "p2p-autopilot"
 }
 
