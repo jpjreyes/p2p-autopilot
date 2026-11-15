@@ -1,36 +1,43 @@
 import type { ReactNode } from "react";
 import type { Tone } from "@/lib/api";
 
-const TONES: Record<Tone, string> = {
-  ok: "bg-ok-soft text-ok",
-  warn: "bg-warn-soft text-warn",
-  bad: "bg-bad-soft text-bad",
-  neutral: "bg-surface-2 text-muted",
-  brand: "bg-brand-soft text-brand",
-  accent: "bg-surface-2 text-accent",
+const INK: Record<Tone, string> = {
+  ok: "text-ok",
+  warn: "text-warn",
+  bad: "text-bad",
+  neutral: "text-muted",
+  brand: "text-foreground",
+  accent: "text-accent",
 };
 
+/** A status mark: typewriter capitals in the ink of its meaning, boxed like a ledger annotation. */
 export function Badge({ tone = "neutral", children, dot = false }: { tone?: Tone; children: ReactNode; dot?: boolean }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${TONES[tone]}`}>
-      {dot && <span className="size-1.5 rounded-full bg-current" />}
+    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap border border-current px-1.5 py-px font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] ${INK[tone]}`}>
+      {dot && <span className="size-1.5 bg-current" />}
       {children}
     </span>
   );
 }
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-xl border border-line bg-surface shadow-card ${className}`}>{children}</div>;
+/** A rubber stamp, for the one mark on a page that matters most. */
+export function Stamp({ tone = "bad", children, className = "" }: { tone?: Tone; children: ReactNode; className?: string }) {
+  return <span className={`stamp text-xs ${INK[tone]} ${className}`}>{children}</span>;
 }
 
+export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <div className={`border border-line bg-surface ${className}`}>{children}</div>;
+}
+
+/** A figure on the ledger: rule above, typewriter label, the number set large in the book face. */
 export function Stat({ label, value, note, tone }: { label: ReactNode; value: ReactNode; note?: ReactNode; tone?: Tone }) {
-  const color = tone === "ok" ? "text-ok" : tone === "warn" ? "text-warn" : tone === "bad" ? "text-bad" : "text-foreground";
+  const color = tone ? INK[tone] : "text-foreground";
   return (
-    <Card className="p-4 sm:p-5">
-      <p className="text-sm text-muted">{label}</p>
-      <p className={`tabular mt-2 text-2xl font-semibold tracking-tight sm:text-3xl ${color}`}>{value}</p>
-      {note && <p className="mt-1.5 text-xs leading-relaxed text-faint">{note}</p>}
-    </Card>
+    <div className="border-t-2 border-line-strong pt-3">
+      <p className="label text-muted">{label}</p>
+      <p className={`tabular mt-2 font-serif text-3xl leading-none tracking-tight sm:text-4xl ${color}`}>{value}</p>
+      {note && <p className="mt-2 text-xs leading-relaxed text-faint">{note}</p>}
+    </div>
   );
 }
 
@@ -38,13 +45,15 @@ export function PageHeader({ eyebrow, title, children, actions }: {
   eyebrow?: ReactNode; title: ReactNode; children?: ReactNode; actions?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4 pb-6">
-      <div className="max-w-3xl">
-        {eyebrow && <p className="mb-2 text-sm font-medium text-brand">{eyebrow}</p>}
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
-        {children && <div className="mt-2 text-[15px] leading-relaxed text-muted">{children}</div>}
+    <div className="mb-8 border-b border-line-strong pb-6">
+      {eyebrow && <p className="label mb-3 text-bad">§ {eyebrow}</p>}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="max-w-3xl">
+          <h1 className="font-serif text-4xl leading-[1.02] tracking-tight sm:text-5xl">{title}</h1>
+          {children && <div className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">{children}</div>}
+        </div>
+        {actions && <div className="flex gap-2">{actions}</div>}
       </div>
-      {actions && <div className="flex gap-2">{actions}</div>}
     </div>
   );
 }
@@ -52,30 +61,30 @@ export function PageHeader({ eyebrow, title, children, actions }: {
 export function Button({ children, variant = "primary", className = "", ...props }:
   React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "danger" | "ghost" }) {
   const styles = {
-    primary: "bg-brand text-brand-ink hover:opacity-90",
-    secondary: "border border-line-strong bg-surface text-foreground hover:bg-surface-2",
-    danger: "border border-line-strong bg-surface text-bad hover:bg-bad-soft",
+    primary: "bg-foreground text-background hover:bg-foreground/85",
+    secondary: "border border-line-strong text-foreground hover:bg-surface-2",
+    danger: "border border-bad text-bad hover:bg-bad-soft",
     ghost: "text-muted hover:bg-surface-2 hover:text-foreground",
   }[variant];
   return (
     <button {...props}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-45 ${styles} ${className}`}>
+      className={`inline-flex items-center justify-center gap-2 px-3.5 py-2 font-mono text-xs font-medium uppercase tracking-[0.08em] transition disabled:cursor-not-allowed disabled:opacity-45 ${styles} ${className}`}>
       {children}
     </button>
   );
 }
 
+/** Mark: a ruled ledger square with a tick in blue ink. */
 export function Logo({ className = "size-7" }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
-      <rect width="32" height="32" rx="8" className="fill-brand" />
-      <path d="M9 9h9.5a4.5 4.5 0 0 1 0 9H13v5H9z" className="fill-brand-ink" />
-      <path d="M13 13h5.3a.9.9 0 0 1 0 1.8H13z" className="fill-brand" />
-      <circle cx="22.5" cy="22" r="2.5" className="fill-brand-ink" />
+      <rect x="1.5" y="1.5" width="29" height="29" fill="none" className="stroke-foreground" strokeWidth="2" />
+      <path d="M6 11h20M6 16h20M6 21h20" className="stroke-faint" strokeWidth="1" />
+      <path d="M9 16.5l4.5 4.5L24 9.5" fill="none" className="stroke-bad" strokeWidth="3" strokeLinecap="square" />
     </svg>
   );
 }
 
 export function Empty({ children }: { children: ReactNode }) {
-  return <div className="px-6 py-14 text-center text-sm text-muted">{children}</div>;
+  return <div className="px-6 py-14 text-center font-mono text-xs uppercase tracking-[0.08em] text-muted">{children}</div>;
 }

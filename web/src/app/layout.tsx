@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans, Newsreader } from "next/font/google";
 import { Nav } from "@/components/nav";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const plexSans = IBM_Plex_Sans({ variable: "--font-plex-sans", subsets: ["latin"], weight: ["400", "500", "600"] });
+const plexMono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"], weight: ["400", "500", "700"] });
+const newsreader = Newsreader({
+  variable: "--font-newsreader", subsets: ["latin"], style: ["normal", "italic"], axes: ["opsz"],
+});
 
 export const metadata: Metadata = {
   title: { default: "P2P Autopilot", template: "%s · P2P Autopilot" },
@@ -14,14 +17,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col bg-background text-foreground">
+    <html lang="en" className={`${plexSans.variable} ${plexMono.variable} ${newsreader.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
         <Nav />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10">{children}</main>
-        <footer className="border-t border-line">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-5 text-xs text-faint sm:px-6">
-            <span>Test environment: mock supplier portals and generated invoices. The agent cannot approve or pay.</span>
-            <span>Playwright · Claude · FastAPI · Postgres · Next.js</span>
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 sm:py-14">{children}</main>
+        <footer className="border-t border-line-strong">
+          <div className="mx-auto grid max-w-6xl gap-3 px-4 py-6 sm:grid-cols-[1fr_auto] sm:px-6">
+            <p className="label text-faint">
+              Test environment · mock supplier portals · generated invoices on real SAP purchase orders (BPI 2019)
+            </p>
+            <p className="label text-faint">The agent cannot approve or pay</p>
           </div>
         </footer>
       </body>
