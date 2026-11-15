@@ -105,7 +105,7 @@ body > * {
 }
 
 /* section headings inside pages are set in the book face (unlayered, so it wins over utility weights) */
-main h2 {
+main h2:not(.font-mono) {
   font-family: var(--font-newsreader);
   font-weight: 400;
   letter-spacing: -0.01em;

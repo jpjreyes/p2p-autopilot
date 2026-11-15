@@ -81,7 +81,7 @@ export default function RunPage() {
           <ChevronLeft className="size-4" /> Runs
         </Link>
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{portal?.supplier ?? run.portal}</h1>
+          <h1 className="font-serif text-4xl tracking-tight sm:text-5xl">{portal?.supplier ?? run.portal}</h1>
           <Badge tone={st.tone} dot>{live ? "Running live" : st.label}</Badge>
           <Badge>{CHAOS[run.chaos]?.label ?? run.chaos}</Badge>
         </div>
