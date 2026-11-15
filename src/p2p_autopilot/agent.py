@@ -71,10 +71,12 @@ ONE_ACTION = {
         "frame": {"type": "string"},
         "role": {"type": "string"},
         "name": {"type": "string"},
-        "value": {"type": "string"},
         "nth": {"type": "integer", "minimum": 0},
         "mark": {"type": "integer", "minimum": 1},
         "text": {"type": "string"},
+        # last: with structured outputs the fields come in schema order, so every addressing field must be
+        # available before it (with "value" before "nth", a fill on an unlabeled textbox put the text in "text")
+        "value": {"type": "string"},
     },
     "required": ["action"],
 }

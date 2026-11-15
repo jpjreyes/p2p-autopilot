@@ -23,3 +23,11 @@ def test_batch1_allows_one_action():
     system, schema = configure(max_batch=1)
     assert schema["properties"]["actions"]["maxItems"] == 1
     assert "exactly one action" in system and "batch up to" not in system
+
+
+def test_value_comes_after_every_addressing_field():
+    # Structured outputs emit fields in schema order: a fill addressed by nth/mark/text must still be able to send
+    # its value afterwards (on the API, "value" before "nth" made the model put credentials in "text").
+    _, schema = configure()
+    keys = list(schema["properties"]["actions"]["items"]["properties"])
+    assert keys[-1] == "value"

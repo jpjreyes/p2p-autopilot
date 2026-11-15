@@ -231,6 +231,7 @@ def decide(item_id: int, body: Decision):
 app.include_router(process_router)  # see -> predict: the process warehouse (D16-D19)
 
 
-@app.get("/healthz")
+@app.get("/health")
+@app.get("/healthz")  # Cloud Run reserves paths ending in "z": use /health there
 def healthz():
     return {"ok": True}

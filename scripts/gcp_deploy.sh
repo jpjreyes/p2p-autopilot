@@ -28,5 +28,5 @@ if [ -n "$MISSING" ]; then
 fi
 echo "== smoke test"
 API=$(cd infra/gcp && $TF output -raw api_url)
-curl -fsS "$API/healthz" && curl -fsS "$API/api/process/overview" | head -c 300 && echo
+curl -fsS "$API/health" && curl -fsS "$API/api/process/overview" | head -c 300 && echo
 echo "== done: set NEXT_PUBLIC_API_URL=$API in Vercel"

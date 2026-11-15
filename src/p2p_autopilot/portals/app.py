@@ -429,7 +429,8 @@ def get_side_effects(portal: str):
     return {"portal": portal, "side_effects": chaos.side_effects(portal)}
 
 
-@app.get("/healthz")
+@app.get("/health")
+@app.get("/healthz")  # Cloud Run reserves paths ending in "z": use /health there
 def healthz():
     return {"ok": True}
 
