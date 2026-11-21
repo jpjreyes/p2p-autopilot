@@ -603,3 +603,29 @@ All runs on commit bdd5a35, Claude Haiku via the CLI on a Claude plan (D23), ext
   model on total and date (adjusted) on the held-out 50.
 - **Headline, decided now:** what fine-tuning adds over the untuned model on all 347 and on the unseen 100, next to
   Haiku, plus the failure types read by hand. Not "matches Claude".
+
+## D29. The payment-block model in an MLflow registry: champion/challenger gate and a drift report (2026-11-21)
+- **Why:** D18 trained the model once by hand and saved files. A model that a team keeps improving needs every
+  candidate recorded (settings, data, scores), one place that says which version is live, and a rule, written
+  before the comparison, for when a new version replaces it.
+- **Where:** MLflow on Databricks Free Edition (tracking + Unity Catalog model registry), model
+  `workspace.p2p_autopilot.payment_block`, experiment `/Shared/p2p-autopilot/payment-block`. Code:
+  `process/registry.py` (same training code as D18 via `predict.run(..., save=False)`, so production files are
+  untouched). Each version is the LightGBM booster plus its isotonic calibration as one MLflow model that returns the
+  calibrated probability; runs carry the warehouse file's hash, all parameters, dev metrics and the baselines.
+  Same code runs against a self-hosted MLflow by changing two environment variables.
+- **Gate (written in the module before it ran):** promote the challenger only if its August-dev average precision is
+  at least 0.005 higher than the champion's and its Brier score is no more than 0.002 worse. The Sep-Nov test months
+  are never used to choose.
+- **Result:** the production configuration (v1 in the registry) reproduced D18b exactly (**dev AP 0.545**, Brier
+  0.1652) and became `@champion`. The challenger, the bigger-tree configuration D18b replaced, scored dev AP 0.515
+  and Brier 0.1701: **rejected** on both conditions, the same call D18b made by hand, now recorded on the version
+  (`gate` tag) with its reason.
+- **Drift report (Evidently, training months vs test months, inputs and scores only, no labels):** 14 of 38 columns
+  drift (share 0.37), **including the model's own score** (normed Wasserstein 0.165 > 0.1). The biggest are
+  features that grow with time by construction: vendor volume so far, vendor history, days since the order, plus
+  clerk mix. Yet the model held up on those months (test AP 0.562, D18b). **Reading:** drift here is a signal to
+  check performance as soon as the 60-day labels arrive, not a trigger to retrain; and cumulative-count features
+  should be monitored as rates, or they will always alarm. HTML report and JSON on the champion's run.
+- **Not done, on purpose:** a scheduled retrain job or a replay of the 2018 log as "new data" (it would re-score the
+  test months behind the reported numbers), and serving from the registry (the live demo keeps its baked model).
