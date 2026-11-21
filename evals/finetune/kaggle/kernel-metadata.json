@@ -1,0 +1,14 @@
+{
+  "id": "jpreyesm03/p2p-receipt-reader-qlora",
+  "title": "p2p-receipt-reader-qlora",
+  "code_file": "train_reader.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "machine_shape": "NvidiaTeslaT4",
+  "enable_internet": true,
+  "dataset_sources": ["jpreyesm03/p2p-sroie-finetune"],
+  "competition_sources": [],
+  "kernel_sources": []
+}

@@ -218,7 +218,14 @@ def scores(y: np.ndarray, p: np.ndarray) -> dict:
             "at_precision_0.7": at_precision(y, p, 0.7), "at_precision_0.6": at_precision(y, p, 0.6)}
 
 
-def run(checkpoint: str, final: bool = False, target: str = "block", db: Path = DEFAULT_DB) -> dict:
+PARAMS = {"objective": "binary", "learning_rate": 0.03, "num_leaves": 15, "min_data_in_leaf": 1000, "lambda_l2": 20,
+          "feature_fraction": 0.8, "bagging_fraction": 0.8, "bagging_freq": 1, "verbose": -1, "seed": 7}
+
+
+def run(checkpoint: str, final: bool = False, target: str = "block", db: Path = DEFAULT_DB,
+        params: dict | None = None, save: bool = True) -> dict:
+    """Train and score one model. `params` overrides PARAMS (registry candidates); `save=False` leaves the
+    production model files and run reports untouched and returns the trained objects under "_artifacts"."""
     t0 = time.monotonic()
     con = duckdb.connect(str(db), read_only=True)
     frame = build_frame(con, checkpoint, target=target)
@@ -235,8 +242,7 @@ def run(checkpoint: str, final: bool = False, target: str = "block", db: Path = 
     X_va, _, _ = matrix(take(frame, va), codes)
     X_te, _, _ = matrix(take(frame, te), codes)
     model = lgb.train(
-        {"objective": "binary", "learning_rate": 0.03, "num_leaves": 15, "min_data_in_leaf": 1000, "lambda_l2": 20,
-         "feature_fraction": 0.8, "bagging_fraction": 0.8, "bagging_freq": 1, "verbose": -1, "seed": 7},
+        {**PARAMS, **(params or {})},
         lgb.Dataset(X_tr, y[tr], feature_name=names, categorical_feature=CATEGORICAL),
         num_boost_round=2000, valid_sets=[lgb.Dataset(X_va, y[va], reference=None)],
         callbacks=[lgb.early_stopping(50, verbose=False), lgb.log_evaluation(200)])
@@ -264,6 +270,11 @@ def run(checkpoint: str, final: bool = False, target: str = "block", db: Path = 
     }
     gain = model.feature_importance("gain")
     report["top_features"] = [n for _, n in sorted(zip(-gain, names))][:8]
+    if not save:
+        report["_artifacts"] = {"model": model, "iso": iso, "codes": codes, "features": names,
+                                "threshold_at_precision_0.8": at_precision(y[va], iso.predict(raw_va))["threshold"],
+                                "X": {"train": X_tr, "scored": X_te}, "p_scored": p_te}
+        return report
     MODELS.mkdir(parents=True, exist_ok=True)
     tag = f"{target}-{checkpoint}" if target != "block" else checkpoint
     model.save_model(str(MODELS / f"block-{tag}.txt"), num_iteration=model.best_iteration)
