@@ -576,3 +576,30 @@ All runs on commit bdd5a35, Claude Haiku via the CLI on a Claude plan (D23), ext
   85 s, 13 proposed and 7 sent to a person, the same split as the scored run. Results: `runs/parity_api/` (local).
 - **Would change if:** a parity miss were unsafe or the API path drifted from the CLI on more than one document;
   then the API path would get its own full suite before the demo stays linked.
+
+## D28. Fine-tuning a small open model to read receipts: protocol, written before any training (2026-11-21)
+- **Why:** a company that cannot send documents to an outside model still needs the reader. The question is how
+  close a small open vision model, fine-tuned on a few hundred real receipts and run on its own hardware, gets to
+  Claude on real paper, and where it fails. Not a cost argument: Haiku reads a receipt for ~$0.0007 (D26), which a
+  self-hosted model does not beat at this volume.
+- **Model and method:** Qwen3-VL-4B-Instruct (Apache 2.0), 4-bit QLoRA with Unsloth on one free Kaggle T4 (fp16).
+  The untuned model runs in the same 4-bit setup, so the comparison isolates what fine-tuning adds.
+- **Data:** the SROIE copy from D26. Train split: 500 receipts; 5 dropped (date label not parseable), 50 held out for
+  checking progress, **445 for training**. Targets use the extraction's conventions: date as ISO, total as printed in
+  the label. Images capped at 1,568 px on the long side, the size Haiku read in D26. Data stays in a private Kaggle
+  dataset; neither the data nor the trained adapter is published (SROIE's redistribution terms are unclear).
+- **Totals, decided now:** SROIE labels take the total before cash rounding; D26's rule is the amount paid. Training
+  keeps the label (relabeling needs the printed rounding line, which the labels don't record, and it affects ~1% of
+  receipts). Every model, Haiku included, is scored two ways: strict (equals the label) and adjusted (equals the label
+  or the label rounded to 0.05, the Malaysian cash rounding). Both are reported.
+- **Template leakage, measured:** train and test share stores and layouts. **100 of the 347 test receipts come from a
+  company never seen in training** (`splits.json`); every number is reported on all 347 and on those 100. If the
+  fine-tune's gain is much smaller on the 100, it learned layouts more than reading.
+- **Scored once:** test predictions for the untuned and the fine-tuned model are produced, then scored in one run of
+  `evals/finetune/score.py` against Haiku's saved D26 answers. No training choice looks at the test set; the 50
+  held-out training receipts are the only feedback during training. One training run; a second (adding synthetic
+  scans from our generator, with some templates held out) only if the first leaves a clear gap.
+- **Registry gate:** the adapter is registered in the MLflow registry as `@champion` only if it beats the untuned
+  model on total and date (adjusted) on the held-out 50.
+- **Headline, decided now:** what fine-tuning adds over the untuned model on all 347 and on the unseen 100, next to
+  Haiku, plus the failure types read by hand. Not "matches Claude".
