@@ -1,7 +1,7 @@
 """Kaggle GPU job (one T4): untuned baseline -> QLoRA fine-tune -> fine-tuned predictions (DECISIONS D28).
 
 Runs top to bottom as a Kaggle script. Everything it produces goes to /kaggle/working:
-    preds_base_{val,test}.jsonl, preds_ft_{val,test}.jsonl   one JSON answer per receipt
+    preds_{base,ft}_{val,test,inv}.jsonl   one JSON answer per receipt / generated invoice scan
     adapter/                                                  the LoRA adapter (not published, see D28)
     train_log.json, run_info.json                             loss curve, settings, timings, library versions
 Scoring happens once on the laptop (evals/finetune/score.py); this job never reads test labels.
@@ -11,12 +11,12 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # one T4; Unsloth trains on a single GPU
 
 import subprocess, sys
-subprocess.run([sys.executable, "-m", "pip", "install", "-q", "--upgrade", "unsloth", "unsloth_zoo"], check=True)
+subprocess.run([sys.executable, "-m", "pip", "install", "-q", "unsloth==2026.11.9", "unsloth_zoo"], check=True)
 
 import glob, json, re, time
 from pathlib import Path
 
-SMOKE = True                 # True: a few receipts and steps, to catch bugs before the real run
+SMOKE = False                # True: a few receipts and steps, to catch bugs before the real run
 MODEL = "unsloth/Qwen3-VL-4B-Instruct"
 LORA_R, LORA_ALPHA = 16, 16
 EPOCHS, LR, GRAD_ACCUM = 2, 2e-4, 8
@@ -45,19 +45,21 @@ def rows(name):
 
 
 train, val, test = rows("train.jsonl"), rows("val.jsonl"), rows("test.jsonl")
+inv = [{**r, "file": "invoices/images/" + r["file"]} for r in rows("invoices/invoices.jsonl")]
 if SMOKE:
-    train, val, test = train[:16], val[:3], test[:3]
+    train, val, test, inv = train[:16], val[:3], test[:3], inv[:2]
 
 from PIL import Image
 import torch
 from unsloth import FastVisionModel, is_bf16_supported
 
 info["gpu"] = torch.cuda.get_device_name(0)
-print("GPU:", info["gpu"], "| data:", DATA, "| train/val/test:", len(train), len(val), len(test), flush=True)
+print("GPU:", info["gpu"], "| data:", DATA, "| train/val/test/invoices:", len(train), len(val), len(test), len(inv),
+      flush=True)
 
 
 def image(file):
-    return Image.open(DATA / "images" / file).convert("RGB")
+    return Image.open(DATA / (file if file.startswith("invoices/") else "images/" + file)).convert("RGB")
 
 
 def parse(text):
@@ -96,6 +98,7 @@ model, tokenizer = FastVisionModel.from_pretrained(MODEL, load_in_4bit=True, use
 # 1. untuned baseline (same 4-bit model, same prompt)
 info["timings_s"]["base_val"] = predict(model, tokenizer, val, OUT / "preds_base_val.jsonl")
 info["timings_s"]["base_test"] = predict(model, tokenizer, test, OUT / "preds_base_test.jsonl")
+info["timings_s"]["base_inv"] = predict(model, tokenizer, inv, OUT / "preds_base_inv.jsonl")
 
 # 2. QLoRA fine-tune
 from trl import SFTTrainer, SFTConfig
@@ -137,8 +140,9 @@ tokenizer.save_pretrained(str(OUT / "adapter"))
 # 3. fine-tuned predictions
 info["timings_s"]["ft_val"] = predict(model, tokenizer, val, OUT / "preds_ft_val.jsonl")
 info["timings_s"]["ft_test"] = predict(model, tokenizer, test, OUT / "preds_ft_test.jsonl")
+info["timings_s"]["ft_inv"] = predict(model, tokenizer, inv, OUT / "preds_ft_inv.jsonl")
 
 import importlib.metadata as md
-info["versions"] = {p: md.version(p) for p in ("torch", "transformers", "trl", "peft", "unsloth", "bitsandbytes")}
+info["versions"] = {p: md.version(p) for p in ("torch", "transformers", "trl", "peft", "unsloth", "unsloth_zoo", "bitsandbytes")}
 (OUT / "run_info.json").write_text(json.dumps(info, indent=1))
 print("DONE", json.dumps(info["timings_s"]), "peak GPU GB", info["peak_gpu_gb"], flush=True)
