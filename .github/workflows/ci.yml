@@ -39,6 +39,7 @@ jobs:
       - run: uv sync --frozen --group dbt
       - name: Land the raw SAP extract, build it with dbt on DuckDB (models + tests)
         run: |
+          mkdir -p runs/data_layer
           uv run --group dbt python -m p2p_autopilot.data_layer.land --full
           uv run --group dbt dbt build --project-dir dbt --profiles-dir dbt
       - name: Parity with the original Python build (row-for-row fingerprints)
