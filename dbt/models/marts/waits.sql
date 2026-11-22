@@ -13,7 +13,7 @@ bands as (
     from {{ ref('cases') }}
 )
 select s.case_id, s.from_seq, s.seq as to_seq, s.from_activity, s.activity as to_activity,
-       round(cast({{ diff_seconds('s.from_ts', 's.ts') }} as double) / 86400, 1) as days,
+       {{ round_float("cast(" ~ diff_seconds('s.from_ts', 's.ts') ~ " as double) / 86400", 1) }} as days,
        b.vendor, b.item_category, b.value_band
 from steps s join bands b on b.case_id = s.case_id
 where s.from_activity is not null

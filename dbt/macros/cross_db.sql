@@ -42,3 +42,9 @@
 
 {# a timestamp literal #}
 {% macro ts_lit(s) %}cast('{{ s }}' as timestamp){% endmacro %}
+
+{# round a double to d decimals the way DuckDB does (round(x * 10^d) / 10^d on the binary value): Spark's round(x, d)
+   goes through the shortest decimal text, so 77.975 (really 77.97499999...) becomes 77.98 there and 77.97 here #}
+{% macro round_float(expr, d) %}{{ return(adapter.dispatch('round_float', 'p2p')(expr, d)) }}{% endmacro %}
+{% macro default__round_float(expr, d) %}(round(({{ expr }}) * {{ 10 ** d }}) / {{ 10 ** d }}){% endmacro %}
+{% macro duckdb__round_float(expr, d) %}round({{ expr }}, {{ d }}){% endmacro %}

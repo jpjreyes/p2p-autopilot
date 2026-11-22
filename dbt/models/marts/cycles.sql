@@ -10,7 +10,7 @@ select case_id,
        cycle_no,
        min(ts)                                                                       as start_ts,
        max(ts)                                                                       as end_ts,
-       round(cast({{ diff_seconds('min(ts)', 'max(ts)') }} as double) / 86400, 2)    as days,
+       {{ round_float("cast(" ~ diff_seconds('min(ts)', 'max(ts)') ~ " as double) / 86400", 2) }}    as days,
        count(*)                                                                      as n_events,
        max({{ as_int("activity = 'Clear Invoice'") }}) = 1                           as is_closed,
        max(case when activity = 'Clear Invoice' then event_id end)                   as closing_event_id

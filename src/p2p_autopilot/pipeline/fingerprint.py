@@ -33,6 +33,8 @@ def normalized_select(con: duckdb.DuckDBPyConnection, table: str, only: list[str
     for c, t in cols:
         if t in NUMERIC or t.startswith("DECIMAL"):
             exprs.append(f'round(CAST("{c}" AS DOUBLE), {FLOAT_DIGITS}) AS "{c}"')
+        elif t.startswith("TIMESTAMP WITH TIME ZONE"):  # read back from Arrow as UTC: compare in UTC, not local time
+            exprs.append(f'strftime(timezone(\'UTC\', "{c}"), \'%Y-%m-%d %H:%M:%S\') AS "{c}"')
         elif t.startswith("TIMESTAMP"):
             exprs.append(f'strftime(CAST("{c}" AS TIMESTAMP), \'%Y-%m-%d %H:%M:%S\') AS "{c}"')
         else:

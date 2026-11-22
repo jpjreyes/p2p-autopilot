@@ -1,0 +1,14 @@
+{
+ "window": "2018-09-01..2018-11-18",
+ "model": "data/models/block-invoice (= registry @champion v1)",
+ "days_scored": 54,
+ "lines_scored": 45439,
+ "invoices_scored": 18241,
+ "top10_days_measured": 54,
+ "top10_precision_mean": 0.924,
+ "top10_precision_median": 1.0,
+ "claim_D18c": {
+  "top10_precision_mean": 0.92,
+  "top10_days_measured": 54
+ }
+}

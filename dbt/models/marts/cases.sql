@@ -29,7 +29,7 @@ stats as (
     from {{ ref('events') }} group by case_id
 )
 select a.*, o.value_eur, s.n_events, s.n_bad_dates, s.start_ts, s.end_ts,
-       round(cast({{ diff_seconds('s.start_ts', 's.end_ts') }} as double) / 86400, 2) as throughput_days
+       {{ round_float("cast(" ~ diff_seconds('s.start_ts', 's.end_ts') ~ " as double) / 86400", 2) }} as throughput_days
 from attrs a
 join stats s on s.case_id = a.case_id
 left join ordered o on o.case_id = a.case_id and o.rn = 1
