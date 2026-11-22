@@ -36,6 +36,7 @@ anywhere in the agent; a human approves every payment in the review console.
 | | Cost per invoice (navigation + reading, API-equivalent) | **~$0.0015** (final suite mean; $1.74 for all 60 runs) |
 | **Models** | Self-hosted reader: Qwen3-VL-4B fine-tuned (QLoRA) on 445 real receipts, for documents that cannot leave the company | real receipts, total and date both right: **85.0% untuned to 91.9% fine-tuned** (Claude Haiku 97.1%); on 100 receipts from companies never seen in training **78% to 84%**, so it learned to read, not the layouts. On invoices it got worse (77% to 63%: it learned "take the date" and picks the due date), and the code check still catches every miss: small model first, Claude on 37%, **100%, 0 silent errors** ([D28](DECISIONS.md), [D30](DECISIONS.md)) |
 | | Model registry (MLflow on Databricks) | both models versioned with data hashes; promotion only through a gate written before the comparison: the receipt reader passed (held-out 50: 86% to 100%), a payment-block challenger was rejected; drift report on the real train-to-test shift ([D29](DECISIONS.md)) |
+| **Data** | Same dbt project on DuckDB, Databricks (live daily job) and Snowflake | **all 6 tables identical, row for row**, on all three engines; a day-by-day replay of the test months reproduces the daily top 10 (92.4% vs 92.0%); a leak check runs in CI ([D31](DECISIONS.md), [D32](DECISIONS.md)) |
 
 Act numbers: final evals, Claude Haiku via the Claude CLI on a Claude plan in an isolated configuration (one sentence
 added to every prompt by an account-managed hook), extraction never cached, code version recorded per run;
@@ -142,13 +143,47 @@ registry = Vertex AI Experiments and Model Registry (aliases = version aliases);
 Pipelines step; Evidently = Vertex AI Model Monitoring. Kept on free tiers here; nothing is served from the registry
 (the live demo uses Claude and the baked payment-block model).
 
+## Data platform
+
+The SAP data of a real customer lives in their warehouse, so the warehouse build is versioned, tested dbt SQL that
+gives the same tables on whichever engine the customer runs, and a daily job feeds new data through it.
+
+```
+SAP extract (one file per day) -> land -> ingest -> dbt build + tests -> score with @champion -> daily worklist
+                                   |        |            |
+                     DuckDB reads files   Databricks Auto Loader -> Delta (bronze)   Snowflake stage + COPY INTO
+```
+
+| Target | How it runs | Parity |
+|---|---|---|
+| DuckDB | local and in CI | all 6 tables identical, row for row, to the original Python build (1.6M events, 211k feature rows) |
+| Databricks (Free Edition) | **live daily job**: the day's file arrives, Auto Loader ingests only new files, dbt builds and tests on a serverless SQL warehouse (~45 s), the champion model from Unity Catalog scores the day's invoices | identical to DuckDB on the same files; scores exactly equal |
+| Snowflake (trial) | same dbt project, `--target snowflake` | 33/33 models and tests on the first build; identical to the original Python build |
+
+- **The CV number survives a real replay.** Day by day over the test months, with only the data that existed each day,
+  the top 10 invoices ranked daily were really blocked **92.4%** of the time (the one-shot score said 92.0%).
+- **Making engines agree found real differences**, fixed in one macro file instead of loosening the check: Spark
+  rounds a double like 77.975 up and DuckDB down, and Spark sorts NULLs first in a window.
+- **Leak check in CI:** features built from data up to a cutoff must not change when later data lands. It found a
+  small leak in the original features (`po_lines` counted PO lines created after the invoice, 1.1% of test lines); it
+  did not inflate the claim, and it is bounded in the check. dbt tests also guarantee no test-month row and no
+  not-yet-observable label can reach training.
+
+Details and every number: [D31](DECISIONS.md), [D32](DECISIONS.md). Code: `dbt/`, `src/p2p_autopilot/data_layer/`,
+`data_layer/databricks/` (the job is a JSON spec deployed by `deploy.py`), `data_layer/snowflake/`.
+
+| ![Databricks daily job: 6 green runs](docs/img/data-platform/databricks-job-runs.jpg) | ![One run: arrive, ingest, dbt build, score](docs/img/data-platform/databricks-task-graph.jpg) |
+|---|---|
+| ![Unity Catalog lineage built from the dbt models](docs/img/data-platform/databricks-lineage.jpg) | ![The same dbt models on Snowflake](docs/img/data-platform/snowflake-dbt-tables.jpg) |
+
 ## Stack
 
 Python 3.12 · DuckDB (process warehouse) · LightGBM + scikit-learn (prediction) · Playwright (Chromium) · Claude Haiku
 (evals through the Claude CLI; the Anthropic API for the deployed version) · pypdf + pypdfium2 · FastAPI · Postgres ·
 Next.js · OpenTelemetry · pytest + GitHub Actions (real browser in CI) · Docker · Terraform for GCP
 (Cloud Run + Cloud Run Jobs for the browser runs) · fine-tuning: PyTorch, Hugging Face Transformers, TRL, PEFT
-(QLoRA), Unsloth, Qwen3-VL-4B on Kaggle · MLOps: MLflow + Unity Catalog registry on Databricks, Evidently.
+(QLoRA), Unsloth, Qwen3-VL-4B on Kaggle · MLOps: MLflow + Unity Catalog registry on Databricks, Evidently ·
+data platform: dbt (DuckDB, Databricks, Snowflake), Databricks Jobs, Auto Loader, Delta Lake.
 
 ## Repository layout
 
@@ -169,6 +204,8 @@ src/p2p_autopilot/
 web/              Next.js review console (process, risk, brief, runs, review queue, evals)
 tests/            pytest, including a real headless browser
 evals/finetune/   receipt-reader fine-tune: data prep, Kaggle training notebook, scorer, cascade, registry gate
+dbt/              warehouse models (staging, D1 date repair, event log, features, training rows), tests, engine macros
+data_layer/       baseline fingerprints, the Databricks job (spec + deploy + parity), the Snowflake load + parity
 infra/gcp/        Terraform: Cloud Run services + Jobs, Secret Manager, Storage, Scheduler, budget alert
 scripts/          dev database, eval runner with resume (run_eval.sh), eval page builder, GCP deploy
 data/             the BPI 2019 log (compressed) and the trained models
@@ -192,6 +229,10 @@ scripts/run_eval.sh runs/final/suite.json --portals a b --repeat 3     # same, r
 uv run python evals/real_scans.py                                       # real scans (SROIE; download in the script)
 uv run --group mlops python -m p2p_autopilot.process.registry           # payment-block model -> MLflow registry + gate + drift
 uv run python evals/finetune/score.py --run runs/finetune/kaggle_out    # score the fine-tuned reader (Kaggle outputs)
+uv run --group dbt python -m p2p_autopilot.data_layer.land --full       # land the raw extract with source row ids
+uv run --group dbt dbt build --project-dir dbt --profiles-dir dbt       # dbt models + tests on DuckDB
+uv run --group dbt python -m p2p_autopilot.data_layer.parity            # row-for-row parity with the Python build
+uv run --group dbt python -m p2p_autopilot.data_layer.leak_check        # features must not change when later data lands
 ```
 
 Console: `uv run uvicorn p2p_autopilot.api:app --port 8062`, then `cd web && npm ci && npx next dev -p 3061`.
