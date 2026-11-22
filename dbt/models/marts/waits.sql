@@ -9,7 +9,7 @@ with steps as (
     where is_canonical and seq is not null and ts_status in ('ok', 'repaired')
 ),
 bands as (
-    select case_id, vendor, item_category, ntile(5) over (order by value_eur, case_id) as value_band
+    select case_id, vendor, item_category, ntile(5) over (order by value_eur nulls last, case_id) as value_band
     from {{ ref('cases') }}
 )
 select s.case_id, s.from_seq, s.seq as to_seq, s.from_activity, s.activity as to_activity,
