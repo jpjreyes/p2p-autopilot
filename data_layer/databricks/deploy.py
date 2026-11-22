@@ -28,7 +28,7 @@ def main() -> None:
     ap.add_argument("--run-now", action="store_true")
     a = ap.parse_args()
     w = WorkspaceClient(profile="p2p")
-    for f in ("arrive.py", "ingest.py", "score.py"):
+    for f in ("arrive.py", "ingest.py", "score.py", "drift.py", "brief.py"):
         upload(w, HERE / f, f"{ROOT}/pipeline/{f}")
     dbt = REPO / "dbt"
     n = 0
@@ -51,7 +51,7 @@ def main() -> None:
         w.api_client.do("POST", "/api/2.2/jobs/reset", body={"job_id": job_id, "new_settings": spec})
     else:
         job_id = w.api_client.do("POST", "/api/2.2/jobs/create", body=spec)["job_id"]
-    print(f"uploaded 3 task scripts + {n} dbt files; job {spec['name']} id {job_id}")
+    print(f"uploaded 5 task scripts + {n} dbt files; job {spec['name']} id {job_id}")
     if a.run_now:
         run = w.api_client.do("POST", "/api/2.2/jobs/run-now", body={"job_id": job_id})
         print(f"run started: {run['run_id']}")

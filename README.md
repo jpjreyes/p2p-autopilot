@@ -157,8 +157,9 @@ SAP extract (one file per day) -> land -> ingest -> dbt build + tests -> score w
 | Target | How it runs | Parity |
 |---|---|---|
 | DuckDB | local and in CI | all 6 tables identical, row for row, to the original Python build (1.6M events, 211k feature rows) |
-| Databricks (Free Edition) | **live daily job**: the day's file arrives, Auto Loader ingests only new files, dbt builds and tests on a serverless SQL warehouse (~45 s), the champion model from Unity Catalog scores the day's invoices | identical to DuckDB on the same files; scores exactly equal |
+| Databricks (Free Edition) | **live daily job**: the day's file arrives, Auto Loader ingests only new files, dbt builds and tests on a serverless SQL warehouse (~45 s), the champion model from Unity Catalog scores the day's invoices, drift is measured, and on Sundays the weekly brief's numbers are computed | identical to DuckDB on the same files; scores exactly equal |
 | Snowflake (trial) | same dbt project, `--target snowflake` | 33/33 models and tests on the first build; identical to the original Python build |
+| Airflow (local) | the same steps as a DAG (arrive, dbt build, score, check), calling the same code | daily worklists identical to the Databricks job on every replay day both ran |
 
 - **The CV number survives a real replay.** Day by day over the test months, with only the data that existed each day,
   the top 10 invoices ranked daily were really blocked **92.4%** of the time (the one-shot score said 92.0%).
@@ -168,13 +169,17 @@ SAP extract (one file per day) -> land -> ingest -> dbt build + tests -> score w
   small leak in the original features (`po_lines` counted PO lines created after the invoice, 1.1% of test lines); it
   did not inflate the claim, and it is bounded in the check. dbt tests also guarantee no test-month row and no
   not-yet-observable label can reach training.
+- **Drift is watched, not obeyed:** each day the job compares the last 7 days with the model's calibration month
+  (PSI on the score and key inputs). Inputs drift while the score holds (score PSI 0.05; two inputs on "watch"), so
+  drift is a reason to check performance when labels arrive, never a reason to stop the pipeline or retrain (D29).
 
-Details and every number: [D31](DECISIONS.md), [D32](DECISIONS.md). Code: `dbt/`, `src/p2p_autopilot/data_layer/`,
+Details and every number: [D31](DECISIONS.md), [D32](DECISIONS.md), [D33](DECISIONS.md). Code: `dbt/`, `src/p2p_autopilot/data_layer/`,
 `data_layer/databricks/` (the job is a JSON spec deployed by `deploy.py`), `data_layer/snowflake/`.
 
 | ![Databricks daily job: 6 green runs](docs/img/data-platform/databricks-job-runs.jpg) | ![One run: arrive, ingest, dbt build, score](docs/img/data-platform/databricks-task-graph.jpg) |
 |---|---|
 | ![Unity Catalog lineage built from the dbt models](docs/img/data-platform/databricks-lineage.jpg) | ![The same dbt models on Snowflake](docs/img/data-platform/snowflake-dbt-tables.jpg) |
+| ![The same steps as an Airflow DAG](docs/img/data-platform/airflow-dag-runs.jpg) | |
 
 ## Stack
 
@@ -183,7 +188,7 @@ Python 3.12 · DuckDB (process warehouse) · LightGBM + scikit-learn (prediction
 Next.js · OpenTelemetry · pytest + GitHub Actions (real browser in CI) · Docker · Terraform for GCP
 (Cloud Run + Cloud Run Jobs for the browser runs) · fine-tuning: PyTorch, Hugging Face Transformers, TRL, PEFT
 (QLoRA), Unsloth, Qwen3-VL-4B on Kaggle · MLOps: MLflow + Unity Catalog registry on Databricks, Evidently ·
-data platform: dbt (DuckDB, Databricks, Snowflake), Databricks Jobs, Auto Loader, Delta Lake.
+data platform: dbt (DuckDB, Databricks, Snowflake), Databricks Jobs, Auto Loader, Delta Lake, Airflow.
 
 ## Repository layout
 

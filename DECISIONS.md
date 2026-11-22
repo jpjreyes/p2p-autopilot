@@ -725,3 +725,23 @@ All runs on commit bdd5a35, Claude Haiku via the CLI on a Claude plan (D23), ext
   DuckDB, Databricks and Snowflake.
 - **Not claimed:** Snowflake in production. It is a tested target; the live daily job runs on Databricks (free).
   The trial expires on its own; nothing to delete for billing reasons.
+
+## D33. Drift and the weekly brief in the daily job; the same steps as an Airflow DAG (2026-11-21)
+- **Drift (daily task):** population stability index of the champion's score and six key inputs, last 7 replay days
+  vs the July 2018 calibration month, written to `drift_daily` as ok (< 0.10), watch (0.10-0.25) or alert (>= 0.25).
+  First run (week to 2018-09-06, 5,118 lines vs 19,226): score 0.05 ok; vendor block rate 0.08 ok; days since the
+  order 0.15 and recent vendor block ratio 0.21 on watch. Same reading as D29: inputs drift, the score holds. An alert
+  is recorded, never a task failure: drift means "check performance when the 60-day labels arrive", not "stop".
+- **Weekly brief (Sunday task):** the brief's numbers only (the week's volume, lines scored and flagged at the
+  80%-precision threshold, EUR flagged, top vendors) in `weekly_brief`. The written summary stays in the app, where the
+  LLM and the grounding check live (D19). Tested on the week ending 2018-09-02: 1,045 lines scored, 57 flagged, EUR
+  209,074. Found on the way: Databricks counts `SystemExit(0)` as a failed task, so "not Sunday" now ends normally.
+- **Airflow:** the same four steps (arrive, dbt build on DuckDB, score, check) as a DAG; each task calls
+  `p2p_autopilot.data_layer.daily` through `uv run`, so Airflow (its own venv, official constraints, no Docker) and
+  the project never share dependencies, and both orchestrators run the same code. 7 DAG runs (2018-08-31 to 09-06),
+  all green. **Orchestrator parity: the Airflow and Databricks daily worklists are identical on all 5 days with
+  invoices** (same lines; scores equal to 1e-9, the rounding of the local file). One trap: `airflow dags test` with a
+  logical date before the DAG's `start_date` creates no task instances and still reports success; caught because the
+  outputs were checked, not the status.
+- **Why two orchestrators:** customers bring their own (Databricks Jobs where the data already lives on Databricks,
+  Airflow elsewhere). One set of steps, two runners, a parity check between them.
