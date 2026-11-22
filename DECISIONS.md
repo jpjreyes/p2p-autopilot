@@ -629,3 +629,51 @@ All runs on commit bdd5a35, Claude Haiku via the CLI on a Claude plan (D23), ext
   should be monitored as rates, or they will always alarm. HTML report and JSON on the champion's run.
 - **Not done, on purpose:** a scheduled retrain job or a replay of the 2018 log as "new data" (it would re-score the
   test months behind the reported numbers), and serving from the registry (the live demo keeps its baked model).
+
+## D30. Fine-tuned receipt reader: results, cascade and registry (2026-11-21)
+- **Run (as D28 wrote it, one training run):** Qwen3-VL-4B-Instruct, 4-bit QLoRA (Unsloth, LoRA r=16, alpha 16,
+  2 epochs, lr 2e-4, 112 steps) on the 445 training receipts, one free Kaggle T4 in fp16. Training 36 min; the whole
+  job (untuned predictions, training, fine-tuned predictions on 489 images) 3.7 GPU hours, peak 15.4 GB of the T4's
+  16. Training loss 0.295 on average, ~0.01 at the end, which is why only the held-out data below counts.
+  Library versions, timings and the training curve are on the MLflow run.
+- **Real receipts (SROIE test, 347, scored once), total and date both right:**
+
+  | Model | All 347 | 100 from unseen companies | Date | Total (strict / adjusted) | Median s per receipt (T4) |
+  |---|---|---|---|---|---|
+  | Qwen3-VL-4B, untuned | 85.0% | 78% | 91.6% | 93.1% / 93.4% | 9.6 |
+  | **Qwen3-VL-4B, fine-tuned** | **91.9%** | **84%** | **96.5%** | 95.1% / 95.4% | 14.8 |
+  | Claude Haiku (D26, zero-shot) | 97.1% | 96% | 97.7% | 98.3% / 99.4% | API |
+
+  **Fine-tuning adds ~7 points and the gain holds on the 100 receipts from companies it never saw** (+6), so it is
+  mostly reading, not memorized layouts. The gain is almost all dates (unseen: 86% to 93%); totals on unseen companies
+  do not improve (91% to 90%). Haiku stays ahead by ~5 points (12 points on unseen totals and dates together). The
+  company field goes the other way (fine-tuned 93% vs Haiku 84%) because the fine-tune learned how SROIE writes
+  company names, a label convention rather than better reading.
+- **The 28 test misses, read by hand:** 16 totals: 9 digits misread on faded thermal paper (6 read as 8, 83.55 as
+  93.55), 4 cash-rounding lines where the model took the other side of the rounding, 3 the wrong line (cash tendered,
+  a subtotal). 12 dates: 8 the wrong year (mostly two-digit years such as "21/12/16"), 4 a misread day or month.
+  None is a format or parse failure (100% valid JSON). The ceiling here is a 4B model's eyesight on bad scans, not the prompt.
+- **Gate:** on the held-out 50, total and date both right went from 86% (untuned) to 100%, total from 94% to 100%,
+  date from 92% to 100%. The adapter became **version 1 and `@champion` of `workspace.p2p_autopilot.receipt_reader`**
+  (experiment `/Shared/p2p-autopilot/receipt-reader`); the run carries the data hash, the Kaggle kernel version and
+  the D28 gate as written. `evals/finetune/register_reader.py`.
+- **Invoices: fine-tuning on receipts made it worse.** On the 92 generated invoice scans from P4's suite (portals A to
+  D, none seen in training) both right fell from 77% (untuned) to 63%. Every total is right; the misses are dates.
+  12 are day-month swaps (the untuned model makes the same 12); **20 are the due date instead of the issue date**,
+  about 30 days late. SROIE receipts have one date, so the fine-tune learned "take the date" and lost "take the issue
+  date" on a document that has two. A narrow training set narrows the model: the fix is invoices in the training mix
+  (run 2 in D28), not a different prompt. Haiku on the same 92: 92/92 ($0.045 API-equivalent).
+- **Cascade (small model first, Claude only when code checks fail), `evals/finetune/cascade.py`:**
+  - Invoices, with P4's real check (date and amount must equal the portal row, D8): **37% go to Claude, final 100%,
+    0 silent errors.** Every wrong date disagreed with the portal row. With the untuned model first, 23% go to
+    Claude, also 100%. So on invoices the checks make the small model safe, and the untuned model is the better first
+    reader today.
+  - Receipts have no portal row: the only checks are parse, a plausible date and a positive total. They send 0.6% to
+    Claude and **let 28 wrong readings through (8% of 347)**. A receipt reader without a source of truth to check
+    against needs a person or a second reader on what matters; a small model alone is not safe there.
+- **Reading:** a self-hosted 4B model fine-tuned on 445 receipts reaches 92% on real paper with no document leaving
+  the company, ~5 points under Claude; that is the privacy trade-off, measured. It is only safe where a code check can
+  catch it (P4's invoices: yes; loose receipts: no). Cost is not the argument (Haiku ~$0.70 per 1,000 receipts).
+- **Would change if:** a second run with generated invoices in the training mix (some portal templates held out)
+  kept the receipt gain and fixed the issue-date mistakes; then the fine-tuned model would replace the untuned one as
+  first reader in the cascade. Not run today.

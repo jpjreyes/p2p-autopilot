@@ -34,6 +34,8 @@ anywhere in the agent; a human approves every payment in the review console.
 | | Scanned invoices · handwritten corrections | 120/120 read from the image · 36/36 sent to a human, 0 false alarms (final suite) |
 | | Real scans (SROIE: 347 real scanned receipts, public benchmark) | total **98.3%**, date **97.7%**; each total miss read by hand: 1 real misread in 347 (the receipt's own arithmetic exposes it), the rest label conventions and one label error ([D26](DECISIONS.md)) |
 | | Cost per invoice (navigation + reading, API-equivalent) | **~$0.0015** (final suite mean; $1.74 for all 60 runs) |
+| **Models** | Self-hosted reader: Qwen3-VL-4B fine-tuned (QLoRA) on 445 real receipts, for documents that cannot leave the company | real receipts, total and date both right: **85.0% untuned to 91.9% fine-tuned** (Claude Haiku 97.1%); on 100 receipts from companies never seen in training **78% to 84%**, so it learned to read, not the layouts. On invoices it got worse (77% to 63%: it learned "take the date" and picks the due date), and the code check still catches every miss: small model first, Claude on 37%, **100%, 0 silent errors** ([D28](DECISIONS.md), [D30](DECISIONS.md)) |
+| | Model registry (MLflow on Databricks) | both models versioned with data hashes; promotion only through a gate written before the comparison: the receipt reader passed (held-out 50: 86% to 100%), a payment-block challenger was rejected; drift report on the real train-to-test shift ([D29](DECISIONS.md)) |
 
 Act numbers: final evals, Claude Haiku via the Claude CLI on a Claude plan in an isolated configuration (one sentence
 added to every prompt by an account-managed hook), extraction never cached, code version recorded per run;
@@ -114,18 +116,46 @@ receipt. Approve and reject are the only money actions, and they belong to peopl
   tab; the download tool only knew links. All three first-contact runs stopped and handed off with that reason
   (nothing unsafe). One general fix to the tool took it to 3/3 ([D24](DECISIONS.md), [D25](DECISIONS.md)).
 
+## Models and MLOps
+
+Two models in the product live in one MLflow registry (Databricks Free Edition, Unity Catalog), each with a
+champion/challenger gate written before the comparison ran.
+
+- **Receipt and invoice reader, fine-tuned and self-hosted.** For companies that cannot send documents to an outside
+  model. Qwen3-VL-4B-Instruct (Apache 2.0), 4-bit QLoRA with Unsloth on one free Kaggle T4 (36 min of training,
+  3.7 GPU hours for the whole job). The protocol (data split, scoring rules, a test set touched once, the 100
+  unseen-company receipts, the gate) was written before training ([D28](DECISIONS.md)). Results and every miss read
+  by hand: [D30](DECISIONS.md). The point is privacy, not cost: Haiku reads a receipt for about $0.0007.
+- **What it showed:** fine-tuning bought ~7 points on real receipts and kept them on unseen companies, but a model
+  trained only on receipts got worse on invoices (it reads the due date as the date). It is safe exactly where a
+  code check backs it up: on invoices the portal-row check sends every wrong reading to Claude (0 silent errors); on
+  loose receipts, with nothing to check against, 8% of wrong readings get through.
+- **Payment-block model:** the LightGBM model and its calibration as one MLflow model, reproduced exactly from the
+  saved training code; a challenger was rejected by the gate on the August dev month (test months never used to
+  choose); Evidently drift report on training vs test months: 14 of 38 inputs drift, including the score, yet the
+  model held up, so drift triggers a performance check, not a retrain ([D29](DECISIONS.md)).
+- **Reproducible:** pinned library versions on Kaggle and the Mac, dataset hashes on every run, the Kaggle kernel
+  version as a tag. Training data (SROIE) and the trained adapter stay private.
+
+How this maps to Google Cloud: Kaggle notebook = Vertex AI custom training job (a T4 or L4); MLflow tracking and
+registry = Vertex AI Experiments and Model Registry (aliases = version aliases); the gate script = a Vertex AI
+Pipelines step; Evidently = Vertex AI Model Monitoring. Kept on free tiers here; nothing is served from the registry
+(the live demo uses Claude and the baked payment-block model).
+
 ## Stack
 
 Python 3.12 · DuckDB (process warehouse) · LightGBM + scikit-learn (prediction) · Playwright (Chromium) · Claude Haiku
 (evals through the Claude CLI; the Anthropic API for the deployed version) · pypdf + pypdfium2 · FastAPI · Postgres ·
-Next.js · OpenTelemetry · pytest + GitHub Actions (124 tests, real browser in CI) · Docker · Terraform for GCP
-(Cloud Run + Cloud Run Jobs for the browser runs).
+Next.js · OpenTelemetry · pytest + GitHub Actions (real browser in CI) · Docker · Terraform for GCP
+(Cloud Run + Cloud Run Jobs for the browser runs) · fine-tuning: PyTorch, Hugging Face Transformers, TRL, PEFT
+(QLoRA), Unsloth, Qwen3-VL-4B on Kaggle · MLOps: MLflow + Unity Catalog registry on Databricks, Evidently.
 
 ## Repository layout
 
 ```
 src/p2p_autopilot/
-  process/        see + predict: SAP log -> DuckDB warehouse, metrics, payment-block model, risk worklist, weekly brief
+  process/        see + predict: SAP log -> DuckDB warehouse, metrics, payment-block model, risk worklist, weekly brief,
+                  registry.py (MLflow registry, champion/challenger gate, drift report)
   agent.py        the portal agent loop (decisions, batching, completeness check, loop guard)
   browser.py      browser tools the model uses (accessibility tree, marks, downloads) and their guardrails
   extract.py      invoice extraction (text or page image) + arithmetic and portal cross-checks
@@ -138,6 +168,7 @@ src/p2p_autopilot/
   llm.py, subscription.py, tracing.py   model backends, clean-CLI eval runner, OpenTelemetry
 web/              Next.js review console (process, risk, brief, runs, review queue, evals)
 tests/            pytest, including a real headless browser
+evals/finetune/   receipt-reader fine-tune: data prep, Kaggle training notebook, scorer, cascade, registry gate
 infra/gcp/        Terraform: Cloud Run services + Jobs, Secret Manager, Storage, Scheduler, budget alert
 scripts/          dev database, eval runner with resume (run_eval.sh), eval page builder, GCP deploy
 data/             the BPI 2019 log (compressed) and the trained models
@@ -159,6 +190,8 @@ uv run python -m p2p_autopilot.agent --portal a             # one run
 uv run python -m p2p_autopilot.chaos_suite --portals a b --repeat 3   # failure suite with pass^k
 scripts/run_eval.sh runs/final/suite.json --portals a b --repeat 3     # same, resumable after limits or crashes
 uv run python evals/real_scans.py                                       # real scans (SROIE; download in the script)
+uv run --group mlops python -m p2p_autopilot.process.registry           # payment-block model -> MLflow registry + gate + drift
+uv run python evals/finetune/score.py --run runs/finetune/kaggle_out    # score the fine-tuned reader (Kaggle outputs)
 ```
 
 Console: `uv run uvicorn p2p_autopilot.api:app --port 8062`, then `cd web && npm ci && npx next dev -p 3061`.
@@ -172,6 +205,8 @@ Console: `uv run uvicorn p2p_autopilot.api:app --port 8062`, then `cd web && npm
 - The invoice scans and handwriting are generated. Reading real paper is measured on receipts (SROIE, D26), not on
   real invoices with line items and PO numbers; real handwriting styles at scale are untested.
 - `already_paid` is only as good as the AP ledger it reads.
+- The fine-tuned reader had one training run on receipts only; invoices in the training mix (D28's run 2) were not
+  tried. It is measured offline and not served.
 
 ## License
 

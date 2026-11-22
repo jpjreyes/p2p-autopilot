@@ -1,0 +1,104 @@
+{
+ "sroie_test": {
+  "set": "SROIE test (real paper)",
+  "n": 347,
+  "escalated_to_claude": 0.006,
+  "accuracy_total_and_date": {
+   "small_alone": 0.919,
+   "claude_alone": 0.971,
+   "cascade": 0.919
+  },
+  "silent_errors": 28,
+  "silent_error_files": [
+   "X51005200931.jpg",
+   "X51005337867.jpg",
+   "X51005442322.jpg",
+   "X51005442382.jpg",
+   "X51005568887.jpg",
+   "X51005675914.jpg",
+   "X51005710963.jpg",
+   "X51005715455.jpg",
+   "X51005719895.jpg",
+   "X51005745298.jpg",
+   "X51005806696.jpg",
+   "X51005806719.jpg",
+   "X51005806720.jpg",
+   "X51006329183.jpg",
+   "X51006332641.jpg",
+   "X51006334927.jpg",
+   "X51006387660.jpg",
+   "X51006387973.jpg",
+   "X51006388068.jpg",
+   "X51006401845.jpg",
+   "X51006414702.jpg",
+   "X51006502534.jpg",
+   "X51006619503.jpg",
+   "X51006619760.jpg",
+   "X51006619784.jpg",
+   "X51006619863.jpg",
+   "X51007391390.jpg",
+   "X51007846321.jpg"
+  ],
+  "claude_cost_per_1000_docs_usd": 0.0,
+  "claude_alone_cost_per_1000_docs_usd": 0.72
+ },
+ "sroie_unseen": {
+  "set": "SROIE test, unseen companies",
+  "n": 100,
+  "escalated_to_claude": 0.0,
+  "accuracy_total_and_date": {
+   "small_alone": 0.84,
+   "claude_alone": 0.96,
+   "cascade": 0.84
+  },
+  "silent_errors": 16,
+  "silent_error_files": [
+   "X51005337867.jpg",
+   "X51005442322.jpg",
+   "X51005710963.jpg",
+   "X51005806696.jpg",
+   "X51005806719.jpg",
+   "X51005806720.jpg",
+   "X51006329183.jpg",
+   "X51006334927.jpg",
+   "X51006387660.jpg",
+   "X51006401845.jpg",
+   "X51006502534.jpg",
+   "X51006619503.jpg",
+   "X51006619760.jpg",
+   "X51006619784.jpg",
+   "X51007391390.jpg",
+   "X51007846321.jpg"
+  ],
+  "claude_cost_per_1000_docs_usd": 0.0,
+  "claude_alone_cost_per_1000_docs_usd": 0.72
+ },
+ "invoices": {
+  "set": "Generated invoice scans (D8 check vs portal row)",
+  "n": 92,
+  "escalated_to_claude": 0.37,
+  "accuracy_total_and_date": {
+   "small_alone": 0.63,
+   "claude_alone": 1.0,
+   "cascade": 1.0
+  },
+  "silent_errors": 0,
+  "silent_error_files": [],
+  "claude_cost_per_1000_docs_usd": 0.18,
+  "claude_alone_cost_per_1000_docs_usd": 0.49
+ },
+ "invoices_untuned_small_model": {
+  "set": "Generated invoice scans, untuned small model first",
+  "n": 92,
+  "escalated_to_claude": 0.228,
+  "accuracy_total_and_date": {
+   "small_alone": 0.772,
+   "claude_alone": 1.0,
+   "cascade": 1.0
+  },
+  "silent_errors": 0,
+  "silent_error_files": [],
+  "claude_cost_per_1000_docs_usd": 0.11,
+  "claude_alone_cost_per_1000_docs_usd": 0.49
+ }
+}
