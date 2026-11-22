@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Check, Minus, X } from "lucide-react";
 import { CHAOS, PORTALS } from "@/lib/api";
 import { Card, PageHeader, Stat } from "@/components/ui";
+import { PlatformSection } from "@/components/platform-section";
 
 type Cell = {
   variant: string; portal: string; mode: string; latest_pass: boolean; latest_docs_right: string | null;
@@ -127,6 +128,8 @@ export default function EvalsPage() {
       </section>
 
       <p className="text-xs text-faint">Results generated {new Date(d.generated_at).toLocaleString()} from the saved run files.</p>
+
+      <PlatformSection />
     </div>
   );
 }
