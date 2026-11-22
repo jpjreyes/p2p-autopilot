@@ -28,6 +28,7 @@ import mlflow
 import numpy as np
 import pandas as pd
 from mlflow import MlflowClient
+from mlflow.exceptions import MlflowException
 from mlflow.models import infer_signature
 
 from p2p_autopilot.process import predict
@@ -196,7 +197,7 @@ def main() -> None:
     data_fp = fingerprint(DEFAULT_DB)
     try:
         current = client.get_model_version_by_alias(MODEL_NAME, "champion")
-    except Exception:
+    except MlflowException:  # no champion yet: the first candidate becomes it
         current = None
     summary = {"model": MODEL_NAME, "gate": GATE, "data_fingerprint": data_fp}
 
