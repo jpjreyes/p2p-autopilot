@@ -48,3 +48,8 @@
 {% macro round_float(expr, d) %}{{ return(adapter.dispatch('round_float', 'p2p')(expr, d)) }}{% endmacro %}
 {% macro default__round_float(expr, d) %}(round(({{ expr }}) * {{ 10 ** d }}) / {{ 10 ** d }}){% endmacro %}
 {% macro duckdb__round_float(expr, d) %}round({{ expr }}, {{ d }}){% endmacro %}
+
+{# a raw column whose name is a reserved word (timestamp, user): Snowflake keeps unquoted names in upper case #}
+{% macro raw_col(name) %}{{ return(adapter.dispatch('raw_col', 'p2p')(name)) }}{% endmacro %}
+{% macro default__raw_col(name) %}{{ adapter.quote(name) }}{% endmacro %}
+{% macro snowflake__raw_col(name) %}"{{ name | upper }}"{% endmacro %}

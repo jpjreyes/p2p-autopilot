@@ -711,3 +711,17 @@ All runs on commit bdd5a35, Claude Haiku via the CLI on a Claude plan (D23), ext
   not unpickled: the pickled model class failed on serverless.
 - **Not done, on purpose:** Spark/PySpark transforms (the data fits a SQL warehouse); incremental dbt models (a full
   rebuild is ~45 s and keeps parity simple); retraining in the job (frozen during the replay, decision 4).
+
+## D32. Snowflake as a third target: same dbt code, identical tables (2026-11-21)
+- **Why:** customers bring Snowflake as often as Databricks (109 of 173 FDE/SE/SA postings naming one name both).
+  Portable means proven on the customer's engine, not claimed.
+- **How:** a 30-day Snowflake trial with no card (it cannot bill), a project-only role, X-Small warehouse that
+  suspends after 60 s, and a programmatic access token restricted to that role. The landed file is PUT to an
+  internal stage and COPY'd into a raw table of text columns (1,595,923 rows, 26 s); then `dbt build --target
+  snowflake`. Code: `data_layer/snowflake/`. One new macro: reserved column names (`timestamp`, `user`) are upper
+  case in Snowflake.
+- **Result:** 33 of 33 models and tests pass on the first build (~15 s), and **all 6 tables are identical, row for
+  row, to the original Python build** (same fingerprints as D31). With D31, one dbt project gives the same tables on
+  DuckDB, Databricks and Snowflake.
+- **Not claimed:** Snowflake in production. It is a tested target; the live daily job runs on Databricks (free).
+  The trial expires on its own; nothing to delete for billing reasons.
