@@ -1,10 +1,10 @@
-"""Parity: do the dbt-built tables equal the legacy Python build (pipeline/baseline.json), row for row?
+"""Parity: do the dbt-built tables equal the legacy Python build (data_layer/baseline.json), row for row?
 
 Compares fingerprints (same columns, in the baseline's order). When a table differs and the legacy DuckDB file is
 present (runs/data_layer/legacy.duckdb, written by baseline.py), it also counts the rows on each side that the other
 side lacks, per column, so a mismatch points at its cause.
 
-Usage: python -m p2p_autopilot.pipeline.parity [--db runs/data_layer/dbt.duckdb]   (exit 1 on any mismatch)
+Usage: python -m p2p_autopilot.data_layer.parity [--db runs/data_layer/dbt.duckdb]   (exit 1 on any mismatch)
 """
 
 from __future__ import annotations
@@ -16,8 +16,8 @@ from pathlib import Path
 
 import duckdb
 
-from p2p_autopilot.pipeline.fingerprint import fingerprint, normalized_select
-from p2p_autopilot.pipeline.paths import BASELINE, DBT_DB, LEGACY_DB
+from p2p_autopilot.data_layer.fingerprint import fingerprint, normalized_select
+from p2p_autopilot.data_layer.paths import BASELINE, DBT_DB, LEGACY_DB
 
 KEYS = {"events": ["event_id"], "cases": ["case_id"], "cycles": ["case_id", "cycle_no"],
         "waits": ["case_id", "to_seq"], "dq_report": ["check_name"], "invoice_features": ["case_id"]}

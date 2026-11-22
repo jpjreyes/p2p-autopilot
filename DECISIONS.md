@@ -686,7 +686,7 @@ All runs on commit bdd5a35, Claude Haiku via the CLI on a Claude plan (D23), ext
   Delta table; DuckDB reads the files directly) -> dbt (staging, D1 date repair, events, cases, cycles, waits,
   dq_report, invoice_features, training_rows; 24 schema and singular tests) -> score (champion model) -> daily
   worklist. Engine differences live in one macro file (date math, day of week, rounding); no engine-specific SQL in
-  the models. Code: `dbt/`, `src/p2p_autopilot/pipeline/`, `pipeline/databricks/` (the job is a JSON spec in the repo,
+  the models. Code: `dbt/`, `src/p2p_autopilot/data_layer/`, `data_layer/databricks/` (the job is a JSON spec in the repo,
   deployed by `deploy.py`).
 - **Parity, measured, not assumed:** (1) dbt on DuckDB vs the original Python build: all 6 tables identical row for
   row (order-independent fingerprints, 1,595,923 events, 211,379 feature rows). (2) Databricks vs DuckDB on the same

@@ -2,9 +2,9 @@
 
 Rebuilds the warehouse from the raw CSV with the existing code (warehouse.py), builds the invoice-time feature
 frame the payment-block model uses (predict.build_frame), and records a fingerprint of every table plus the
-daily-worklist numbers behind the CV claim. The dbt build must reproduce these exactly (pipeline/parity.py).
+daily-worklist numbers behind the CV claim. The dbt build must reproduce these exactly (data_layer/parity.py).
 
-Usage: python -m p2p_autopilot.pipeline.baseline   (~2 min)
+Usage: python -m p2p_autopilot.data_layer.baseline   (~2 min)
 """
 
 from __future__ import annotations
@@ -14,9 +14,9 @@ import json
 import duckdb
 import pandas as pd
 
-from p2p_autopilot.pipeline.fingerprint import fingerprint
-from p2p_autopilot.pipeline.paths import BASELINE as OUT
-from p2p_autopilot.pipeline.paths import LEGACY_DB
+from p2p_autopilot.data_layer.fingerprint import fingerprint
+from p2p_autopilot.data_layer.paths import BASELINE as OUT
+from p2p_autopilot.data_layer.paths import LEGACY_DB
 from p2p_autopilot.process import predict
 from p2p_autopilot.process.warehouse import DEFAULT_CSV, DEFAULT_DB, ROOT, build
 

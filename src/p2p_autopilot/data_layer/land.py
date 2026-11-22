@@ -13,7 +13,7 @@ Modes:
                            the test months day by day, so no later event, and no later label, exists before its day)
 
 Files: <out>/sap_events_backfill.csv.gz, <out>/sap_events_YYYY-MM-DD.csv.gz (all columns text, as delivered).
-Usage: python -m p2p_autopilot.pipeline.land --full [--out DIR]
+Usage: python -m p2p_autopilot.data_layer.land --full [--out DIR]
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from pathlib import Path
 
 import duckdb
 
-from p2p_autopilot.pipeline.paths import LANDING
+from p2p_autopilot.data_layer.paths import LANDING
 from p2p_autopilot.process.warehouse import DEFAULT_CSV, VALID_FROM, VALID_TO
 
 

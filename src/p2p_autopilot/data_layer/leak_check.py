@@ -8,7 +8,7 @@ Rules (exit 1 if any fails):
      no label is used before it is observable (D18 label delay).
   3. dbt's own tests pass on the cutoff build (including: no test-month row in training_rows).
 
-Usage: python -m p2p_autopilot.pipeline.leak_check [--cutoff 2018-09-15]   (needs the dbt dependency group)
+Usage: python -m p2p_autopilot.data_layer.leak_check [--cutoff 2018-09-15]   (needs the dbt dependency group)
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from datetime import date, timedelta
 
 import duckdb
 
-from p2p_autopilot.pipeline.paths import DATA_LAYER, DBT_DIR
+from p2p_autopilot.data_layer.paths import DATA_LAYER, DBT_DIR
 
 # known pre-existing exceptions in the D18 features, with the share of rows allowed to differ (data-layer D31):
 #   po_lines counts every line of the PO, including lines created after the invoice;
@@ -33,7 +33,7 @@ def build(name: str, landing_args: list[str]) -> str:
     landing = DATA_LAYER / f"landing_{name}"
     db = DATA_LAYER / f"{name}.duckdb"
     db.unlink(missing_ok=True)
-    subprocess.run([sys.executable, "-m", "p2p_autopilot.pipeline.land", *landing_args, "--out", str(landing)],
+    subprocess.run([sys.executable, "-m", "p2p_autopilot.data_layer.land", *landing_args, "--out", str(landing)],
                    check=True)
     env = {**os.environ, "P2P_DUCKDB": str(db), "P2P_LANDING": str(landing)}
     r = subprocess.run(["dbt", "build", "--project-dir", str(DBT_DIR), "--profiles-dir", str(DBT_DIR), "--quiet"],

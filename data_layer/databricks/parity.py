@@ -3,9 +3,9 @@ same landed files (the backfill plus every daily file up to the job's replay day
 the local scorer's on the same day.
 
 Reads the Databricks tables through the SQL warehouse into DuckDB and compares fingerprints with the same
-normalization as pipeline/parity.py.
+normalization as data_layer/parity.py.
 
-Usage: python pipeline/databricks/parity.py   (dbt group; profile `p2p`; downloads ~1.6M rows, a few minutes)
+Usage: python data_layer/databricks/parity.py   (dbt group; profile `p2p`; downloads ~1.6M rows, a few minutes)
 """
 
 import os
@@ -21,9 +21,9 @@ import requests
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.sql import Disposition, Format, StatementState
 
-from p2p_autopilot.pipeline.fingerprint import fingerprint
-from p2p_autopilot.pipeline.paths import DATA_LAYER, DBT_DIR
-from p2p_autopilot.pipeline.score import Scorer, columns_of
+from p2p_autopilot.data_layer.fingerprint import fingerprint
+from p2p_autopilot.data_layer.paths import DATA_LAYER, DBT_DIR
+from p2p_autopilot.data_layer.score import Scorer, columns_of
 
 TABLES = ["events", "cases", "cycles", "waits", "dq_report", "invoice_features"]
 FEED = DATA_LAYER / "replay_feed"

@@ -1,7 +1,7 @@
 """Deploy the daily job to Databricks: upload the task scripts and the dbt project to the workspace, make sure the
 checkpoint volume exists, and create or update the job from job.json (the job lives in the repo, not in the UI).
 
-Usage: python pipeline/databricks/deploy.py [--run-now]   (profile `p2p` in ~/.databrickscfg; no charge on Free Edition)
+Usage: python data_layer/databricks/deploy.py [--run-now]   (profile `p2p` in ~/.databrickscfg; no charge on Free Edition)
 """
 
 import argparse

@@ -6,7 +6,7 @@ Afterwards, when all outcomes are known, the daily worklist is checked against t
 10 invoices ranked highest each day, 92% get blocked), computed exactly as predict.business_report does: an invoice's
 score is its riskiest line, its label is whether any line got blocked, days with fewer than 20 invoices are skipped.
 
-Usage: python -m p2p_autopilot.pipeline.replay [--start 2018-09-01] [--end 2018-11-18]   (needs the dbt group; ~10 min)
+Usage: python -m p2p_autopilot.data_layer.replay [--start 2018-09-01] [--end 2018-11-18]   (needs the dbt group; ~10 min)
 """
 
 from __future__ import annotations
@@ -22,14 +22,14 @@ from datetime import date, timedelta
 import duckdb
 import numpy as np
 
-from p2p_autopilot.pipeline.paths import DATA_LAYER, DBT_DIR, ROOT
-from p2p_autopilot.pipeline.score import Scorer, columns_of
+from p2p_autopilot.data_layer.paths import DATA_LAYER, DBT_DIR, ROOT
+from p2p_autopilot.data_layer.score import Scorer, columns_of
 
 FEED = DATA_LAYER / "replay_feed"        # every file the customer will ever send (staged once)
 LANDING = DATA_LAYER / "replay_landing"  # what has arrived so far
 DB = DATA_LAYER / "replay.duckdb"
 OUT = DATA_LAYER / "replay_scores.jsonl"
-RESULT = ROOT / "pipeline" / "replay_result.json"
+RESULT = ROOT / "data_layer" / "replay_result.json"
 
 
 def run_day(day: date, scorer: Scorer) -> list[dict]:
@@ -82,7 +82,7 @@ def main() -> None:
     a = ap.parse_args()
     for d in (FEED, LANDING):
         shutil.rmtree(d, ignore_errors=True)
-    subprocess.run(["python", "-m", "p2p_autopilot.pipeline.land", "--replay-start", str(a.start),
+    subprocess.run(["python", "-m", "p2p_autopilot.data_layer.land", "--replay-start", str(a.start),
                     "--out", str(FEED)], check=True)
     LANDING.mkdir(parents=True)
     shutil.copy(FEED / "sap_events_backfill.csv.gz", LANDING)

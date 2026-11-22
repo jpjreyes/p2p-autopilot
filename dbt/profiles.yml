@@ -1,5 +1,5 @@
 # Credentials never live here: the Databricks target reads them from the environment
-# (DATABRICKS_HOST, DATABRICKS_HTTP_PATH, DATABRICKS_TOKEN), set by pipeline/run_dbt.sh from ~/.databrickscfg.
+# (DATABRICKS_HOST, DATABRICKS_HTTP_PATH, DATABRICKS_TOKEN), set by data_layer/databricks/deploy.py from ~/.databrickscfg.
 p2p:
   target: duckdb
   outputs:
