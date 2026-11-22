@@ -5,7 +5,7 @@ p2p:
   outputs:
     duckdb:
       type: duckdb
-      path: "{{ env_var('P2P_DUCKDB', '../runs/data_layer/dbt.duckdb') }}"
+      path: "{{ env_var('P2P_DUCKDB', 'runs/data_layer/dbt.duckdb') }}"
       threads: 4
     databricks:
       type: databricks

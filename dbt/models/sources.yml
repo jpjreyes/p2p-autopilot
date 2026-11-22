@@ -10,7 +10,7 @@ sources:
     tables:
       - name: sap_events
         meta:
-          external_location: "read_csv('{{ env_var('P2P_LANDING', '../runs/landing/sap_events') }}/sap_events_*.csv.gz', all_varchar = true, union_by_name = true)"
+          external_location: "read_csv('{{ env_var('P2P_LANDING', 'runs/landing/sap_events') }}/sap_events_*.csv.gz', all_varchar = true, union_by_name = true)"
         loaded_at_field: "cast(extract_date as timestamp)"
         columns:
           - name: file_row

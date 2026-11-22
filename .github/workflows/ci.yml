@@ -33,6 +33,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       UV_PYTHON: "3.12"  # dbt 1.10 does not support Python 3.14 yet
+      P2P_DUCKDB: ${{ github.workspace }}/runs/data_layer/dbt.duckdb
+      P2P_LANDING: ${{ github.workspace }}/runs/landing/sap_events
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
