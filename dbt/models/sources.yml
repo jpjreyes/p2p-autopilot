@@ -1,0 +1,21 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      The SAP purchase-to-pay extract as delivered (BPI Challenge 2019), every column as text, plus the land step's
+      file_row (position in the delivered file) and extract_date. On DuckDB the landed files are read directly; on
+      Databricks Auto Loader ingests the same files into a bronze Delta table; on Snowflake COPY INTO loads them.
+    schema: "{{ 'main' if target.type == 'duckdb' else 'p2p_autopilot_raw' }}"
+    tables:
+      - name: sap_events
+        meta:
+          external_location: "read_csv('{{ env_var('P2P_LANDING', '../runs/landing/sap_events') }}/sap_events_*.csv.gz', all_varchar = true, union_by_name = true)"
+        loaded_at_field: "cast(extract_date as timestamp)"
+        columns:
+          - name: file_row
+            tests: [not_null, unique]
+          - name: case_id
+            tests: [not_null]
+          - name: activity
+            tests: [not_null]

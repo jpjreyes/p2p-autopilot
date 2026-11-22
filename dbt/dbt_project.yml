@@ -1,0 +1,31 @@
+name: p2p
+version: "1.0.0"
+config-version: 2
+profile: p2p
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  # D1: the log was extracted in 2019; anything outside this window is a data-entry error
+  valid_from: "2017-01-01"
+  valid_to: "2020-01-01"
+  repair_window_days: 60
+  # D18: payment block removed within this many days of the invoice = label
+  horizon_days: 60
+  # D18: training months end here; the vendor prior uses the training base rate
+  train_end: "2018-07-01"
+  # D18: the replay feeds the test months from here on; no label from a day >= this may reach training
+  test_start: "2018-09-01"
+
+models:
+  p2p:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: table
+    marts:
+      +materialized: table

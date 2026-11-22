@@ -29,6 +29,21 @@ jobs:
       - run: uv run python -m p2p_autopilot.process.predict --worklist  # score open invoices with the committed model
       - run: uv run pytest -q
 
+  data-layer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen --group dbt
+      - name: Land the raw SAP extract, build it with dbt on DuckDB (models + tests)
+        run: |
+          uv run --group dbt python -m p2p_autopilot.pipeline.land --full
+          uv run --group dbt dbt build --project-dir dbt --profiles-dir dbt
+      - name: Parity with the original Python build (row-for-row fingerprints)
+        run: uv run --group dbt python -m p2p_autopilot.pipeline.parity
+      - name: Leak check (features built from data up to a cutoff must not change when later data lands)
+        run: uv run --group dbt python -m p2p_autopilot.pipeline.leak_check
+
   image:
     runs-on: ubuntu-latest
     steps:

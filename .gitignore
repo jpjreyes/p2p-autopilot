@@ -17,3 +17,6 @@ infra/gcp/.terraform/
 infra/gcp/*.tfstate*
 infra/gcp/terraform.tfvars
 infra/gcp/.terraform.lock.hcl
+dbt/target/
+dbt/logs/
+dbt/.user.yml

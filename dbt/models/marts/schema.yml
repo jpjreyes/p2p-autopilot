@@ -1,0 +1,47 @@
+version: 2
+
+models:
+  - name: events
+    description: Event log, one row per delivered row (D7), dates repaired or flagged (D1).
+    columns:
+      - name: event_id
+        tests: [unique, not_null]
+      - name: case_id
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('cases'), field: case_id}}
+      - name: ts_status
+        tests:
+          - accepted_values: {arguments: {values: ['ok', 'repaired', 'duplicate', 'unresolved']}}
+      - name: is_canonical
+        tests: [not_null]
+  - name: cases
+    description: One row per PO line item (D2).
+    columns:
+      - name: case_id
+        tests: [unique, not_null]
+      - name: po
+        tests: [not_null]
+      - name: vendor
+        tests: [not_null]
+  - name: cycles
+    description: Payment cycles (D4).
+    columns:
+      - name: case_id
+        tests: [not_null]
+  - name: waits
+    columns:
+      - name: days
+        tests: [not_null]
+  - name: invoice_features
+    description: Payment-block model features at invoice receipt (D18), one row per invoiced PO line.
+    columns:
+      - name: case_id
+        tests: [unique, not_null]
+      - name: label
+        tests:
+          - accepted_values: {arguments: {values: [0, 1], quote: false}}
+      - name: vendor_block_rate
+        tests: [not_null]
+  - name: training_rows
+    description: Feature rows a retrain may use as of the landed data (label observable, never the test months).

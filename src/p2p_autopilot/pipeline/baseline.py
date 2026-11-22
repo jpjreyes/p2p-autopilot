@@ -10,17 +10,16 @@ Usage: python -m p2p_autopilot.pipeline.baseline   (~2 min)
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import duckdb
 import pandas as pd
 
 from p2p_autopilot.pipeline.fingerprint import fingerprint
+from p2p_autopilot.pipeline.paths import BASELINE as OUT
+from p2p_autopilot.pipeline.paths import LEGACY_DB
 from p2p_autopilot.process import predict
 from p2p_autopilot.process.warehouse import DEFAULT_CSV, DEFAULT_DB, ROOT, build
 
-OUT = ROOT / "pipeline" / "baseline.json"
-LEGACY_DB = ROOT / "runs" / "data_layer" / "legacy.duckdb"
 TABLES = ["events", "cases", "cycles", "waits", "dq_report"]
 
 
