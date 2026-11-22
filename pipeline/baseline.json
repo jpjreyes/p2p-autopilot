@@ -1,0 +1,159 @@
+{
+ "source_csv": "bpi2019_events.csv.gz",
+ "tables": {
+  "events": {
+   "rows": 1595923,
+   "md5": "b95227888ad1d568ed6b749ecb05f98a",
+   "columns": [
+    "event_id",
+    "case_id",
+    "seq",
+    "activity",
+    "ts",
+    "ts_original",
+    "ts_status",
+    "resource",
+    "user_id",
+    "value_eur",
+    "n_identical",
+    "is_canonical"
+   ]
+  },
+  "cases": {
+   "rows": 251734,
+   "md5": "319d579929d06ec91c9c9851720882f8",
+   "columns": [
+    "case_id",
+    "po",
+    "item",
+    "item_category",
+    "item_type",
+    "vendor",
+    "company",
+    "spend_area",
+    "sub_spend_area",
+    "document_type",
+    "gr_based_inv_verif",
+    "goods_receipt_flag",
+    "value_eur",
+    "n_events",
+    "n_bad_dates",
+    "start_ts",
+    "end_ts",
+    "throughput_days"
+   ]
+  },
+  "cycles": {
+   "rows": 264222,
+   "md5": "41c37d009569a21bd50e3094a5bd4fc1",
+   "columns": [
+    "case_id",
+    "cycle_no",
+    "start_ts",
+    "end_ts",
+    "days",
+    "n_events",
+    "is_closed",
+    "closing_event_id"
+   ]
+  },
+  "waits": {
+   "rows": 1211411,
+   "md5": "3763a18a3de6f128a01fb098b84a7fd0",
+   "columns": [
+    "case_id",
+    "from_seq",
+    "to_seq",
+    "from_activity",
+    "to_activity",
+    "days",
+    "vendor",
+    "item_category",
+    "value_band"
+   ]
+  },
+  "dq_report": {
+   "rows": 12,
+   "md5": "02c70ffd0fc8ad08bacfce74e49e9647",
+   "columns": [
+    "check_name",
+    "n",
+    "note"
+   ]
+  },
+  "invoice_features": {
+   "rows": 211379,
+   "md5": "de0ef7beb4348f13ec75020399498c13",
+   "columns": [
+    "case_id",
+    "ir_ts",
+    "label",
+    "value_eur",
+    "vendor",
+    "item_category",
+    "item_type",
+    "document_type",
+    "spend_area",
+    "sub_spend_area",
+    "company",
+    "ir_user",
+    "gr_based_inv_verif",
+    "log_value",
+    "days_po_to_cut",
+    "invoice_before_gr",
+    "n_change_price",
+    "n_change_qty",
+    "n_gr",
+    "n_order_conf",
+    "n_cancel_gr",
+    "has_requisition",
+    "n_vendor_invoice",
+    "n_change_approval",
+    "n_service_entry",
+    "po_lines",
+    "po_blocked_before",
+    "value_ratio",
+    "inv_lines",
+    "inv_any_no_gr",
+    "inv_share_no_gr",
+    "inv_log_value",
+    "inv_any_price_change",
+    "inv_any_qty_change",
+    "ir_dow",
+    "ir_day",
+    "days_since_gr",
+    "vendor_rpb_30d",
+    "vendor_ir_30d",
+    "vendor_recent_block_ratio",
+    "vendor_lines",
+    "vendor_block_rate"
+   ]
+  }
+ },
+ "baked_worklist": {
+  "rows": 17553,
+  "md5": "c83233f286c077cc4eb757f738497703",
+  "columns": [
+   "case_id",
+   "vendor",
+   "value_eur",
+   "invoice_recorded",
+   "p_block",
+   "flagged",
+   "reasons"
+  ]
+ },
+ "daily_worklist": {
+  "days": 54,
+  "median_invoices_per_day": 356.5,
+  "median_blocked_invoices_per_day": 65.0,
+  "base_rate_invoices": 0.233,
+  "top10_precision_median": 1.0,
+  "top20_precision_median": 0.9,
+  "top10_precision_mean": 0.92,
+  "top20_precision_mean": 0.827,
+  "top10_days_measured": 54,
+  "top20_days_measured": 53,
+  "rule_precision_invoices": 0.889
+ }
+}
