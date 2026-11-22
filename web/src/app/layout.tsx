@@ -26,7 +26,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <p className="label text-faint">
               Test environment · mock supplier portals · generated invoices on real SAP purchase orders (BPI 2019)
             </p>
-            <p className="label text-faint">The agent cannot approve or pay</p>
+            <div className="grid gap-1 sm:justify-items-end">
+              <p className="label text-faint">The agent cannot approve or pay</p>
+              <a
+                className="label text-faint underline decoration-dotted underline-offset-4 hover:text-foreground"
+                href="https://github.com/jpreyesm03/p2p-autopilot#models-and-mlops"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Models and data platform ↗
+              </a>
+            </div>
           </div>
         </footer>
       </body>
