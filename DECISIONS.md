@@ -677,3 +677,37 @@ All runs on commit bdd5a35, Claude Haiku via the CLI on a Claude plan (D23), ext
 - **Would change if:** a second run with generated invoices in the training mix (some portal templates held out)
   kept the receipt gain and fixed the issue-date mistakes; then the fine-tuned model would replace the untuned one as
   first reader in the cascade. Not run today.
+
+## D31. Data layer: dbt on DuckDB and Databricks, a daily job, and a leak check (2026-11-21)
+- **Why:** the SAP data of a real customer lives in their warehouse, not in a file on a laptop. The one-time Python
+  load (warehouse.py) becomes versioned, tested SQL that builds the same tables wherever the customer's data is, and
+  a daily job feeds new data through it the way production would.
+- **Shape:** land (a stable source row id + one file per extract day) -> ingest (Databricks Auto Loader into a bronze
+  Delta table; DuckDB reads the files directly) -> dbt (staging, D1 date repair, events, cases, cycles, waits,
+  dq_report, invoice_features, training_rows; 24 schema and singular tests) -> score (champion model) -> daily
+  worklist. Engine differences live in one macro file (date math, day of week, rounding); no engine-specific SQL in
+  the models. Code: `dbt/`, `src/p2p_autopilot/pipeline/`, `pipeline/databricks/` (the job is a JSON spec in the repo,
+  deployed by `deploy.py`).
+- **Parity, measured, not assumed:** (1) dbt on DuckDB vs the original Python build: all 6 tables identical row for
+  row (order-independent fingerprints, 1,595,923 events, 211,379 feature rows). (2) Databricks vs DuckDB on the same
+  landed files: all 6 tables identical, and the job's scores equal the local scorer's on the same day (max
+  difference 0). Getting there found two real engine differences, both fixed in the macros, not by loosening the
+  check: Spark rounds a double like 77.975 (stored as 77.97499...) up and DuckDB down (104 of 177,935 lines), and
+  Spark sorts NULLs first in a window (1,102 lines without an order value yet shifted every value band).
+- **The CV number survives a real replay:** day by day over the test months, with only the files landed up to each
+  day and a dbt rebuild each day, the top 10 invoices ranked each day were really blocked **92.4%** of the time
+  (54 days, 45,439 lines; D18c said 92.0% from a one-shot score). Score only: the test months never train.
+- **Leak check (in CI):** build from data landed up to a cutoff and compare every invoice's features with the
+  full-data build. It found a small pre-existing leak in D18's features: `po_lines` counts lines of the PO created
+  after the invoice (0.17% of rows at a mid-September cutoff, 1.1% of test-month lines). It did not inflate the
+  claim (the replay, which cannot see later lines, scores 92.4%). Kept for parity with the trained model and bounded
+  in the check; the next retrain should count only lines created before the invoice. A D1 date repair can also move
+  when a line's later events widen its timeline (1 row). The label-delay rule holds: 3,383 labels were not yet
+  observable at the cutoff and none reaches `training_rows`, which also never admits a test-month row (dbt tests).
+- **Live:** Databricks Free Edition job `p2p-autopilot-daily` (arrive -> Auto Loader -> dbt on the serverless SQL
+  warehouse, ~45 s -> score with `payment_block@champion` from Unity Catalog), scheduled daily at 06:00 Pacific,
+  advancing the replay one day per run; failure email on. Auto Loader picks up only new files (exactly-once via its
+  checkpoint; 0 duplicate rows across runs). The champion is loaded from its logged files (booster + calibration),
+  not unpickled: the pickled model class failed on serverless.
+- **Not done, on purpose:** Spark/PySpark transforms (the data fits a SQL warehouse); incremental dbt models (a full
+  rebuild is ~45 s and keeps parity simple); retraining in the job (frozen during the replay, decision 4).
