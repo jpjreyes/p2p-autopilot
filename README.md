@@ -1,6 +1,6 @@
 # P2P Autopilot
 
-[![ci](https://github.com/jpreyesm03/p2p-autopilot/actions/workflows/ci.yml/badge.svg)](https://github.com/jpreyesm03/p2p-autopilot/actions/workflows/ci.yml)
+[![ci](https://github.com/jpjreyes/p2p-autopilot/actions/workflows/ci.yml/badge.svg)](https://github.com/jpjreyes/p2p-autopilot/actions/workflows/ci.yml)
 
 **Live demo: [p2p-autopilot-eight.vercel.app](https://p2p-autopilot-eight.vercel.app)** (console on Vercel, API, portals and agent jobs on
 GCP Cloud Run; start a real agent run and review what it proposes; first load after a quiet period takes a few seconds).
@@ -14,7 +14,7 @@ anywhere in the agent; a human approves every payment in the review console.
 > Data: the public BPI Challenge 2019 log (a coatings manufacturer's SAP purchase-to-pay, 251,734 PO lines, CC BY 4.0).
 > The supplier portals are mocks built for this project; their invoices bill **real purchase orders and goods receipts
 > from that log** ([D17](DECISIONS.md)). No real third-party site is automated. Scenario: [CLIENT_BRIEF.md](CLIENT_BRIEF.md).
-> This merges the original analyst ([Process Copilot](https://github.com/jpreyesm03/process-copilot), kept public as
+> This merges the original analyst ([Process Copilot](https://github.com/jpjreyes/process-copilot), kept public as
 > the first version) with the portal agent ([D16](DECISIONS.md)).
 
 ![Review console: the invoice next to the 3-way match, with a handwritten correction flagged](docs/img/review-drawer.png)

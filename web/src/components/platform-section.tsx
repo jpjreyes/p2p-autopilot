@@ -2,7 +2,7 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Card, Stat } from "@/components/ui";
 
-const REPO = "https://github.com/jpreyesm03/p2p-autopilot";
+const REPO = "https://github.com/jpjreyes/p2p-autopilot";
 const DECISIONS_URL = `${REPO}/blob/main/DECISIONS.md`;
 
 // Static results (DECISIONS D28-D33). Nothing here calls the API: the numbers come from the scored runs in the repo.

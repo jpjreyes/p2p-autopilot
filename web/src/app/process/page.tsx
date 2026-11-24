@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { api, eur, type ProcessOverview } from "@/lib/api";
 import { Card, PageHeader, Stat } from "@/components/ui";
 
-const DECISIONS_URL = "https://github.com/jpreyesm03/p2p-autopilot/blob/main/DECISIONS.md";
+const DECISIONS_URL = "https://github.com/jpjreyes/p2p-autopilot/blob/main/DECISIONS.md";
 
 export default function ProcessPage() {
   const [d, setD] = useState<ProcessOverview | null>(null);
